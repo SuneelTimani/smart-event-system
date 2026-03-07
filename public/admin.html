@@ -1,0 +1,2054 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | Smart Event System</title>
+  <link rel="icon" type="image/png" href="/assets/web-logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="mx-auto max-w-6xl px-4 py-8">
+    <header class="flex flex-col gap-4">
+      <nav data-role-nav class="flex flex-col gap-4 border border-slate-800 bg-slate-900/70 px-4 py-3 backdrop-blur md:flex-row md:items-center md:justify-between rounded-xl">
+        <div class="flex items-center gap-3">
+          <img src="/assets/web-logo.png" alt="Smart Event System" class="h-9 w-9 rounded-lg object-cover">
+          <div>
+            <p class="text-sm font-semibold">Smart Event System</p>
+            <p class="text-xs text-slate-400">Manage and discover events</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 text-sm">
+          <a class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800" href="/">Home</a>
+          <a data-nav="auth" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/book.html">Book Event</a>
+          <a data-nav="admin" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/create-event.html">Create Event</a>
+          <a data-nav="admin" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/admin.html">Admin Dashboard</a>
+          <a data-nav="guest" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800" href="/login.html">Login</a>
+          
+            <a data-nav="auth-avatar" class="hidden inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ring-2 ring-amber-300/40" href="/profile.html"><img data-nav-avatar-img src="https://ui-avatars.com/api/?name=U&background=0f172a&color=f59e0b&size=96" alt="Profile" class="h-full w-full object-cover"></a>
+        </div>
+      </nav>
+      <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 class="text-3xl font-semibold">Admin Dashboard</h1>
+          <p class="text-slate-400">Manage events and bookings in one place.</p>
+          <p id="myEventsMeta" class="mt-1 text-xs text-slate-500">My Events: 0</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <a href="/admin-bookings.html" class="rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-sm hover:bg-slate-800">Show All Bookings</a>
+          <a href="/user.html" class="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm text-amber-200 hover:bg-amber-500/20">User Dashboard</a>
+          <a href="/organizer-tools.html" class="rounded-lg border border-indigo-500/40 bg-indigo-500/10 px-4 py-2 text-sm text-indigo-200 hover:bg-indigo-500/20">Organizer Tools</a>
+          <button id="weeklyDigestBtn" class="rounded-lg border border-violet-500/40 bg-violet-500/10 px-4 py-2 text-sm text-violet-200 hover:bg-violet-500/20">Weekly Digest</button>
+          <button id="testEmailBtn" class="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 hover:bg-emerald-500/20">Test Email</button>
+          <button id="testWhatsAppBtn" class="rounded-lg border border-cyan-500/40 bg-cyan-500/10 px-4 py-2 text-sm text-cyan-300 hover:bg-cyan-500/20">Test WhatsApp</button>
+          <button id="refreshBtn" class="rounded-lg border border-slate-800 bg-slate-900 px-4 py-2 text-sm hover:bg-slate-800">Refresh</button>
+        </div>
+      </div>
+    </header>
+
+    <section id="admin-subnav" class="mt-4 rounded-xl border border-slate-800 bg-slate-900/70 p-3 backdrop-blur">
+      <div class="flex flex-wrap gap-2 text-xs md:text-sm">
+        <a href="#overview" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Overview</a>
+        <a href="#events-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Events</a>
+        <a href="#archived-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Archived</a>
+        <a href="#analytics-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Analytics</a>
+        <a href="#users-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Users</a>
+        <a href="#comments-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Comments</a>
+        <a href="#audit-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Audit</a>
+        <a href="#monitoring-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Monitoring</a>
+        <a href="#push-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Push</a>
+        <a href="#ml-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">ML</a>
+        <a href="#tools-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">API Tools</a>
+      </div>
+    </section>
+
+    <section id="overview" class="mt-8 grid gap-4 md:grid-cols-3">
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+        <p class="text-sm text-slate-400">Total Events</p>
+        <p id="totalEvents" class="mt-2 text-2xl font-semibold">0</p>
+      </div>
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+        <p class="text-sm text-slate-400">Total Bookings</p>
+        <p id="totalBookings" class="mt-2 text-2xl font-semibold">0</p>
+      </div>
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+        <p class="text-sm text-slate-400">Latest Activity</p>
+        <p id="latestEvent" class="mt-2 text-sm text-slate-300">-</p>
+      </div>
+    </section>
+
+    <section id="events-section" class="mt-8">
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+        <div class="mb-3 flex items-center justify-between">
+          <h2 class="text-lg font-semibold">Events</h2>
+          <button id="loadEventsBtn" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 text-sm hover:bg-slate-800">Load Events</button>
+        </div>
+        <div id="events" class="grid gap-3 md:grid-cols-2"></div>
+        <div id="eventsPager" class="mt-4"></div>
+      </div>
+    </section>
+
+    <section id="archived-section" class="mt-6">
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+        <div class="mb-3 flex items-center justify-between">
+          <h2 class="text-lg font-semibold">Archived Events</h2>
+          <button id="loadArchivedBtn" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 text-sm hover:bg-slate-800">Load Archived</button>
+        </div>
+        <div id="archivedEvents" class="grid gap-3 md:grid-cols-2"></div>
+        <div id="archivedEventsPager" class="mt-4"></div>
+      </div>
+    </section>
+
+    <section id="analytics-section" class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
+      <h2 class="text-lg font-semibold">Event Registration Summary</h2>
+      <div class="mt-4 overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="text-slate-400">
+            <tr>
+              <th class="px-3 py-2 text-left">Event</th>
+              <th class="px-3 py-2 text-left">Users</th>
+              <th class="px-3 py-2 text-left">Registrations</th>
+              <th class="px-3 py-2 text-left">Tickets</th>
+              <th class="px-3 py-2 text-left">Confirmed</th>
+              <th class="px-3 py-2 text-left">Cancelled</th>
+            </tr>
+          </thead>
+          <tbody id="eventSummaryBody" class="divide-y divide-slate-800"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="audit-section" class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
+      <div class="mb-3 flex items-center justify-between">
+        <h2 class="text-lg font-semibold">Booking Analytics</h2>
+        <p class="text-xs text-slate-400">Interactive charts for trends, status, top events, and revenue.</p>
+      </div>
+      <div class="grid gap-3 md:grid-cols-5">
+        <select id="analyticsRange" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <option value="7" selected>Last 7 days</option>
+          <option value="30">Last 30 days</option>
+          <option value="custom">Custom range</option>
+        </select>
+        <input id="analyticsFrom" type="date" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" disabled>
+        <input id="analyticsTo" type="date" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" disabled>
+        <select id="analyticsEvent" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <option value="">All events</option>
+        </select>
+        <select id="analyticsStatus" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <option value="">All statuses</option>
+          <option value="pending">pending</option>
+          <option value="confirmed">confirmed</option>
+          <option value="checked_in">checked_in</option>
+          <option value="cancelled">cancelled</option>
+          <option value="refunded">refunded</option>
+        </select>
+      </div>
+      <div class="mt-4 grid gap-4 lg:grid-cols-2">
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <p class="text-xs uppercase tracking-wide text-slate-400">Bookings Trend</p>
+          <canvas id="trendChart" class="mt-2"></canvas>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <p class="text-xs uppercase tracking-wide text-slate-400">Status Breakdown</p>
+          <canvas id="statusChart" class="mt-2"></canvas>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <p class="text-xs uppercase tracking-wide text-slate-400">Top Events by Registrations</p>
+          <canvas id="topEventsChart" class="mt-2"></canvas>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <p class="text-xs uppercase tracking-wide text-slate-400">Revenue by Event</p>
+          <canvas id="revenueChart" class="mt-2"></canvas>
+        </div>
+      </div>
+      <div id="bookingsList" class="mt-4 grid gap-3 md:grid-cols-2"></div>
+    </section>
+
+    <section id="users-section" class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
+      <div class="mb-3 flex items-center justify-between">
+        <h2 class="text-lg font-semibold">Audit Logs</h2>
+        <button id="loadAuditBtn" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 text-sm hover:bg-slate-800">Refresh Logs</button>
+      </div>
+      <div class="grid gap-3 md:grid-cols-4">
+        <select id="auditActionFilter" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <option value="">All Actions</option>
+          <option value="event_create">event_create</option>
+          <option value="event_edit">event_edit</option>
+          <option value="event_archive">event_archive</option>
+          <option value="event_restore">event_restore</option>
+          <option value="user_force_verify">user_force_verify</option>
+          <option value="user_lock">user_lock</option>
+          <option value="user_unlock">user_unlock</option>
+          <option value="comment_hide">comment_hide</option>
+          <option value="comment_unhide">comment_unhide</option>
+          <option value="comment_delete">comment_delete</option>
+          <option value="booking_status_change">booking_status_change</option>
+        </select>
+        <input id="auditFrom" type="date" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+        <input id="auditTo" type="date" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+        <select id="auditLimit" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <option value="25">Last 25</option>
+          <option value="50" selected>Last 50</option>
+          <option value="100">Last 100</option>
+          <option value="200">Last 200</option>
+        </select>
+      </div>
+      <div class="mt-4 overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="text-slate-400">
+            <tr>
+              <th class="px-3 py-2 text-left">Time</th>
+              <th class="px-3 py-2 text-left">Action</th>
+              <th class="px-3 py-2 text-left">Target</th>
+              <th class="px-3 py-2 text-left">Route</th>
+              <th class="px-3 py-2 text-left">Details</th>
+            </tr>
+          </thead>
+          <tbody id="auditBody" class="divide-y divide-slate-800"></tbody>
+        </table>
+      </div>
+      <div id="auditPager" class="mt-4"></div>
+    </section>
+
+    <section id="comments-section" class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
+      <div class="mb-3 flex items-center justify-between">
+        <h2 class="text-lg font-semibold">User Management</h2>
+        <button id="loadUsersBtn" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 text-sm hover:bg-slate-800">Refresh Users</button>
+      </div>
+      <div class="grid gap-3 md:grid-cols-4">
+        <input id="userSearch" placeholder="Search name or email" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+        <select id="userVerifiedFilter" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <option value="">All verification</option>
+          <option value="true">Verified</option>
+          <option value="false">Unverified</option>
+        </select>
+        <select id="userLockedFilter" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <option value="">All lock states</option>
+          <option value="true">Locked</option>
+          <option value="false">Unlocked</option>
+        </select>
+        <p class="self-center text-xs text-slate-500">You can force verify and lock/unlock accounts.</p>
+      </div>
+      <div class="mt-4 overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="text-slate-400">
+            <tr>
+              <th class="px-3 py-2 text-left">Name</th>
+              <th class="px-3 py-2 text-left">Email</th>
+              <th class="px-3 py-2 text-left">Role</th>
+              <th class="px-3 py-2 text-left">Verified</th>
+              <th class="px-3 py-2 text-left">Locked</th>
+              <th class="px-3 py-2 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersBody" class="divide-y divide-slate-800"></tbody>
+        </table>
+      </div>
+      <div id="usersPager" class="mt-4"></div>
+    </section>
+
+    <section id="monitoring-section" class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
+      <div class="mb-3 flex items-center justify-between">
+        <h2 class="text-lg font-semibold">Comment Moderation</h2>
+        <button id="loadCommentsModerationBtn" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 text-sm hover:bg-slate-800">Refresh Comments</button>
+      </div>
+      <div class="grid gap-3 md:grid-cols-4">
+        <input id="commentSearch" placeholder="Search text/user/event" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+        <select id="commentEventFilter" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <option value="">All events</option>
+        </select>
+        <select id="commentStatusFilter" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <option value="all">All comments</option>
+          <option value="reported">Reported</option>
+          <option value="hidden">Hidden</option>
+          <option value="visible">Visible</option>
+        </select>
+        <select id="commentLimitFilter" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <option value="25">Last 25</option>
+          <option value="50" selected>Last 50</option>
+          <option value="100">Last 100</option>
+          <option value="200">Last 200</option>
+        </select>
+      </div>
+      <div class="mt-3 grid gap-3 md:grid-cols-3">
+        <input id="commentHideReason" placeholder="Hide reason (optional, reusable)" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+        <select id="commentReasonPreset" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <option value="">Reason preset (optional)</option>
+          <option value="Abusive language">Abusive language</option>
+          <option value="Spam or scam">Spam or scam</option>
+          <option value="Harassment">Harassment</option>
+          <option value="Off-topic">Off-topic</option>
+          <option value="Sensitive content">Sensitive content</option>
+        </select>
+        <p class="self-center text-xs text-slate-500">Hide/unhide, reason tracking, and permanent delete.</p>
+      </div>
+      <div class="mt-4 overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="text-slate-400">
+            <tr>
+              <th class="px-3 py-2 text-left">Time</th>
+              <th class="px-3 py-2 text-left">Event</th>
+              <th class="px-3 py-2 text-left">User</th>
+              <th class="px-3 py-2 text-left">Comment</th>
+              <th class="px-3 py-2 text-left">Reports</th>
+              <th class="px-3 py-2 text-left">Reason</th>
+              <th class="px-3 py-2 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="commentsModerationBody" class="divide-y divide-slate-800"></tbody>
+        </table>
+      </div>
+      <div id="commentsPager" class="mt-4"></div>
+    </section>
+
+    <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
+      <div class="mb-3 flex items-center justify-between">
+        <h2 class="text-lg font-semibold">P3 Monitoring</h2>
+        <button id="refreshMonitoringBtn" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 text-sm hover:bg-slate-800">Refresh</button>
+      </div>
+      <div class="grid gap-3 md:grid-cols-3">
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <p class="text-xs uppercase tracking-wide text-slate-400">API Latency</p>
+          <p id="monitorLatency" class="mt-2 text-sm text-slate-200">-</p>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <p class="text-xs uppercase tracking-wide text-slate-400">Server Errors</p>
+          <p id="monitorErrors" class="mt-2 text-sm text-slate-200">-</p>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <p class="text-xs uppercase tracking-wide text-slate-400">Queue Dead-Letter</p>
+          <p id="monitorDeadLetter" class="mt-2 text-sm text-slate-200">-</p>
+        </div>
+      </div>
+      <p id="monitorMeta" class="mt-3 text-xs text-slate-500">Window: last 15 minutes</p>
+    </section>
+
+    <section id="push-section" class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
+      <div class="mb-3 flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-semibold">Push Subscribers</h2>
+          <p class="text-xs text-slate-400">Browsers subscribed to web push reminders.</p>
+        </div>
+        <button id="loadPushSubscribersBtn" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 text-sm hover:bg-slate-800">Refresh</button>
+      </div>
+      <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <p class="text-xs uppercase tracking-wide text-slate-400">Subscribed Users</p>
+          <p id="pushUsersCount" class="mt-2 text-2xl font-semibold text-slate-100">-</p>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <p class="text-xs uppercase tracking-wide text-slate-400">Active Endpoints</p>
+          <p id="pushEndpointsCount" class="mt-2 text-2xl font-semibold text-slate-100">-</p>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <p class="text-xs uppercase tracking-wide text-slate-400">Latest Subscription</p>
+          <p id="pushLatestMeta" class="mt-2 text-sm text-slate-300">-</p>
+        </div>
+      </div>
+      <div id="pushSubscribersList" class="mt-4 grid gap-3 md:grid-cols-2"></div>
+    </section>
+
+    <!-- ── ML Insights ─────────────────────────────────────────────────────── -->
+    <section id="ml-section" class="mt-6 rounded-xl border border-indigo-500/30 bg-slate-900 p-4">
+      <div class="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h2 class="text-lg font-semibold">ML Insights</h2>
+          <p class="text-xs text-slate-400">Attendance prediction &amp; churn detection powered by your ML engine.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="mlEventSelect"
+                  class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm min-w-[200px]">
+            <option value="">Select an event...</option>
+          </select>
+          <button id="loadMlBtn"
+                  class="rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-400">
+            Analyse
+          </button>
+        </div>
+      </div>
+
+      <!-- Attendance card -->
+      <div id="mlAttendanceCard" class="hidden rounded-xl border border-slate-800 bg-slate-950 p-4">
+        <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Attendance Prediction</p>
+        <div id="mlAttendanceContent"></div>
+      </div>
+
+      <!-- Churn summary bar -->
+      <div id="mlChurnSummaryBar" class="hidden mt-4 grid grid-cols-3 gap-3 md:grid-cols-6">
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3 text-center">
+          <p class="text-xs text-slate-400">Total Bookings</p>
+          <p id="mlChurnTotal" class="mt-1 text-xl font-bold text-slate-100">-</p>
+        </div>
+        <div class="rounded-lg border border-rose-500/30 bg-rose-950/20 p-3 text-center">
+          <p class="text-xs text-slate-400">High Risk</p>
+          <p id="mlChurnHigh" class="mt-1 text-xl font-bold text-rose-300">-</p>
+        </div>
+        <div class="rounded-lg border border-amber-500/30 bg-amber-950/20 p-3 text-center">
+          <p class="text-xs text-slate-400">Medium Risk</p>
+          <p id="mlChurnMedium" class="mt-1 text-xl font-bold text-amber-300">-</p>
+        </div>
+        <div class="rounded-lg border border-emerald-500/30 bg-emerald-950/20 p-3 text-center">
+          <p class="text-xs text-slate-400">Low Risk</p>
+          <p id="mlChurnLow" class="mt-1 text-xl font-bold text-emerald-300">-</p>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3 text-center">
+          <p class="text-xs text-slate-400">Avg Churn Score</p>
+          <p id="mlChurnAvg" class="mt-1 text-xl font-bold text-slate-100">-</p>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3 text-center">
+          <p class="text-xs text-slate-400">At Risk</p>
+          <p id="mlChurnAtRisk" class="mt-1 text-xl font-bold text-amber-200">-</p>
+        </div>
+      </div>
+
+      <!-- Churn user cards -->
+      <div id="mlChurnCards" class="mt-4 grid gap-3 md:grid-cols-2"></div>
+
+      <!-- Empty/loading state -->
+      <p id="mlStatus" class="text-sm text-slate-400">Select an event above and click Analyse.</p>
+    </section>
+
+    <section id="tools-section" class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
+      <div class="mb-3 flex items-center justify-between">
+        <h2 class="text-lg font-semibold">API Tools</h2>
+        <div class="flex gap-2">
+          <button id="pingHealthBtn" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 text-sm hover:bg-slate-800">Ping /health</button>
+          <button id="pingDbBtn" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 text-sm hover:bg-slate-800">Ping /health/db</button>
+          <button id="runRemindersBtn" class="rounded-lg border border-amber-600/40 bg-amber-500/10 px-3 py-1 text-sm text-amber-200 hover:bg-amber-500/20">Run Reminders</button>
+          <button id="loadWebhooksBtn" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 text-sm hover:bg-slate-800">Load Webhooks</button>
+        </div>
+      </div>
+      <p id="apiToolsStatus" class="text-xs text-slate-400">Ready.</p>
+      <div class="mt-4 overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="text-slate-400">
+            <tr>
+              <th class="px-3 py-2 text-left">Time</th>
+              <th class="px-3 py-2 text-left">Event ID</th>
+              <th class="px-3 py-2 text-left">Type</th>
+              <th class="px-3 py-2 text-left">Processed</th>
+              <th class="px-3 py-2 text-left">Error</th>
+            </tr>
+          </thead>
+          <tbody id="webhookEventsBody" class="divide-y divide-slate-800"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <dialog id="editEventModal" class="w-[92vw] max-w-2xl rounded-xl border border-slate-700 bg-slate-950 p-0 text-slate-100 backdrop:bg-black/70">
+    <form id="editEventForm" class="p-5">
+      <div class="mb-4 flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Edit Event</h3>
+        <button type="button" id="closeEditModal" class="rounded-md border border-slate-700 px-3 py-1 text-xs hover:bg-slate-800">Close</button>
+      </div>
+      <input type="hidden" id="editEventId">
+      <div class="grid gap-3">
+        <input id="editTitle" required placeholder="Title" class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+        <textarea id="editDescription" required placeholder="Description" class="min-h-24 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm"></textarea>
+        <input id="editDate" type="datetime-local" required class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+        <input id="editLocation" required placeholder="Location" class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+        <input id="editOrganizer" required placeholder="Organizer" class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+        <div class="grid gap-3 md:grid-cols-3">
+          <select id="editCategory" class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+            <option>Conference</option>
+            <option>Workshop</option>
+            <option>Concert</option>
+            <option>Meetup</option>
+            <option>Festival</option>
+            <option>Webinar</option>
+            <option>Other</option>
+          </select>
+          <input id="editCapacity" type="number" min="1" required placeholder="Capacity" class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+          <select id="editStatus" class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm">
+            <option value="published">published</option>
+            <option value="draft">draft</option>
+            <option value="cancelled">cancelled</option>
+          </select>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-900 p-3">
+          <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Ticket Prices</p>
+          <div class="grid gap-3 md:grid-cols-2">
+            <input id="editStandardPrice" type="number" min="0" step="0.01" placeholder="Standard Price" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+            <input id="editVipPrice" type="number" min="0" step="0.01" placeholder="VIP Price (optional)" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          </div>
+          <p class="mt-2 text-xs text-slate-400">Quantities stay unchanged while editing prices.</p>
+        </div>
+      </div>
+      <p id="editEventMsg" class="mt-3 text-sm text-slate-300"></p>
+      <button type="submit" class="mt-3 rounded-lg bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-300">Save Changes</button>
+    </form>
+  </dialog>
+
+  <dialog id="userHistoryModal" class="w-[92vw] max-w-3xl rounded-xl border border-slate-700 bg-slate-950 p-0 text-slate-100 backdrop:bg-black/70">
+    <div class="p-5">
+      <div class="mb-3 flex items-center justify-between gap-3">
+        <h3 class="text-lg font-semibold">User Action History</h3>
+        <button type="button" id="closeUserHistoryModal" class="rounded-md border border-slate-700 px-3 py-1 text-xs hover:bg-slate-800">Close</button>
+      </div>
+      <p id="userHistoryMeta" class="mb-3 text-xs text-slate-400">-</p>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="text-slate-400">
+            <tr>
+              <th class="px-3 py-2 text-left">Time</th>
+              <th class="px-3 py-2 text-left">Action</th>
+              <th class="px-3 py-2 text-left">By</th>
+              <th class="px-3 py-2 text-left">Details</th>
+            </tr>
+          </thead>
+          <tbody id="userHistoryBody" class="divide-y divide-slate-800"></tbody>
+        </table>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="ui-feedback.js"></script>
+  <script>
+    const token = localStorage.getItem("token");
+    let adminEvents = [];
+    const adminPageState = {
+      events: 1,
+      archivedEvents: 1,
+      users: 1,
+      comments: 1,
+      audit: 1
+    };
+    if (!token) {
+      window.location.href = "/login.html";
+    }
+
+    function authHeaders() {
+      return token ? { Authorization: token } : {};
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+    function readableBookingId(id) {
+      const raw = String(id || "").trim();
+      if (!raw) return "-";
+      return `BK-${raw.slice(-8).toUpperCase()}`;
+    }
+
+    function renderPagination(containerId, pagination, handlerName) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      const page = Number(pagination?.page || 1);
+      const totalPages = Number(pagination?.totalPages || 1);
+      const total = Number(pagination?.total || 0);
+      if (totalPages <= 1) {
+        container.innerHTML = total ? `<p class="text-xs text-slate-500">Showing page ${page} of ${totalPages} · ${total} total</p>` : "";
+        return;
+      }
+      container.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+          <p>Page ${page} of ${totalPages} · ${total} total</p>
+          <div class="flex items-center gap-2">
+            <button ${page <= 1 ? "disabled" : ""} onclick="${handlerName}(${page - 1})" class="rounded-md border border-slate-700 px-3 py-1 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40">Prev</button>
+            <button ${page >= totalPages ? "disabled" : ""} onclick="${handlerName}(${page + 1})" class="rounded-md border border-slate-700 px-3 py-1 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40">Next</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function goToEventsPage(page) {
+      adminPageState.events = Math.max(1, Number(page || 1));
+      loadEvents();
+    }
+    window.goToEventsPage = goToEventsPage;
+
+    function goToArchivedEventsPage(page) {
+      adminPageState.archivedEvents = Math.max(1, Number(page || 1));
+      loadArchivedEvents();
+    }
+    window.goToArchivedEventsPage = goToArchivedEventsPage;
+
+    function goToUsersPage(page) {
+      adminPageState.users = Math.max(1, Number(page || 1));
+      loadUsers();
+    }
+    window.goToUsersPage = goToUsersPage;
+
+    function goToCommentsPage(page) {
+      adminPageState.comments = Math.max(1, Number(page || 1));
+      loadModerationComments();
+    }
+    window.goToCommentsPage = goToCommentsPage;
+
+    function goToAuditPage(page) {
+      adminPageState.audit = Math.max(1, Number(page || 1));
+      loadAuditLogs();
+    }
+    window.goToAuditPage = goToAuditPage;
+
+    async function ensureAdmin() {
+      const res = await fetch("/api/auth/me", { headers: authHeaders() });
+      if (!res.ok) {
+        localStorage.removeItem("token");
+        window.location.href = "/login.html";
+        return false;
+      }
+      const me = await res.json();
+      if (me.role !== "admin") {
+        window.location.href = "/user.html";
+        return false;
+      }
+      return true;
+    }
+
+    async function loadStats() {
+      const [eventsRes, bookingsRes, summaryRes] = await Promise.all([
+        fetch("/api/admin/events?page=1&pageSize=50", { headers: authHeaders() }),
+        fetch("/api/admin/bookings?page=1&pageSize=200", { headers: authHeaders() }),
+        fetch("/api/admin/event-booking-summary", { headers: authHeaders() })
+      ]);
+
+      if (bookingsRes.status === 401 || bookingsRes.status === 403) {
+        window.location.href = "/login.html";
+        return;
+      }
+
+      const eventsPayload = await eventsRes.json();
+      const bookingsPayload = await bookingsRes.json();
+      const events = Array.isArray(eventsPayload) ? eventsPayload : (eventsPayload.items || []);
+      const bookings = Array.isArray(bookingsPayload) ? bookingsPayload : (bookingsPayload.items || []);
+      const summary = summaryRes.ok ? await summaryRes.json() : buildSummaryFromBookings(bookings);
+      const totalEvents = Array.isArray(eventsPayload) ? events.length : Number(eventsPayload?.pagination?.total || events.length);
+      const totalBookings = Array.isArray(bookingsPayload) ? bookings.length : Number(bookingsPayload?.pagination?.total || bookings.length);
+
+      document.getElementById("totalEvents").textContent = totalEvents;
+      document.getElementById("totalBookings").textContent = totalBookings;
+      const latestByDate = [...events].sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+      document.getElementById("latestEvent").textContent =
+          latestByDate ? `${latestByDate.title} (${new Date(latestByDate.date).toLocaleDateString()})` : "-";
+      document.getElementById("myEventsMeta").textContent =
+          latestByDate
+            ? `My Events: ${totalEvents} | Last Event: ${latestByDate.title}`
+            : `My Events: ${totalEvents}`;
+
+      analyticsBookings = bookings;
+      populateAnalyticsEventFilter(events, analyticsBookings);
+      renderAnalyticsCharts();
+      renderBookings(bookings);
+      renderEventSummary(summary);
+    }
+
+    async function loadMonitoring() {
+      const latencyEl = document.getElementById("monitorLatency");
+      const errorsEl = document.getElementById("monitorErrors");
+      const deadEl = document.getElementById("monitorDeadLetter");
+      const metaEl = document.getElementById("monitorMeta");
+
+      latencyEl.textContent = "Loading...";
+      errorsEl.textContent = "Loading...";
+      deadEl.textContent = "Loading...";
+
+      const res = await fetch("/api/admin/monitoring?windowMinutes=15", { headers: authHeaders() });
+      if (!res.ok) {
+        let message = "Failed to load monitoring stats.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        latencyEl.textContent = "-";
+        errorsEl.textContent = "-";
+        deadEl.textContent = "-";
+        metaEl.textContent = message;
+        return;
+      }
+
+      const payload = await res.json();
+      const runtime = payload?.runtime || {};
+      const notifications = payload?.notifications || {};
+      latencyEl.textContent = `avg ${Number(runtime.avgLatencyMs || 0).toFixed(1)}ms | p95 ${Number(runtime.p95LatencyMs || 0).toFixed(1)}ms`;
+      errorsEl.textContent = `${Number(runtime.errorCount || 0)} errors / ${Number(runtime.requestCount || 0)} requests`;
+      deadEl.textContent = String(Number(notifications.deadLetterCount || 0));
+      metaEl.textContent = `Window: last ${Math.round(Number(runtime.windowMs || 0) / 60000) || 15} minutes | Rate: ${Number(runtime.requestsPerMin || 0).toFixed(2)} req/min`;
+    }
+
+    async function loadAuditLogs() {
+      const action = document.getElementById("auditActionFilter").value;
+      const from = document.getElementById("auditFrom").value;
+      const to = document.getElementById("auditTo").value;
+      const pageSize = document.getElementById("auditLimit").value || "50";
+      const params = new URLSearchParams({ page: String(adminPageState.audit || 1), pageSize });
+      if (action) params.set("action", action);
+      if (from) params.set("from", `${from}T00:00:00.000Z`);
+      if (to) params.set("to", `${to}T23:59:59.999Z`);
+
+      const body = document.getElementById("auditBody");
+      body.innerHTML = `<tr><td colspan="5" class="px-3 py-3 text-slate-400">Loading logs...</td></tr>`;
+
+      const res = await fetch(`/api/admin/audit-logs?${params.toString()}`, { headers: authHeaders() });
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem("token");
+        window.location.href = "/login.html";
+        return;
+      }
+      if (!res.ok) {
+        let message = "Failed to load audit logs.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        body.innerHTML = `<tr><td colspan="5" class="px-3 py-3 text-rose-300">${message}</td></tr>`;
+        if (typeof showToast === "function") showToast(message, "error");
+        return;
+      }
+      const payload = await res.json();
+      const logs = Array.isArray(payload) ? payload : (payload.items || []);
+      renderAuditLogs(logs);
+      renderPagination("auditPager", payload.pagination, "goToAuditPage");
+    }
+
+    function renderAuditLogs(logs) {
+      const body = document.getElementById("auditBody");
+      if (!Array.isArray(logs) || !logs.length) {
+        body.innerHTML = `<tr><td colspan="5" class="px-3 py-3 text-slate-400">No audit logs found.</td></tr>`;
+        return;
+      }
+      body.innerHTML = logs.map((l) => `
+        <tr>
+          <td class="px-3 py-2 text-xs text-slate-300">${l.createdAt ? new Date(l.createdAt).toLocaleString() : "-"}</td>
+          <td class="px-3 py-2"><span class="rounded bg-slate-800 px-2 py-0.5 text-xs">${escapeHtml(l.action || "-")}</span></td>
+          <td class="px-3 py-2 text-xs text-slate-300">${escapeHtml(l.targetType || "-")}: ${escapeHtml(l.targetId || "-")}</td>
+          <td class="px-3 py-2 text-xs text-slate-400">${escapeHtml(l.method || "-")} ${escapeHtml(l.route || "-")}</td>
+          <td class="px-3 py-2 text-xs text-slate-400">${escapeHtml(l.details ? JSON.stringify(l.details) : "-")}</td>
+        </tr>
+      `).join("");
+    }
+
+    async function pingEndpoint(pathname) {
+      const statusEl = document.getElementById("apiToolsStatus");
+      statusEl.textContent = `Pinging ${pathname}...`;
+      try {
+        const res = await fetch(pathname);
+        const data = await res.json();
+        statusEl.textContent = `${pathname} -> ${res.status} ${JSON.stringify(data)}`;
+        if (typeof showToast === "function") showToast(`${pathname} ${res.status}`, res.ok ? "success" : "error");
+      } catch (_) {
+        statusEl.textContent = `${pathname} failed`;
+        if (typeof showToast === "function") showToast(`${pathname} failed`, "error");
+      }
+    }
+
+    async function loadWebhookEvents() {
+      const body = document.getElementById("webhookEventsBody");
+      body.innerHTML = `<tr><td colspan="5" class="px-3 py-3 text-slate-400">Loading webhook events...</td></tr>`;
+      const res = await fetch("/api/admin/webhook-events?limit=30", { headers: authHeaders() });
+      if (!res.ok) {
+        let message = "Failed to load webhook events.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        body.innerHTML = `<tr><td colspan="5" class="px-3 py-3 text-rose-300">${message}</td></tr>`;
+        if (typeof showToast === "function") showToast(message, "error");
+        return;
+      }
+      const rows = await res.json();
+      if (!Array.isArray(rows) || !rows.length) {
+        body.innerHTML = `<tr><td colspan="5" class="px-3 py-3 text-slate-400">No webhook events yet.</td></tr>`;
+        return;
+      }
+      body.innerHTML = rows.map((w) => `
+        <tr>
+          <td class="px-3 py-2 text-xs text-slate-300">${w.createdAt ? new Date(w.createdAt).toLocaleString() : "-"}</td>
+          <td class="px-3 py-2 text-xs text-slate-400">${escapeHtml(w.eventId || "-")}</td>
+          <td class="px-3 py-2 text-xs text-slate-300">${escapeHtml(w.type || "-")}</td>
+          <td class="px-3 py-2 text-xs ${w.processed ? "text-emerald-300" : "text-amber-300"}">${w.processed ? "yes" : "no"}</td>
+          <td class="px-3 py-2 text-xs text-rose-300">${escapeHtml(w.error || "-")}</td>
+        </tr>
+      `).join("");
+    }
+
+    async function loadPushSubscribers() {
+      const list = document.getElementById("pushSubscribersList");
+      const usersCount = document.getElementById("pushUsersCount");
+      const endpointsCount = document.getElementById("pushEndpointsCount");
+      const latestMeta = document.getElementById("pushLatestMeta");
+
+      list.innerHTML = `<div class="rounded-lg border border-slate-800 bg-slate-950 p-4 text-sm text-slate-400">Loading push subscribers...</div>`;
+
+      const res = await fetch("/api/admin/push-subscribers", { headers: authHeaders() });
+      if (!res.ok) {
+        let message = "Failed to load push subscribers.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        usersCount.textContent = "-";
+        endpointsCount.textContent = "-";
+        latestMeta.textContent = message;
+        list.innerHTML = `<div class="rounded-lg border border-rose-500/30 bg-rose-950/20 p-4 text-sm text-rose-200">${escapeHtml(message)}</div>`;
+        return;
+      }
+
+      const payload = await res.json().catch(() => ({ items: [] }));
+      const items = Array.isArray(payload.items) ? payload.items : [];
+      const latest = items
+        .map((item) => item.latestSubscriptionAt)
+        .filter(Boolean)
+        .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0] || null;
+
+      usersCount.textContent = String(payload.totalUsers || 0);
+      endpointsCount.textContent = String(payload.totalSubscriptions || 0);
+      latestMeta.textContent = latest ? new Date(latest).toLocaleString() : "No recent subscriptions";
+
+      if (!items.length) {
+        list.innerHTML = `<div class="rounded-lg border border-slate-800 bg-slate-950 p-4 text-sm text-slate-400">No active push subscribers yet.</div>`;
+        return;
+      }
+
+      list.innerHTML = items.map((item) => {
+        const subscriptions = Array.isArray(item.subscriptions) ? item.subscriptions : [];
+        const endpointCards = subscriptions.slice(0, 2).map((sub) => {
+          const endpoint = String(sub.endpoint || "");
+          const shortEndpoint = endpoint.length > 56 ? `${endpoint.slice(0, 56)}...` : endpoint;
+          return `
+            <div class="rounded-md border border-slate-800 bg-slate-900/60 px-3 py-2">
+              <p class="truncate text-xs text-slate-300">${escapeHtml(shortEndpoint || "Unknown endpoint")}</p>
+              <p class="mt-1 text-[11px] text-slate-500">${escapeHtml(sub.userAgent || "Unknown browser")}</p>
+            </div>
+          `;
+        }).join("");
+        const extra = subscriptions.length > 2
+          ? `<p class="mt-2 text-[11px] text-slate-500">+${subscriptions.length - 2} more endpoint(s)</p>`
+          : "";
+
+        return `
+          <article class="rounded-xl border border-slate-800 bg-slate-950 p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-sm font-semibold text-slate-100">${escapeHtml(item.name || "User")}</p>
+                <p class="text-xs text-slate-400">${escapeHtml(item.email || "-")}</p>
+              </div>
+              <span class="rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-[11px] text-amber-200">${escapeHtml(item.role || "user")}</span>
+            </div>
+            <div class="mt-3 flex items-center justify-between text-xs text-slate-400">
+              <span>Endpoints: ${Number(item.subscriptionCount || 0)}</span>
+              <span>${item.latestSubscriptionAt ? escapeHtml(new Date(item.latestSubscriptionAt).toLocaleString()) : "n/a"}</span>
+            </div>
+            <div class="mt-3 space-y-2">${endpointCards}</div>
+            ${extra}
+          </article>
+        `;
+      }).join("");
+    }
+
+    async function loadUsers() {
+      const body = document.getElementById("usersBody");
+      const q = document.getElementById("userSearch").value.trim();
+      const verified = document.getElementById("userVerifiedFilter").value;
+      const locked = document.getElementById("userLockedFilter").value;
+      const params = new URLSearchParams({ page: String(adminPageState.users || 1), pageSize: "50" });
+      if (q) params.set("q", q);
+      if (verified) params.set("verified", verified);
+      if (locked) params.set("locked", locked);
+
+      body.innerHTML = `<tr><td colspan="6" class="px-3 py-3 text-slate-400">Loading users...</td></tr>`;
+      const res = await fetch(`/api/admin/users?${params.toString()}`, { headers: authHeaders() });
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem("token");
+        window.location.href = "/login.html";
+        return;
+      }
+      if (!res.ok) {
+        let message = "Failed to load users.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        body.innerHTML = `<tr><td colspan="6" class="px-3 py-3 text-rose-300">${message}</td></tr>`;
+        if (typeof showToast === "function") showToast(message, "error");
+        return;
+      }
+      const usersPayload = await res.json();
+      const users = Array.isArray(usersPayload) ? usersPayload : (usersPayload.items || []);
+      renderUsers(users);
+      renderPagination("usersPager", usersPayload.pagination, "goToUsersPage");
+    }
+
+    function renderUsers(users) {
+      const body = document.getElementById("usersBody");
+      if (!Array.isArray(users) || !users.length) {
+        body.innerHTML = `<tr><td colspan="6" class="px-3 py-3 text-slate-400">No users found.</td></tr>`;
+        return;
+      }
+      body.innerHTML = users.map((u) => `
+        <tr>
+          <td class="px-3 py-2">${u.name || "-"}</td>
+          <td class="px-3 py-2 text-xs text-slate-300">${u.email || "-"}</td>
+          <td class="px-3 py-2"><span class="rounded bg-slate-800 px-2 py-0.5 text-xs">${u.role || "user"}</span></td>
+          <td class="px-3 py-2">${u.isEmailVerified ? '<span class="text-emerald-300">yes</span>' : '<span class="text-amber-300">no</span>'}</td>
+          <td class="px-3 py-2">${u.isAccountLocked ? `<span class="text-rose-300">yes</span><div class="text-[10px] text-slate-500">${u.accountLockedAt ? new Date(u.accountLockedAt).toLocaleString() : ""}</div>` : '<span class="text-emerald-300">no</span>'}</td>
+          <td class="px-3 py-2">
+            <div class="flex flex-wrap gap-2">
+              ${u.isEmailVerified ? "" : `<button class="rounded-md border border-emerald-500/40 px-2 py-1 text-xs text-emerald-300 hover:bg-slate-800" data-action="force-verify" data-id="${u._id}">Force Verify</button>`}
+              ${u.isAccountLocked
+                ? `<button class="rounded-md border border-cyan-500/40 px-2 py-1 text-xs text-cyan-300 hover:bg-slate-800" data-action="unlock" data-id="${u._id}">Unlock</button>`
+                : `<button class="rounded-md border border-rose-500/40 px-2 py-1 text-xs text-rose-300 hover:bg-slate-800" data-action="lock" data-id="${u._id}">Lock</button>`}
+              <button class="rounded-md border border-indigo-500/40 px-2 py-1 text-xs text-indigo-300 hover:bg-slate-800" data-action="history" data-id="${u._id}" data-email="${escapeHtml(u.email || "")}">History</button>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    async function forceVerifyUser(id) {
+      const res = await fetch(`/api/admin/users/${id}/force-verify`, {
+        method: "PATCH",
+        headers: authHeaders()
+      });
+      if (!res.ok) {
+        let message = "Failed to verify user.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        showToast(message, "error");
+        return;
+      }
+      showToast("User verified.", "success");
+      await loadUsers();
+      await loadAuditLogs();
+    }
+    window.forceVerifyUser = forceVerifyUser;
+
+    async function lockUser(id) {
+      if (!confirm("Lock this account? User will not be able to login or use API.")) return;
+      const res = await fetch(`/api/admin/users/${id}/lock`, {
+        method: "PATCH",
+        headers: authHeaders()
+      });
+      if (!res.ok) {
+        let message = "Failed to lock user.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        showToast(message, "error");
+        return;
+      }
+      showToast("User locked.", "success");
+      await loadUsers();
+      await loadAuditLogs();
+    }
+    window.lockUser = lockUser;
+
+    async function unlockUser(id) {
+      const reason = (prompt("Optional unlock reason (leave blank if not needed):", "") || "").trim();
+      const res = await fetch(`/api/admin/users/${id}/unlock`, {
+        method: "PATCH",
+        headers: { ...authHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ reason })
+      });
+      if (!res.ok) {
+        let message = "Failed to unlock user.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        showToast(message, "error");
+        return;
+      }
+      showToast("User unlocked.", "success");
+      await loadUsers();
+      await loadAuditLogs();
+    }
+    window.unlockUser = unlockUser;
+
+    async function openUserActionHistory(id, email) {
+      const modal = document.getElementById("userHistoryModal");
+      const body = document.getElementById("userHistoryBody");
+      const meta = document.getElementById("userHistoryMeta");
+      meta.textContent = `User: ${email || "-"}`;
+      body.innerHTML = `<tr><td colspan="4" class="px-3 py-3 text-slate-400">Loading history...</td></tr>`;
+      modal.showModal();
+
+      const res = await fetch(`/api/admin/users/${id}/action-history?limit=30`, { headers: authHeaders() });
+      if (!res.ok) {
+        let message = "Failed to load user action history.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        body.innerHTML = `<tr><td colspan="4" class="px-3 py-3 text-rose-300">${escapeHtml(message)}</td></tr>`;
+        if (typeof showToast === "function") showToast(message, "error");
+        return;
+      }
+
+      const payload = await res.json();
+      const rows = Array.isArray(payload.items) ? payload.items : [];
+      if (payload.user?.email) {
+        meta.textContent = `User: ${payload.user.email}`;
+      }
+      if (!rows.length) {
+        body.innerHTML = `<tr><td colspan="4" class="px-3 py-3 text-slate-400">No actions found for this user.</td></tr>`;
+        return;
+      }
+      body.innerHTML = rows.map((row) => {
+        const actor = row.actor?.email || row.actor?.name || "-";
+        const reason = row.details?.reason ? ` | reason: ${row.details.reason}` : "";
+        return `
+          <tr>
+            <td class="px-3 py-2 text-xs text-slate-300">${row.createdAt ? new Date(row.createdAt).toLocaleString() : "-"}</td>
+            <td class="px-3 py-2 text-xs text-slate-200">${escapeHtml(row.action || "-")}</td>
+            <td class="px-3 py-2 text-xs text-slate-300">${escapeHtml(actor)}</td>
+            <td class="px-3 py-2 text-xs text-slate-400">${escapeHtml((row.details?.email || "-") + reason)}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+    window.openUserActionHistory = openUserActionHistory;
+
+    document.getElementById("usersBody").addEventListener("click", (event) => {
+      const btn = event.target.closest("button[data-action]");
+      if (!btn) return;
+      const id = btn.getAttribute("data-id");
+      if (!id) return;
+      const action = btn.getAttribute("data-action");
+      if (action === "force-verify") return forceVerifyUser(id);
+      if (action === "lock") return lockUser(id);
+      if (action === "unlock") return unlockUser(id);
+      if (action === "history") return openUserActionHistory(id, btn.getAttribute("data-email") || "");
+    });
+
+    async function loadModerationComments() {
+      const body = document.getElementById("commentsModerationBody");
+      const q = document.getElementById("commentSearch").value.trim();
+      const eventId = document.getElementById("commentEventFilter").value.trim();
+      const status = document.getElementById("commentStatusFilter").value || "all";
+      const pageSize = document.getElementById("commentLimitFilter").value || "50";
+      const params = new URLSearchParams({ status, page: String(adminPageState.comments || 1), pageSize });
+      if (q) params.set("q", q);
+      if (eventId) params.set("eventId", eventId);
+
+      body.innerHTML = `<tr><td colspan="7" class="px-3 py-3 text-slate-400">Loading comments...</td></tr>`;
+      const res = await fetch(`/api/admin/comments?${params.toString()}`, { headers: authHeaders() });
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem("token");
+        window.location.href = "/login.html";
+        return;
+      }
+      if (!res.ok) {
+        let message = "Failed to load comments.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        body.innerHTML = `<tr><td colspan="7" class="px-3 py-3 text-rose-300">${message}</td></tr>`;
+        return;
+      }
+      const commentsPayload = await res.json();
+      const comments = Array.isArray(commentsPayload) ? commentsPayload : (commentsPayload.items || []);
+      renderModerationComments(comments);
+      renderPagination("commentsPager", commentsPayload.pagination, "goToCommentsPage");
+    }
+
+    async function loadCommentEventFilter() {
+      const select = document.getElementById("commentEventFilter");
+      const current = select.value;
+      const res = await fetch("/api/admin/events?page=1&pageSize=200", { headers: authHeaders() });
+      if (!res.ok) return;
+      const rows = await res.json();
+      const events = Array.isArray(rows) ? rows : (rows.items || []);
+      select.innerHTML = '<option value="">All events</option>';
+      events.forEach((e) => {
+        const id = String(e._id || "");
+        if (!id) return;
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = e.title || "Untitled Event";
+        select.appendChild(opt);
+      });
+      if (current) select.value = current;
+    }
+
+    function renderModerationComments(comments) {
+      const body = document.getElementById("commentsModerationBody");
+      if (!Array.isArray(comments) || !comments.length) {
+        body.innerHTML = `<tr><td colspan="7" class="px-3 py-3 text-slate-400">No comments found.</td></tr>`;
+        return;
+      }
+      body.innerHTML = comments.map((c) => `
+        <tr>
+          <td class="px-3 py-2 text-xs text-slate-300">${c.createdAt ? new Date(c.createdAt).toLocaleString() : "-"}</td>
+          <td class="px-3 py-2 text-xs text-slate-300">${escapeHtml(c.eventTitle || "Unknown Event")}</td>
+          <td class="px-3 py-2 text-xs text-slate-300">
+            ${escapeHtml(c.userName || "User")}
+            ${c.parentId ? '<span class="ml-1 rounded bg-slate-800 px-1 py-0.5 text-[10px] text-cyan-300">reply</span>' : ""}
+          </td>
+          <td class="px-3 py-2 text-xs text-slate-300">
+            <p class="max-w-md truncate" title="${escapeHtml(c.text || "")}">${escapeHtml(c.text || "")}</p>
+            <p class="mt-1 text-[10px] ${c.isHidden ? "text-rose-300" : "text-emerald-300"}">${c.isHidden ? "hidden" : "visible"} | Helpful: ${Number(c.helpfulCount || 0)}</p>
+          </td>
+          <td class="px-3 py-2 text-xs ${c.reportCount > 0 ? "text-amber-300" : "text-slate-400"}">${c.reportCount || 0}</td>
+          <td class="px-3 py-2 text-xs text-slate-400">${escapeHtml(c.hiddenReason || "-")}</td>
+          <td class="px-3 py-2 text-xs">
+            <div class="flex flex-wrap gap-2">
+              ${c.isHidden
+                ? `<button class="rounded border border-cyan-500/40 px-2 py-1 text-cyan-300 hover:bg-slate-800" onclick="unhideComment('${c._id}')">Unhide</button>`
+                : `<button class="rounded border border-amber-500/40 px-2 py-1 text-amber-200 hover:bg-slate-800" onclick="hideComment('${c._id}')">Hide</button>`}
+              <button class="rounded border border-rose-500/40 px-2 py-1 text-rose-300 hover:bg-slate-800" onclick="deleteComment('${c._id}')">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    async function hideComment(id) {
+      const preset = document.getElementById("commentReasonPreset").value.trim();
+      const typed = document.getElementById("commentHideReason").value.trim();
+      const defaultReason = typed || preset;
+      const reason = prompt("Optional reason for hiding this comment:", defaultReason) || "";
+      const res = await fetch(`/api/admin/comments/${id}/hide`, {
+        method: "PATCH",
+        headers: { ...authHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ reason })
+      });
+      if (!res.ok) {
+        let message = "Failed to hide comment.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        showToast(message, "error");
+        return;
+      }
+      showToast("Comment hidden.", "success");
+      await loadModerationComments();
+      await loadAuditLogs();
+    }
+    window.hideComment = hideComment;
+
+    async function unhideComment(id) {
+      const res = await fetch(`/api/admin/comments/${id}/unhide`, {
+        method: "PATCH",
+        headers: authHeaders()
+      });
+      if (!res.ok) {
+        let message = "Failed to unhide comment.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        showToast(message, "error");
+        return;
+      }
+      showToast("Comment visible again.", "success");
+      await loadModerationComments();
+      await loadAuditLogs();
+    }
+    window.unhideComment = unhideComment;
+
+    async function deleteComment(id) {
+      if (!confirm("Delete this comment permanently?")) return;
+      const res = await fetch(`/api/admin/comments/${id}`, {
+        method: "DELETE",
+        headers: authHeaders()
+      });
+      if (!res.ok) {
+        let message = "Failed to delete comment.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        showToast(message, "error");
+        return;
+      }
+      showToast("Comment deleted.", "success");
+      await loadModerationComments();
+      await loadAuditLogs();
+    }
+    window.deleteComment = deleteComment;
+
+    async function loadEvents() {
+      document.getElementById("events").innerHTML = uiSkeletonCards(4);
+      const res = await fetch(`/api/admin/events?page=${adminPageState.events || 1}&pageSize=6`, { headers: authHeaders() });
+      if (res.status === 401 || res.status === 403) {
+        window.location.href = "/login.html";
+        return;
+      }
+      const payload = await res.json();
+      const data = Array.isArray(payload) ? payload : (payload.items || []);
+      adminEvents = data;
+      populateMlEventSelect(data);
+      renderPagination("eventsPager", payload.pagination, "goToEventsPage");
+
+      if (!data.length) {
+        document.getElementById("events").innerHTML = uiEmptyState("No events yet", "Create your first event to get started.");
+        return;
+      }
+      document.getElementById("events").innerHTML = data.map((e) => `
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <h3 class="font-semibold">${escapeHtml(e.title || "Untitled Event")}</h3>
+          <p class="text-sm text-slate-400">${escapeHtml(e.location || "No location")} | ${escapeHtml(e.category || "Other")}</p>
+          <p class="mt-1 text-xs text-slate-500">Status: ${escapeHtml(e.status || "published")} | Seats: ${escapeHtml(e.seatsBooked || 0)}/${escapeHtml(e.capacity || 0)}</p>
+          <div class="mt-3 flex items-center justify-between gap-2">
+            <span class="text-xs text-slate-500">${e.date ? new Date(e.date).toLocaleDateString() : "No date"}</span>
+            <div class="flex gap-2">
+              <button class="rounded-md border border-amber-500/40 px-2 py-1 text-xs text-amber-200 hover:bg-slate-800"
+                      onclick="openEditEvent('${encodeURIComponent(String(e._id || ""))}')">
+                Edit
+              </button>
+              <button class="rounded-md bg-red-500 px-2 py-1 text-xs font-semibold text-white"
+                      onclick="deleteEvent('${encodeURIComponent(String(e._id || ""))}')">
+                Archive
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function loadArchivedEvents() {
+      const container = document.getElementById("archivedEvents");
+      container.innerHTML = uiSkeletonCards(2);
+      const res = await fetch(`/api/admin/events?includeDeleted=true&page=${adminPageState.archivedEvents || 1}&pageSize=6`, { headers: authHeaders() });
+      if (res.status === 401 || res.status === 403) {
+        window.location.href = "/login.html";
+        return;
+      }
+      const payload = await res.json();
+      const data = Array.isArray(payload) ? payload : (payload.items || []);
+      const archived = (Array.isArray(data) ? data : []).filter((e) => e.isDeleted === true);
+      renderPagination("archivedEventsPager", payload.pagination, "goToArchivedEventsPage");
+      if (!archived.length) {
+        container.innerHTML = uiEmptyState("No archived events", "Archived events will appear here.");
+        return;
+      }
+      container.innerHTML = archived.map((e) => `
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <h3 class="font-semibold">${escapeHtml(e.title || "Untitled Event")}</h3>
+          <p class="text-sm text-slate-400">${escapeHtml(e.location || "No location")} | ${escapeHtml(e.category || "Other")}</p>
+          <p class="mt-1 text-xs text-slate-500">Archived on: ${e.deletedAt ? new Date(e.deletedAt).toLocaleString() : "-"}</p>
+          <div class="mt-3 flex items-center justify-between gap-2">
+            <span class="text-xs text-slate-500">${e.date ? new Date(e.date).toLocaleDateString() : "No date"}</span>
+            <div class="flex gap-2">
+              <button class="rounded-md border border-emerald-500/40 px-2 py-1 text-xs text-emerald-300 hover:bg-slate-800"
+                      onclick="restoreEvent('${encodeURIComponent(String(e._id || ""))}')">
+                Restore
+              </button>
+              <button class="rounded-md border border-rose-600/50 px-2 py-1 text-xs text-rose-300 hover:bg-rose-950/30"
+                      onclick="permanentDeleteEvent('${encodeURIComponent(String(e._id || ""))}')">
+                Delete Permanently
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function toDateTimeLocal(dateValue) {
+      const d = new Date(dateValue);
+      const pad = (n) => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function openEditEvent(id) {
+      const event = adminEvents.find((e) => e._id === id);
+      if (!event) return;
+      document.getElementById("editEventId").value = event._id;
+      document.getElementById("editTitle").value = event.title || "";
+      document.getElementById("editDescription").value = event.description || "";
+      document.getElementById("editDate").value = toDateTimeLocal(event.date);
+      document.getElementById("editLocation").value = event.location || "";
+      document.getElementById("editOrganizer").value = event.organizer || "";
+      document.getElementById("editCategory").value = event.category || "Other";
+      document.getElementById("editCapacity").value = event.capacity || 100;
+      document.getElementById("editStatus").value = event.status || "published";
+      const standardTicket = (event.ticketTypes || []).find((t) => (t.name || "").toLowerCase() === "standard");
+      const vipTicket = (event.ticketTypes || []).find((t) => (t.name || "").toLowerCase() === "vip");
+      document.getElementById("editStandardPrice").value = Number(standardTicket?.price ?? 25);
+      document.getElementById("editVipPrice").value = vipTicket ? Number(vipTicket.price ?? 0) : "";
+      document.getElementById("editEventMsg").textContent = "";
+      document.getElementById("editEventModal").showModal();
+    }
+    window.openEditEvent = openEditEvent;
+
+    async function deleteEvent(id) {
+      const res = await fetch(`/api/admin/event/${id}`, {
+        method: "DELETE",
+        headers: authHeaders()
+      });
+      if (!res.ok) {
+        let message = "Failed to archive event.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        showToast(message, "error");
+        return;
+      }
+      showToast("Event archived.", "success");
+      await loadEvents();
+      await loadStats();
+      await loadArchivedEvents();
+    }
+
+    async function restoreEvent(id) {
+      const res = await fetch(`/api/admin/event/${id}/restore`, {
+        method: "PATCH",
+        headers: authHeaders()
+      });
+      if (!res.ok) {
+        let message = "Failed to restore event.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        showToast(message, "error");
+        return;
+      }
+      showToast("Event restored.", "success");
+      await loadEvents();
+      await loadStats();
+      await loadArchivedEvents();
+    }
+    window.restoreEvent = restoreEvent;
+
+    async function permanentDeleteEvent(id) {
+      if (!confirm("This will permanently delete the archived event. This cannot be undone. Continue?")) return;
+      const typed = prompt('Type DELETE to permanently remove this event:', '');
+      if (typed !== "DELETE") {
+        showToast("Permanent delete cancelled.", "warning");
+        return;
+      }
+      const res = await fetch(`/api/admin/event/${id}/permanent`, {
+        method: "DELETE",
+        headers: authHeaders()
+      });
+      if (!res.ok) {
+        let message = "Failed to permanently delete event.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        showToast(message, "error");
+        return;
+      }
+      showToast("Event permanently deleted.", "success");
+      await loadEvents();
+      await loadStats();
+      await loadArchivedEvents();
+    }
+    window.permanentDeleteEvent = permanentDeleteEvent;
+
+    async function updateBookingStatus(id, status) {
+      const res = await fetch(`/api/bookings/${id}/status`, {
+        method: "PATCH",
+        headers: { ...authHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
+
+      if (!res.ok) {
+        let message = "Failed to update booking.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        showToast(message, "error");
+        return;
+      }
+
+      showToast("Booking status updated.", "success");
+      await loadStats();
+    }
+
+    function renderBookings(bookings) {
+      const container = document.getElementById("bookingsList");
+      const top = bookings.slice(0, 10);
+      if (!top.length) {
+        container.innerHTML = uiEmptyState("No bookings yet", "Bookings will appear here.");
+        return;
+      }
+      container.innerHTML = top.map((b) => `
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <p class="font-semibold">${escapeHtml(b.eventId?.title || "Unknown Event")}</p>
+          <p class="text-xs text-cyan-300">Booking Ref: ${escapeHtml(readableBookingId(b._id))}</p>
+          <p class="text-xs text-slate-400">${escapeHtml(b.userId?.email || "Unknown User")} | ${escapeHtml(b.ticketType || "Standard")} x ${escapeHtml(b.quantity || 1)}</p>
+          <p class="mt-1 text-xs text-slate-500">Status: ${escapeHtml(b.status || "pending")} | Payment: ${escapeHtml(b.paymentStatus || "unpaid")}</p>
+          <div class="mt-2 flex gap-2">
+            <select id="status-${encodeURIComponent(String(b._id || ""))}" class="rounded-md border border-slate-700 bg-slate-900 px-2 py-1 text-xs">
+              ${["pending","confirmed","checked_in","cancelled","refunded"].map((s) => `<option value="${s}" ${b.status === s ? "selected" : ""}>${s}</option>`).join("")}
+            </select>
+            <button class="rounded-md border border-slate-700 px-2 py-1 text-xs hover:bg-slate-800"
+                    onclick="updateBookingStatus('${encodeURIComponent(String(b._id || ""))}', document.getElementById('status-${encodeURIComponent(String(b._id || ""))}').value)">
+              Update
+            </button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderEventSummary(summary) {
+      const body = document.getElementById("eventSummaryBody");
+      if (!Array.isArray(summary) || summary.length === 0) {
+        body.innerHTML = `<tr><td colspan="6" class="px-3 py-3 text-slate-400">No registrations yet.</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = summary.map((row) => `
+        <tr>
+          <td class="px-3 py-2">
+            <p class="font-medium">${escapeHtml(row.title || "Untitled Event")}</p>
+            <p class="text-xs text-slate-400">${escapeHtml(row.location || "No location")}</p>
+          </td>
+          <td class="px-3 py-2">${row.uniqueUsers || 0}</td>
+          <td class="px-3 py-2">${row.totalRegistrations || 0}</td>
+          <td class="px-3 py-2">${row.totalTickets || 0}</td>
+          <td class="px-3 py-2">${row.confirmedCount || 0}</td>
+          <td class="px-3 py-2">${row.cancelledCount || 0}</td>
+        </tr>
+      `).join("");
+    }
+
+    function buildSummaryFromBookings(bookings) {
+      const map = new Map();
+      (bookings || []).forEach((b) => {
+        const key = String(b.eventId?._id || b.eventId || "unknown");
+        if (!map.has(key)) {
+          map.set(key, {
+            title: b.eventId?.title || "Unknown Event",
+            location: b.eventId?.location || "-",
+            uniqueSet: new Set(),
+            totalRegistrations: 0,
+            totalTickets: 0,
+            confirmedCount: 0,
+            cancelledCount: 0
+          });
+        }
+        const row = map.get(key);
+        row.totalRegistrations += 1;
+        row.totalTickets += Number(b.quantity || 1);
+        row.uniqueSet.add(String(b.userId?._id || b.userId || "unknown"));
+        if (b.status === "confirmed") row.confirmedCount += 1;
+        if (b.status === "cancelled") row.cancelledCount += 1;
+      });
+
+      return Array.from(map.values()).map((r) => ({
+        title: r.title,
+        location: r.location,
+        uniqueUsers: r.uniqueSet.size,
+        totalRegistrations: r.totalRegistrations,
+        totalTickets: r.totalTickets,
+        confirmedCount: r.confirmedCount,
+        cancelledCount: r.cancelledCount
+      }));
+    }
+
+    let analyticsBookings = [];
+    let trendChartInstance;
+    let statusChartInstance;
+    let topEventsChartInstance;
+    let revenueChartInstance;
+
+    function formatDateKey(value) {
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "";
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function todayDateOnly() {
+      const now = new Date();
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    }
+
+    function toInputDate(dateObj) {
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const d = String(dateObj.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function initializeAnalyticsDateInputs() {
+      const range = document.getElementById("analyticsRange");
+      const fromEl = document.getElementById("analyticsFrom");
+      const toEl = document.getElementById("analyticsTo");
+      const today = todayDateOnly();
+      const start7 = new Date(today);
+      start7.setDate(today.getDate() - 6);
+      fromEl.value = toInputDate(start7);
+      toEl.value = toInputDate(today);
+      fromEl.disabled = range.value !== "custom";
+      toEl.disabled = range.value !== "custom";
+    }
+
+    function getAnalyticsDateRange() {
+      const range = document.getElementById("analyticsRange").value;
+      const today = todayDateOnly();
+      let from;
+      let to = new Date(today);
+      if (range === "custom") {
+        const fromRaw = document.getElementById("analyticsFrom").value;
+        const toRaw = document.getElementById("analyticsTo").value;
+        from = fromRaw ? new Date(`${fromRaw}T00:00:00`) : new Date(today);
+        to = toRaw ? new Date(`${toRaw}T23:59:59`) : new Date(today);
+      } else {
+        const days = Number(range) || 7;
+        from = new Date(today);
+        from.setDate(today.getDate() - (days - 1));
+        to = new Date(`${toInputDate(today)}T23:59:59`);
+      }
+      if (from > to) {
+        const tmp = from;
+        from = to;
+        to = tmp;
+      }
+      return { from, to };
+    }
+
+    function populateAnalyticsEventFilter(events, bookings) {
+      const eventSelect = document.getElementById("analyticsEvent");
+      const current = eventSelect.value;
+      const map = new Map();
+      (events || []).forEach((e) => {
+        if (!e?._id) return;
+        map.set(String(e._id), e.title || "Untitled Event");
+      });
+      (bookings || []).forEach((b) => {
+        const id = String(b.eventId?._id || b.eventId || "");
+        if (!id) return;
+        if (!map.has(id)) map.set(id, b.eventId?.title || "Unknown Event");
+      });
+
+      eventSelect.innerHTML = '<option value="">All events</option>';
+      map.forEach((title, id) => {
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = title;
+        eventSelect.appendChild(opt);
+      });
+      if ([...map.keys()].includes(current)) eventSelect.value = current;
+    }
+
+    function getFilteredAnalyticsBookings() {
+      const { from, to } = getAnalyticsDateRange();
+      const eventId = document.getElementById("analyticsEvent").value;
+      const status = document.getElementById("analyticsStatus").value;
+      return analyticsBookings.filter((b) => {
+        const d = new Date(b.date || b.createdAt || 0);
+        if (Number.isNaN(d.getTime())) return false;
+        if (d < from || d > to) return false;
+        const bEventId = String(b.eventId?._id || b.eventId || "");
+        if (eventId && bEventId !== eventId) return false;
+        if (status && String(b.status || "") !== status) return false;
+        return true;
+      });
+    }
+
+    function destroyAnalyticsCharts() {
+      if (trendChartInstance) trendChartInstance.destroy();
+      if (statusChartInstance) statusChartInstance.destroy();
+      if (topEventsChartInstance) topEventsChartInstance.destroy();
+      if (revenueChartInstance) revenueChartInstance.destroy();
+    }
+
+    function renderTrendChart(bookings) {
+      const { from, to } = getAnalyticsDateRange();
+      const byDay = new Map();
+      const cursor = new Date(from);
+      while (cursor <= to) {
+        const key = formatDateKey(cursor);
+        byDay.set(key, 0);
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      bookings.forEach((b) => {
+        const key = formatDateKey(b.date || b.createdAt);
+        if (!key || !byDay.has(key)) return;
+        byDay.set(key, byDay.get(key) + 1);
+      });
+      trendChartInstance = new Chart(document.getElementById("trendChart"), {
+        type: "line",
+        data: {
+          labels: [...byDay.keys()],
+          datasets: [{
+            label: "Bookings",
+            data: [...byDay.values()],
+            borderColor: "#22d3ee",
+            backgroundColor: "rgba(34,211,238,0.25)",
+            tension: 0.3,
+            fill: true
+          }]
+        },
+        options: {
+          plugins: { legend: { labels: { color: "#e2e8f0" } } },
+          scales: {
+            x: { ticks: { color: "#cbd5e1" }, grid: { color: "rgba(148,163,184,0.12)" } },
+            y: { ticks: { color: "#cbd5e1", precision: 0 }, grid: { color: "rgba(148,163,184,0.12)" } }
+          }
+        }
+      });
+    }
+
+    function renderStatusChart(bookings) {
+      const statusOrder = ["pending", "confirmed", "checked_in", "cancelled", "refunded"];
+      const counts = statusOrder.map((s) => bookings.filter((b) => b.status === s).length);
+      statusChartInstance = new Chart(document.getElementById("statusChart"), {
+        type: "doughnut",
+        data: {
+          labels: statusOrder,
+          datasets: [{
+            data: counts,
+            backgroundColor: ["#94a3b8", "#22c55e", "#06b6d4", "#f97316", "#a78bfa"]
+          }]
+        },
+        options: {
+          plugins: { legend: { labels: { color: "#e2e8f0" } } }
+        }
+      });
+    }
+
+    function renderTopEventsChart(bookings) {
+      const map = new Map();
+      bookings.forEach((b) => {
+        const key = String(b.eventId?._id || b.eventId || "unknown");
+        const title = b.eventId?.title || "Unknown Event";
+        if (!map.has(key)) map.set(key, { title, count: 0 });
+        map.get(key).count += 1;
+      });
+      const rows = [...map.values()].sort((a, b) => b.count - a.count).slice(0, 8);
+      topEventsChartInstance = new Chart(document.getElementById("topEventsChart"), {
+        type: "bar",
+        data: {
+          labels: rows.length ? rows.map((r) => r.title) : ["No Data"],
+          datasets: [{
+            label: "Registrations",
+            data: rows.length ? rows.map((r) => r.count) : [0],
+            backgroundColor: "#38bdf8"
+          }]
+        },
+        options: {
+          indexAxis: "y",
+          plugins: { legend: { labels: { color: "#e2e8f0" } } },
+          scales: {
+            x: { ticks: { color: "#cbd5e1", precision: 0 }, grid: { color: "rgba(148,163,184,0.12)" } },
+            y: { ticks: { color: "#cbd5e1" }, grid: { color: "rgba(148,163,184,0.12)" } }
+          }
+        }
+      });
+    }
+
+    function renderRevenueChart(bookings) {
+      const map = new Map();
+      bookings.forEach((b) => {
+        const key = String(b.eventId?._id || b.eventId || "unknown");
+        const title = b.eventId?.title || "Unknown Event";
+        const amount = Number(b.totalAmount || 0);
+        if (!map.has(key)) map.set(key, { title, amount: 0 });
+        map.get(key).amount += Number.isFinite(amount) ? amount : 0;
+      });
+      const rows = [...map.values()].sort((a, b) => b.amount - a.amount).slice(0, 8);
+      revenueChartInstance = new Chart(document.getElementById("revenueChart"), {
+        type: "bar",
+        data: {
+          labels: rows.length ? rows.map((r) => r.title) : ["No Data"],
+          datasets: [{
+            label: "Revenue ($)",
+            data: rows.length ? rows.map((r) => Number(r.amount.toFixed(2))) : [0],
+            backgroundColor: "#34d399"
+          }]
+        },
+        options: {
+          plugins: { legend: { labels: { color: "#e2e8f0" } } },
+          scales: {
+            x: { ticks: { color: "#cbd5e1" }, grid: { color: "rgba(148,163,184,0.12)" } },
+            y: { ticks: { color: "#cbd5e1" }, grid: { color: "rgba(148,163,184,0.12)" } }
+          }
+        }
+      });
+    }
+
+    function renderAnalyticsCharts() {
+      const filtered = getFilteredAnalyticsBookings();
+      destroyAnalyticsCharts();
+      renderTrendChart(filtered);
+      renderStatusChart(filtered);
+      renderTopEventsChart(filtered);
+      renderRevenueChart(filtered);
+    }
+
+    document.getElementById("loadEventsBtn").addEventListener("click", loadEvents);
+    document.getElementById("loadArchivedBtn").addEventListener("click", loadArchivedEvents);
+    document.getElementById("loadUsersBtn").addEventListener("click", loadUsers);
+    document.getElementById("userSearch").addEventListener("input", () => { adminPageState.users = 1; loadUsers(); });
+    document.getElementById("userVerifiedFilter").addEventListener("change", () => { adminPageState.users = 1; loadUsers(); });
+    document.getElementById("userLockedFilter").addEventListener("change", () => { adminPageState.users = 1; loadUsers(); });
+    document.getElementById("loadCommentsModerationBtn").addEventListener("click", loadModerationComments);
+    document.getElementById("commentSearch").addEventListener("input", () => { adminPageState.comments = 1; loadModerationComments(); });
+    document.getElementById("commentEventFilter").addEventListener("change", () => { adminPageState.comments = 1; loadModerationComments(); });
+    document.getElementById("commentStatusFilter").addEventListener("change", () => { adminPageState.comments = 1; loadModerationComments(); });
+    document.getElementById("commentLimitFilter").addEventListener("change", () => { adminPageState.comments = 1; loadModerationComments(); });
+    document.getElementById("refreshBtn").addEventListener("click", () => {
+      loadStats();
+      loadEvents();
+      loadArchivedEvents();
+      loadUsers();
+      loadCommentEventFilter();
+      loadModerationComments();
+      loadAuditLogs();
+      loadMonitoring();
+      loadPushSubscribers();
+      loadWebhookEvents();
+    });
+    document.getElementById("loadAuditBtn").addEventListener("click", () => { adminPageState.audit = 1; loadAuditLogs(); });
+    document.getElementById("analyticsRange").addEventListener("change", () => {
+      const range = document.getElementById("analyticsRange").value;
+      const fromEl = document.getElementById("analyticsFrom");
+      const toEl = document.getElementById("analyticsTo");
+      const isCustom = range === "custom";
+      fromEl.disabled = !isCustom;
+      toEl.disabled = !isCustom;
+      if (!isCustom) {
+        const today = todayDateOnly();
+        const days = Number(range) || 7;
+        const start = new Date(today);
+        start.setDate(today.getDate() - (days - 1));
+        fromEl.value = toInputDate(start);
+        toEl.value = toInputDate(today);
+      }
+      renderAnalyticsCharts();
+    });
+    document.getElementById("analyticsFrom").addEventListener("change", renderAnalyticsCharts);
+    document.getElementById("analyticsTo").addEventListener("change", renderAnalyticsCharts);
+    document.getElementById("analyticsEvent").addEventListener("change", renderAnalyticsCharts);
+    document.getElementById("analyticsStatus").addEventListener("change", renderAnalyticsCharts);
+    document.getElementById("auditActionFilter").addEventListener("change", () => { adminPageState.audit = 1; loadAuditLogs(); });
+    document.getElementById("auditFrom").addEventListener("change", () => { adminPageState.audit = 1; loadAuditLogs(); });
+    document.getElementById("auditTo").addEventListener("change", () => { adminPageState.audit = 1; loadAuditLogs(); });
+    document.getElementById("auditLimit").addEventListener("change", () => { adminPageState.audit = 1; loadAuditLogs(); });
+    document.getElementById("refreshMonitoringBtn").addEventListener("click", loadMonitoring);
+    document.getElementById("loadPushSubscribersBtn").addEventListener("click", loadPushSubscribers);
+    document.getElementById("pingHealthBtn").addEventListener("click", () => pingEndpoint("/health"));
+    document.getElementById("pingDbBtn").addEventListener("click", () => pingEndpoint("/health/db"));
+    document.getElementById("runRemindersBtn").addEventListener("click", async () => {
+      const res = await fetch("/api/admin/run-reminders", {
+        method: "POST",
+        headers: authHeaders()
+      });
+      if (!res.ok) {
+        let text = "Failed to run reminder cycle.";
+        try {
+          const err = await res.json();
+          text = err.error || text;
+        } catch (_) {}
+        showToast(text, "error");
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      showToast(data.message || "Reminder cycle executed.", "success");
+    });
+    document.getElementById("loadWebhooksBtn").addEventListener("click", loadWebhookEvents);
+    document.getElementById("testEmailBtn").addEventListener("click", async () => {
+      const res = await fetch("/api/admin/test-email", {
+        method: "POST",
+        headers: { ...authHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({})
+      });
+      if (!res.ok) {
+        let text = "Failed to trigger test email.";
+        try {
+          const err = await res.json();
+          text = err.error || text;
+        } catch (_) {}
+        showToast(text, "error");
+        return;
+      }
+      const data = await res.json();
+      showToast(data.message || "Test email triggered.", "success");
+    });
+    document.getElementById("weeklyDigestBtn").addEventListener("click", async () => {
+      const res = await fetch("/api/admin/weekly-digest", {
+        method: "POST",
+        headers: { ...authHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({})
+      });
+      if (!res.ok) {
+        let text = "Failed to send weekly organizer digest.";
+        try {
+          const err = await res.json();
+          text = err.error || text;
+        } catch (_) {}
+        showToast(text, "error");
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      showToast(data.message || "Weekly organizer digest sent.", "success", 4000);
+    });
+    document.getElementById("testWhatsAppBtn").addEventListener("click", async () => {
+      const to = prompt("Enter WhatsApp number in E.164 format (example: +15551234567):", "");
+      if (!to) return;
+      const res = await fetch("/api/admin/test-whatsapp", {
+        method: "POST",
+        headers: { ...authHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ to })
+      });
+      if (!res.ok) {
+        let text = "Failed to trigger test WhatsApp.";
+        try {
+          const err = await res.json();
+          text = err.error || text;
+        } catch (_) {}
+        showToast(text, "error");
+        return;
+      }
+      const data = await res.json();
+      showToast(`${data.message || "Test WhatsApp triggered."} SID: ${data.sid || "n/a"}`, "success", 4000);
+    });
+    document.getElementById("closeEditModal").addEventListener("click", () => {
+      document.getElementById("editEventModal").close();
+    });
+    document.getElementById("closeUserHistoryModal").addEventListener("click", () => {
+      document.getElementById("userHistoryModal").close();
+    });
+    document.getElementById("editEventForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const eventId = document.getElementById("editEventId").value;
+      const payload = {
+        title: document.getElementById("editTitle").value.trim(),
+        description: document.getElementById("editDescription").value.trim(),
+        date: new Date(document.getElementById("editDate").value).toISOString(),
+        location: document.getElementById("editLocation").value.trim(),
+        organizer: document.getElementById("editOrganizer").value.trim(),
+        category: document.getElementById("editCategory").value,
+        capacity: Number(document.getElementById("editCapacity").value || 100),
+        status: document.getElementById("editStatus").value
+      };
+      const msg = document.getElementById("editEventMsg");
+      const standardPrice = Number(document.getElementById("editStandardPrice").value || 0);
+      const vipPriceRaw = document.getElementById("editVipPrice").value.trim();
+      const vipPrice = vipPriceRaw === "" ? null : Number(vipPriceRaw);
+      if (Number.isNaN(standardPrice) || standardPrice < 0 || (vipPrice !== null && (Number.isNaN(vipPrice) || vipPrice < 0))) {
+        msg.classList.remove("text-emerald-300");
+        msg.classList.add("text-rose-300");
+        msg.textContent = "Ticket prices must be valid numbers >= 0.";
+        return;
+      }
+      payload.ticketPrices = { standard: standardPrice };
+      if (vipPrice !== null) payload.ticketPrices.vip = vipPrice;
+
+      const res = await fetch(`/api/events/${eventId}`, {
+        method: "PUT",
+        headers: { ...authHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        let text = "Failed to update event.";
+        try {
+          const err = await res.json();
+          text = err.error || text;
+        } catch (_) {}
+        msg.classList.remove("text-emerald-300");
+        msg.classList.add("text-rose-300");
+        msg.textContent = text;
+        return;
+      }
+
+      msg.classList.remove("text-rose-300");
+      msg.classList.add("text-emerald-300");
+      msg.textContent = "Event updated successfully.";
+      await loadEvents();
+      await loadStats();
+      setTimeout(() => document.getElementById("editEventModal").close(), 500);
+    });
+
+    // ── ML Insights ──────────────────────────────────────────────────────────
+
+    function populateMlEventSelect(events) {
+      const sel = document.getElementById("mlEventSelect");
+      const current = sel.value;
+      sel.innerHTML = '<option value="">Select an event...</option>';
+      (Array.isArray(events) ? events : []).forEach((e) => {
+        if (!e?._id) return;
+        const opt = document.createElement("option");
+        opt.value = String(e._id);
+        opt.textContent = e.title || "Untitled Event";
+        sel.appendChild(opt);
+      });
+      if (current) sel.value = current;
+    }
+
+    document.getElementById("loadMlBtn").addEventListener("click", async () => {
+      const eventId = document.getElementById("mlEventSelect").value;
+      if (!eventId) { showToast("Please select an event first.", "warning"); return; }
+
+      const statusEl   = document.getElementById("mlStatus");
+      const attCard    = document.getElementById("mlAttendanceCard");
+      const attContent = document.getElementById("mlAttendanceContent");
+      const summaryBar = document.getElementById("mlChurnSummaryBar");
+      const churnCards = document.getElementById("mlChurnCards");
+
+      statusEl.textContent = "Analysing... please wait.";
+      attCard.classList.add("hidden");
+      summaryBar.classList.add("hidden");
+      churnCards.innerHTML = "";
+
+      try {
+        const [attRes, churnRes] = await Promise.all([
+          fetch(`/api/ml/attendance/${eventId}`, { headers: authHeaders() }),
+          fetch(`/api/ml/churn/${eventId}`,      { headers: authHeaders() })
+        ]);
+
+        if (!attRes.ok || !churnRes.ok) {
+          statusEl.textContent = "Failed to load ML insights. Make sure mlRoutes.js is mounted in server.js.";
+          showToast("ML request failed.", "error");
+          return;
+        }
+
+        const att   = await attRes.json();
+        const churn = await churnRes.json();
+        const s     = churn.summary || {};
+
+        // ── Attendance card ──────────────────────────────────────────────
+        const confidenceColor = att.confidence === "high"
+          ? "text-emerald-300"
+          : att.confidence === "medium"
+            ? "text-amber-300"
+            : "text-slate-400";
+
+        attContent.innerHTML = `
+          <div class="grid gap-4 md:grid-cols-4 mb-4">
+            <div class="rounded-lg border border-slate-800 bg-slate-900 p-3 text-center">
+              <p class="text-xs text-slate-400">Total Booked</p>
+              <p class="mt-1 text-2xl font-bold text-slate-100">${att.totalBooked ?? "-"}</p>
+            </div>
+            <div class="rounded-lg border border-emerald-500/30 bg-emerald-950/20 p-3 text-center">
+              <p class="text-xs text-slate-400">Predicted Attendance</p>
+              <p class="mt-1 text-2xl font-bold text-emerald-300">${att.predictedAttendance ?? "-"}</p>
+            </div>
+            <div class="rounded-lg border border-rose-500/30 bg-rose-950/20 p-3 text-center">
+              <p class="text-xs text-slate-400">Predicted No-Shows</p>
+              <p class="mt-1 text-2xl font-bold text-rose-300">${att.predictedNoShows ?? "-"}</p>
+            </div>
+            <div class="rounded-lg border border-slate-800 bg-slate-950 p-3 text-center">
+              <p class="text-xs text-slate-400">Show-Up Rate</p>
+              <p class="mt-1 text-2xl font-bold text-indigo-300">${att.showUpRate ?? "-"}%</p>
+              <p class="text-xs ${confidenceColor}">${att.confidence ?? ""} confidence</p>
+            </div>
+          </div>
+          ${Array.isArray(att.insights) && att.insights.length ? `
+            <div class="rounded-lg border border-slate-800 bg-slate-900 p-3">
+              <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Insights</p>
+              <ul class="list-disc pl-5 space-y-1">
+                ${att.insights.map(i => `<li class="text-xs text-slate-300">${escapeHtml(i)}</li>`).join("")}
+              </ul>
+            </div>` : ""}
+        `;
+        attCard.classList.remove("hidden");
+
+        // ── Churn summary bar ────────────────────────────────────────────
+        document.getElementById("mlChurnTotal").textContent   = s.total    ?? 0;
+        document.getElementById("mlChurnHigh").textContent    = s.high     ?? 0;
+        document.getElementById("mlChurnMedium").textContent  = s.medium   ?? 0;
+        document.getElementById("mlChurnLow").textContent     = s.low      ?? 0;
+        document.getElementById("mlChurnAvg").textContent     = (s.averageChurnScore ?? 0) + "%";
+        document.getElementById("mlChurnAtRisk").textContent  = s.atRiskCount ?? 0;
+        summaryBar.classList.remove("hidden");
+
+        // ── Churn user cards (high risk first, max 8) ────────────────────
+        const highRisk = (churn.results || []).filter(r => r.churnRisk === "high").slice(0, 8);
+        const medRisk  = (churn.results || []).filter(r => r.churnRisk === "medium").slice(0, 4);
+        const toRender = [...highRisk, ...medRisk].slice(0, 10);
+
+        if (!toRender.length) {
+          churnCards.innerHTML = `
+            <div class="md:col-span-2 rounded-lg border border-emerald-500/30 bg-emerald-950/20 p-4 text-center">
+              <p class="text-emerald-300 font-semibold">✓ No high or medium churn risk detected</p>
+              <p class="text-xs text-slate-400 mt-1">All ${s.low ?? 0} bookings are low risk.</p>
+            </div>`;
+        } else {
+          churnCards.innerHTML = toRender.map(r => {
+            const borderColor = r.churnRisk === "high"
+              ? "border-rose-500/40 bg-rose-950/20"
+              : "border-amber-500/30 bg-amber-950/10";
+            const badgeColor  = r.churnRisk === "high"
+              ? "bg-rose-500/20 text-rose-300"
+              : "bg-amber-500/20 text-amber-300";
+            const scoreBar    = Math.min(100, r.churnScore);
+            const barColor    = r.churnRisk === "high" ? "bg-rose-500" : "bg-amber-400";
+
+            return `
+              <div class="rounded-xl border ${borderColor} p-4">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <p class="font-semibold text-sm">${escapeHtml(r.userName || "Unknown")}</p>
+                    <p class="text-xs text-slate-400">${escapeHtml(r.userEmail || "-")}</p>
+                  </div>
+                  <span class="rounded-full px-2 py-0.5 text-xs font-semibold ${badgeColor}">${r.churnRisk} risk</span>
+                </div>
+
+                <!-- Score bar -->
+                <div class="mt-3">
+                  <div class="flex justify-between text-xs text-slate-400 mb-1">
+                    <span>Churn Score</span>
+                    <span class="font-semibold">${r.churnScore}%</span>
+                  </div>
+                  <div class="h-1.5 w-full rounded-full bg-slate-800">
+                    <div class="h-1.5 rounded-full ${barColor}" style="width:${scoreBar}%"></div>
+                  </div>
+                </div>
+
+                <!-- Signals -->
+                <div class="mt-3 flex flex-wrap gap-2 text-xs">
+                  <span class="rounded bg-slate-800 px-2 py-0.5">${escapeHtml(r.ticketType || "Standard")}</span>
+                  <span class="rounded ${r.features?.isPaid ? "bg-emerald-900/50 text-emerald-300" : "bg-rose-900/50 text-rose-300"} px-2 py-0.5">
+                    ${r.features?.isPaid ? "Paid ✓" : "Unpaid"}
+                  </span>
+                  ${r.features?.isVip ? '<span class="rounded bg-indigo-900/50 text-indigo-300 px-2 py-0.5">VIP</span>' : ""}
+                  <span class="rounded bg-slate-800 px-2 py-0.5">${r.features?.daysUntilEvent ?? "?"} days away</span>
+                  <span class="rounded bg-slate-800 px-2 py-0.5">cancel rate: ${r.features?.historicalCancelRate ?? 0}%</span>
+                </div>
+
+                <!-- Recommended action -->
+                ${r.recommendedActions?.[0] ? `
+                  <div class="mt-3 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2">
+                    <p class="text-xs text-amber-300">💡 ${escapeHtml(r.recommendedActions[0])}</p>
+                  </div>` : ""}
+              </div>
+            `;
+          }).join("");
+        }
+
+        statusEl.textContent = `Analysis complete — ${churn.eventTitle || "event"} · ${s.total ?? 0} bookings analysed.`;
+      } catch (err) {
+        console.error("[ML panel]", err);
+        statusEl.textContent = "Error loading ML insights. Check the browser console for details.";
+        showToast("ML analysis failed.", "error");
+      }
+    });
+
+    (async function initAdminPage() {
+      if (!await ensureAdmin()) return;
+      initializeAnalyticsDateInputs();
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("created") === "1" && typeof showToast === "function") {
+        showToast("Event created and dashboard refreshed.", "success");
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+      loadStats();
+      loadEvents();
+      loadArchivedEvents();
+      loadUsers();
+      loadCommentEventFilter();
+      loadModerationComments();
+      loadAuditLogs();
+      loadMonitoring();
+      loadPushSubscribers();
+      loadWebhookEvents();
+    })();
+  </script>
+  <script src="nav-auth.js?v=20260302a"></script>
+</body>
+</html>

@@ -1,0 +1,279 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Event | Smart Event System</title>
+  <link rel="icon" type="image/png" href="/assets/web-logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="mx-auto max-w-4xl px-4 py-8">
+    <header class="flex flex-col gap-4">
+      <nav data-role-nav class="flex flex-col gap-4 border border-slate-800 bg-slate-900/70 px-4 py-3 backdrop-blur md:flex-row md:items-center md:justify-between rounded-xl">
+        <div class="flex w-full flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <a href="/" class="flex items-center gap-3">
+            <img src="/assets/web-logo.png" alt="Smart Event System" class="h-9 w-9 rounded-lg object-cover">
+            <div>
+              <p class="text-sm font-semibold">Smart Event System</p>
+              <p class="text-xs text-slate-400">Manage and discover events</p>
+            </div>
+          </a>
+          <div class="flex flex-wrap gap-2 text-sm">
+            <a class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800" href="/">Home</a>
+            <a data-nav="auth" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/user.html">Dashboard</a>
+            <a data-nav="auth" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/book.html">Book Event</a>
+            <a data-nav="admin" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/create-event.html">Create Event</a>
+            <a data-nav="admin" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/admin.html">Admin Dashboard</a>
+            <a data-nav="guest" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800" href="/login.html">Login</a>
+            <a data-nav="guest" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800" href="/signup.html">Sign Up</a>
+            <a data-nav="auth-avatar" class="hidden inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ring-2 ring-amber-300/40" href="/profile.html"><img data-nav-avatar-img src="https://ui-avatars.com/api/?name=U&background=0f172a&color=f59e0b&size=96" alt="Profile" class="h-full w-full object-cover"></a>
+          </div>
+        </div>
+      </nav>
+      <div>
+        <h1 class="text-3xl font-semibold">Create Event</h1>
+        <p class="text-slate-400">Admin-only event publishing page.</p>
+      </div>
+    </header>
+
+    <section class="mt-8 rounded-xl border border-slate-800 bg-slate-900 p-6">
+      <form id="create-event-form" class="grid gap-4">
+        <input type="text" id="title" placeholder="Title" required class="rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-100 placeholder-slate-500">
+        <textarea id="description" placeholder="Description" required class="min-h-28 rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-100 placeholder-slate-500"></textarea>
+        <input type="datetime-local" id="date" required class="rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-100">
+        <input type="text" id="location" placeholder="Location" required class="rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-100 placeholder-slate-500">
+        <input type="url" id="mapLink" placeholder="Google Maps Link (optional)" class="rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-100 placeholder-slate-500">
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-4">
+          <p class="mb-3 text-sm font-semibold text-slate-200">Event Cover Image</p>
+          <div class="grid gap-3 md:grid-cols-[1.2fr_.8fr]">
+            <div class="space-y-3">
+              <input type="url" id="coverImageUrl" placeholder="Image URL (optional)" class="w-full rounded-lg border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-slate-100 placeholder-slate-500">
+              <label class="flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-amber-400/40 bg-slate-900 px-4 py-3 text-sm text-amber-200 hover:bg-slate-800">
+                <input id="coverImageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="hidden">
+                Upload Image
+              </label>
+              <button type="button" id="clearCoverImageBtn" class="rounded-lg border border-slate-700 px-3 py-2 text-xs hover:bg-slate-800">Clear Image</button>
+              <p class="text-xs text-slate-500">Use an image URL or upload a JPG/PNG/WebP/GIF under about 1.5MB.</p>
+            </div>
+            <div class="overflow-hidden rounded-xl border border-slate-800 bg-slate-900">
+              <img id="coverImagePreview" src="/assets/web-logo.png" alt="Cover preview" class="h-44 w-full object-cover opacity-70">
+            </div>
+          </div>
+        </div>
+        <input type="text" id="organizer" placeholder="Organizer" required class="rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-100 placeholder-slate-500">
+        <div class="grid gap-3 md:grid-cols-3">
+          <select id="category" class="rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-100">
+            <option>Conference</option>
+            <option>Workshop</option>
+            <option>Concert</option>
+            <option>Meetup</option>
+            <option>Festival</option>
+            <option>Webinar</option>
+            <option selected>Other</option>
+          </select>
+          <input type="number" id="capacity" min="1" max="100000" value="100" placeholder="Capacity" class="rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-100 placeholder-slate-500">
+          <select id="status" class="rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-100">
+            <option value="published" selected>Published</option>
+            <option value="draft">Draft</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-4">
+          <p class="mb-3 text-sm font-semibold text-slate-200">Ticket Types</p>
+          <div class="grid gap-3 md:grid-cols-3">
+            <input type="number" id="standardPrice" min="0" step="0.01" value="25" placeholder="Standard Price" class="rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm">
+            <input type="number" id="standardQty" min="1" value="80" placeholder="Standard Qty" class="rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm">
+            <div></div>
+            <input type="number" id="vipPrice" min="0" step="0.01" value="60" placeholder="VIP Price" class="rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm">
+            <input type="number" id="vipQty" min="0" value="20" placeholder="VIP Qty (0 to disable)" class="rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm">
+            <p class="self-center text-xs text-slate-400">Total ticket quantity cannot exceed capacity.</p>
+          </div>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-4">
+          <p class="mb-3 text-sm font-semibold text-slate-200">Booking Rules</p>
+          <div class="grid gap-3 md:grid-cols-3">
+            <label class="flex items-center gap-2 text-sm">
+              <input id="waitlistEnabled" type="checkbox" checked class="rounded border-slate-700 bg-slate-900">
+              Enable waitlist
+            </label>
+            <input type="number" id="cancelWindowHoursBefore" min="0" max="720" value="24" placeholder="Cancel cutoff (hours before)" class="rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm">
+            <input type="number" id="transferWindowHoursBefore" min="0" max="720" value="2" placeholder="Transfer cutoff (hours before)" class="rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm">
+          </div>
+        </div>
+        <input type="text" id="whatsappTo" placeholder="WhatsApp Number (+15551234567) optional" class="rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-100 placeholder-slate-500">
+        <button type="submit" class="rounded-lg bg-amber-400 px-4 py-3 font-semibold text-slate-900 hover:bg-amber-300">
+          Create Event
+        </button>
+      </form>
+      <p id="createEventMsg" class="mt-3 text-sm text-slate-300"></p>
+    </section>
+  </div>
+
+  <script src="ui-feedback.js"></script>
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "/login.html";
+    let currentCoverImage = "";
+
+    function authHeaders(extra = {}) {
+      return { Authorization: token, ...extra };
+    }
+
+    function setCoverPreview(src) {
+      const preview = document.getElementById("coverImagePreview");
+      preview.src = src || "/assets/web-logo.png";
+      preview.classList.toggle("opacity-70", !src);
+    }
+
+    async function fileToDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(new Error("Failed to read image"));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function requireAdmin() {
+      const res = await fetch("/api/auth/me", { headers: authHeaders() });
+      if (!res.ok) {
+        localStorage.removeItem("token");
+        window.location.href = "/login.html";
+        return false;
+      }
+      const me = await res.json();
+      if (me.role !== "admin") {
+        window.location.href = "/user.html";
+        return false;
+      }
+      return true;
+    }
+
+    document.getElementById("create-event-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!await requireAdmin()) return;
+
+      const dateRaw = document.getElementById("date").value;
+      const parsedDate = new Date(dateRaw);
+      if (!dateRaw || Number.isNaN(parsedDate.getTime())) {
+        const msg = document.getElementById("createEventMsg");
+        msg.classList.remove("text-emerald-300");
+        msg.classList.add("text-rose-300");
+        msg.textContent = "Please select a valid date and time.";
+        return;
+      }
+
+      const payload = {
+        title: document.getElementById("title").value.trim(),
+        description: document.getElementById("description").value.trim(),
+        date: parsedDate.toISOString(),
+        location: document.getElementById("location").value.trim(),
+        mapLink: document.getElementById("mapLink").value.trim(),
+        coverImage: currentCoverImage || document.getElementById("coverImageUrl").value.trim(),
+        organizer: document.getElementById("organizer").value.trim(),
+        category: document.getElementById("category").value,
+        capacity: Number(document.getElementById("capacity").value || 100),
+        status: document.getElementById("status").value,
+        waitlistEnabled: document.getElementById("waitlistEnabled").checked,
+        cancelWindowHoursBefore: Number(document.getElementById("cancelWindowHoursBefore").value || 24),
+        transferWindowHoursBefore: Number(document.getElementById("transferWindowHoursBefore").value || 2),
+        whatsappTo: document.getElementById("whatsappTo").value.trim()
+      };
+
+      const standardPrice = Number(document.getElementById("standardPrice").value || 0);
+      const standardQty = Number(document.getElementById("standardQty").value || 0);
+      const vipPrice = Number(document.getElementById("vipPrice").value || 0);
+      const vipQty = Number(document.getElementById("vipQty").value || 0);
+
+      payload.ticketTypes = [
+        { name: "Standard", price: standardPrice, quantity: standardQty }
+      ];
+      if (vipQty > 0) {
+        payload.ticketTypes.push({ name: "VIP", price: vipPrice, quantity: vipQty });
+      }
+
+      if (!payload.whatsappTo) delete payload.whatsappTo;
+      if (!payload.mapLink) delete payload.mapLink;
+      if (!payload.coverImage) delete payload.coverImage;
+
+      const res = await fetch("/api/events/create", {
+        method: "POST",
+        headers: authHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify(payload)
+      });
+
+      const msg = document.getElementById("createEventMsg");
+      if (!res.ok) {
+        let text = "Create failed.";
+        try {
+          const err = await res.json();
+          text = err.error || text;
+        } catch (_) {}
+        msg.classList.remove("text-emerald-300");
+        msg.classList.add("text-rose-300");
+        msg.textContent = text;
+        showToast(text, "error");
+        return;
+      }
+
+      msg.classList.remove("text-rose-300");
+      msg.classList.add("text-emerald-300");
+      msg.textContent = "Event created successfully.";
+      showToast("Event created successfully.", "success");
+      e.target.reset();
+      currentCoverImage = "";
+      setCoverPreview("");
+      setTimeout(() => {
+        window.location.href = "/admin.html?created=1";
+      }, 500);
+    });
+
+    document.getElementById("coverImageUrl").addEventListener("input", (e) => {
+      const value = e.target.value.trim();
+      if (value) {
+        currentCoverImage = value;
+        setCoverPreview(value);
+      } else if (!currentCoverImage.startsWith("data:image/")) {
+        currentCoverImage = "";
+        setCoverPreview("");
+      }
+    });
+
+    document.getElementById("coverImageFile").addEventListener("change", async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      if (file.size > 1.5 * 1024 * 1024) {
+        showToast("Image is too large. Use a file under 1.5MB.", "error");
+        e.target.value = "";
+        return;
+      }
+      try {
+        currentCoverImage = await fileToDataUrl(file);
+        document.getElementById("coverImageUrl").value = "";
+        setCoverPreview(currentCoverImage);
+      } catch (err) {
+        showToast(err.message || "Failed to read image.", "error");
+      }
+    });
+
+    document.getElementById("clearCoverImageBtn").addEventListener("click", () => {
+      currentCoverImage = "";
+      document.getElementById("coverImageUrl").value = "";
+      document.getElementById("coverImageFile").value = "";
+      setCoverPreview("");
+    });
+
+    requireAdmin();
+  </script>
+  <script src="nav-auth.js?v=20260302a"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+

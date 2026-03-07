@@ -1,0 +1,25 @@
+{
+  "name": "Smart Event System",
+  "short_name": "Event Arc",
+  "description": "Discover, book, and manage events with installable app access and browser reminders.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#061023",
+  "theme_color": "#fbbf24",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/assets/web-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/web-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

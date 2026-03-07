@@ -1,0 +1,613 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Event | Smart Event System</title>
+  <link rel="icon" type="image/png" href="/assets/web-logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="mx-auto max-w-5xl px-4 py-8">
+    <header class="flex flex-col gap-4">
+      <nav data-role-nav class="flex flex-col gap-4 border border-slate-800 bg-slate-900/70 px-4 py-3 backdrop-blur md:flex-row md:items-center md:justify-between rounded-xl">
+        <div class="flex items-center gap-3">
+          <img src="/assets/web-logo.png" alt="Smart Event System" class="h-9 w-9 rounded-lg object-cover">
+          <div>
+            <p class="text-sm font-semibold">Smart Event System</p>
+            <p class="text-xs text-slate-400">Manage and discover events</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 text-sm">
+          <a class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800" href="/">Home</a>
+          <a data-nav="auth" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/user.html">User Dashboard</a>
+          <a data-nav="auth" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/book.html">Book Event</a>
+          <a data-nav="admin" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/create-event.html">Create Event</a>
+          <a data-nav="admin" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/admin.html">Admin Dashboard</a>
+          <a data-nav="guest" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800" href="/login.html">Login</a>
+          
+            <a data-nav="auth-avatar" class="hidden inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ring-2 ring-amber-300/40" href="/profile.html"><img data-nav-avatar-img src="https://ui-avatars.com/api/?name=U&background=0f172a&color=f59e0b&size=96" alt="Profile" class="h-full w-full object-cover"></a>
+        </div>
+      </nav>
+      <div>
+        <h1 class="text-3xl font-semibold">Book an Event</h1>
+        <p class="text-slate-400">Choose an event and submit your booking.</p>
+      </div>
+    </header>
+
+    <section class="mt-8 grid gap-6 lg:grid-cols-3">
+      <div class="lg:col-span-2 rounded-xl border border-slate-800 bg-slate-900 p-4">
+        <h2 class="text-lg font-semibold">Available Events</h2>
+        <div id="events" class="mt-4 grid gap-3 sm:grid-cols-2"></div>
+      </div>
+
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+        <h2 class="text-lg font-semibold">Booking Form</h2>
+        <form id="bookingForm" class="mt-4 grid gap-3">
+          <select id="eventId" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100">
+            <option value="">Select Event</option>
+          </select>
+          <select id="ticketType" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100">
+            <option value="">Select Ticket Type</option>
+          </select>
+          <input id="quantity" type="number" min="1" max="10" value="1" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100">
+          <input id="promoCode" type="text" maxlength="40" placeholder="Promo Code (optional)" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100">
+          <input id="attendeeName" type="text" placeholder="Attendee Name" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100">
+          <input id="attendeeEmail" type="email" placeholder="Attendee Email" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100">
+          <input id="attendeeWhatsApp" type="text" placeholder="WhatsApp (+15551234567) optional" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100">
+          <select id="paymentMethod" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100">
+            <option value="stripe">Pay with Stripe (Test)</option>
+            <option value="card">Direct Confirm (No Gateway)</option>
+          </select>
+          <button type="submit" class="rounded-lg bg-amber-400 px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-300">
+            Continue
+          </button>
+        </form>
+        <p id="bookingMsg" class="mt-3 text-xs text-slate-300"></p>
+      </div>
+    </section>
+  </div>
+
+  <dialog id="eventDetailModal" class="w-[92vw] max-w-xl rounded-2xl border border-slate-700 bg-slate-950 p-0 text-slate-100 backdrop:bg-black/70">
+    <div class="p-5">
+      <div class="flex items-start justify-between gap-3">
+        <h3 id="modalTitle" class="text-xl font-semibold"></h3>
+        <button id="closeEventModal" aria-label="Close details" class="inline-flex items-center justify-center rounded-md border border-slate-700 p-1.5 text-xs hover:bg-slate-800">
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+      </div>
+      <p id="modalDescription" class="mt-3 whitespace-pre-wrap text-sm text-slate-300"></p>
+      <p id="modalMeta" class="mt-3 text-xs text-slate-400"></p>
+    </div>
+  </dialog>
+  <dialog id="shareModal" class="w-[92vw] max-w-lg rounded-2xl border border-cyan-400/30 bg-slate-950 p-0 text-slate-100 shadow-2xl shadow-cyan-900/30 backdrop:bg-black/70">
+    <div class="p-5">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <p class="text-xs uppercase tracking-[0.18em] text-cyan-300">Share Event</p>
+          <h3 id="shareTitle" class="mt-1 text-lg font-semibold"></h3>
+        </div>
+        <button id="closeShareModal" aria-label="Close share dialog" class="inline-flex items-center justify-center rounded-md border border-slate-700 p-1.5 text-xs hover:bg-slate-800">
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+      </div>
+      <p id="shareMeta" class="mt-2 text-xs text-slate-400"></p>
+
+      <div class="mt-4 rounded-xl border border-slate-800 bg-slate-900/70 p-3">
+        <p class="text-xs text-slate-400">Share Link</p>
+        <p id="shareUrlText" class="mt-1 break-all text-xs text-cyan-200"></p>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <button id="shareCopyBtn" class="rounded-lg bg-cyan-400 px-3 py-1.5 text-xs font-semibold text-slate-900 hover:bg-cyan-300">Copy Link</button>
+          <button id="shareNativeBtn" class="rounded-lg border border-cyan-400/40 px-3 py-1.5 text-xs text-cyan-200 hover:bg-slate-800">Shareâ€¦</button>
+        </div>
+      </div>
+
+      <div class="mt-4 grid gap-2 sm:grid-cols-2">
+        <a id="shareWhatsAppBtn" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-3 py-2 text-sm text-emerald-200 hover:bg-emerald-400/20">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" class="h-4 w-4 fill-current" aria-hidden="true"><path d="M16 3C9 3 3.3 8.7 3.3 15.8c0 2.5.7 4.8 2 6.8L3 29l6.6-2.2c1.9 1 4.1 1.6 6.4 1.6 7 0 12.7-5.7 12.7-12.8S23 3 16 3zm0 23.3c-2 0-3.9-.5-5.5-1.5l-.4-.2-3.9 1.3 1.3-3.8-.2-.4c-1-1.7-1.6-3.6-1.6-5.8C5.7 9.8 10.3 5.2 16 5.2s10.3 4.6 10.3 10.6S21.7 26.3 16 26.3zm5.9-7.8c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-.3-.2-1.3-.5-2.5-1.7-.9-.9-1.5-2-1.7-2.3-.2-.3 0-.5.1-.7.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.7-1.8-1-2.4-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.7.4-.2.3-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.9 4.4 4 2.6 1.1 2.6.7 3.1.7.5 0 1.8-.7 2-1.5.2-.8.2-1.4.1-1.5 0-.1-.2-.2-.5-.4z"/></svg>
+          <span>WhatsApp</span>
+        </a>
+        <a id="shareXBtn" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-xl border border-sky-400/40 bg-sky-400/10 px-3 py-2 text-sm text-sky-200 hover:bg-sky-400/20">
+          <svg viewBox="0 0 24 24" class="h-4 w-4 fill-current" aria-hidden="true"><path d="M18.9 2H22l-6.7 7.7L23 22h-6.1l-4.8-6.3L6.6 22H3.5l7.2-8.2L1.3 2h6.2l4.4 5.8L18.9 2zm-1.1 18h1.7L6.5 3.9H4.7L17.8 20z"/></svg>
+          <span>X / Twitter</span>
+        </a>
+        <a id="shareFacebookBtn" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-xl border border-blue-400/40 bg-blue-400/10 px-3 py-2 text-sm text-blue-200 hover:bg-blue-400/20">
+          <svg viewBox="0 0 24 24" class="h-4 w-4 fill-current" aria-hidden="true"><path d="M13.5 22v-8h2.7l.4-3h-3.1V9.1c0-.9.3-1.6 1.7-1.6h1.5V4.8c-.7-.1-1.4-.2-2.1-.2-3.1 0-4.9 1.9-4.9 5.2V11H7v3h2.7v8h3.8z"/></svg>
+          <span>Facebook</span>
+        </a>
+        <a id="shareLinkedInBtn" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-xl border border-indigo-400/40 bg-indigo-400/10 px-3 py-2 text-sm text-indigo-200 hover:bg-indigo-400/20">
+          <svg viewBox="0 0 24 24" class="h-4 w-4 fill-current" aria-hidden="true"><path d="M6.9 8.5a2.2 2.2 0 1 1 0-4.3 2.2 2.2 0 0 1 0 4.3zM5 9.8h3.7V20H5V9.8zm5.8 0h3.5v1.4h.1c.5-.9 1.7-1.8 3.5-1.8 3.7 0 4.4 2.4 4.4 5.5V20h-3.7v-4.6c0-1.1 0-2.6-1.6-2.6s-1.8 1.2-1.8 2.5V20h-3.7V9.8z"/></svg>
+          <span>LinkedIn</span>
+        </a>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="ui-feedback.js"></script>
+  <script src="i18n-time.js"></script>
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/login.html";
+    }
+
+    let allEvents = [];
+    const eventDetailModal = document.getElementById("eventDetailModal");
+    const closeEventModal = document.getElementById("closeEventModal");
+    const shareModal = document.getElementById("shareModal");
+    const closeShareModal = document.getElementById("closeShareModal");
+    const shareTitle = document.getElementById("shareTitle");
+    const shareMeta = document.getElementById("shareMeta");
+    const shareUrlText = document.getElementById("shareUrlText");
+    const shareCopyBtn = document.getElementById("shareCopyBtn");
+    const shareNativeBtn = document.getElementById("shareNativeBtn");
+    const shareWhatsAppBtn = document.getElementById("shareWhatsAppBtn");
+    const shareXBtn = document.getElementById("shareXBtn");
+    const shareFacebookBtn = document.getElementById("shareFacebookBtn");
+    const shareLinkedInBtn = document.getElementById("shareLinkedInBtn");
+    const EVENTS_CACHE_KEY = "book_events_cache_v1";
+    const EVENTS_CACHE_TTL_MS = 45 * 1000;
+    const TICKET_DRAFT_KEY = "ticketDraft";
+
+    function authHeaders() {
+      return token ? { Authorization: token } : {};
+    }
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+    function formatDateLocal(value) {
+      if (window.AppI18nTime) return window.AppI18nTime.formatDate(value, { dateStyle: "medium" });
+      return new Date(value).toLocaleDateString();
+    }
+    function eventDetailsUrl(id) {
+      const u = new URL("/event-details.html", window.location.origin);
+      u.searchParams.set("id", id);
+      return u.toString();
+    }
+    function shareTextForEvent(e) {
+      return `${e.title || "Event"} | ${e.location || "TBD"} | ${new Date(e.date).toLocaleDateString()}`;
+    }
+
+    function getEventImageUrl(event) {
+      const src = String(event?.coverImage || "").trim();
+      if (/^data:image\//i.test(src)) return src;
+      if (/^https?:\/\//i.test(src)) return src;
+      return "";
+    }
+
+    async function confirmStripeSessionIfPresent() {
+      const params = new URLSearchParams(window.location.search);
+      const success = params.get("stripe_success");
+      const sessionId = params.get("session_id");
+      const cancelled = params.get("stripe_cancel");
+      const msg = document.getElementById("bookingMsg");
+
+      if (cancelled) {
+        msg.classList.remove("text-emerald-300");
+        msg.classList.add("text-rose-300");
+        msg.textContent = "Payment cancelled.";
+        return;
+      }
+
+      if (success !== "1" || !sessionId) return;
+
+      const res = await fetch("/api/bookings/stripe/confirm-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({ sessionId })
+      });
+
+      if (!res.ok) {
+        let text = "Payment verification failed.";
+        try {
+          const err = await res.json();
+          text = err.error || text;
+        } catch (_) {}
+        msg.classList.remove("text-emerald-300");
+        msg.classList.add("text-rose-300");
+        msg.textContent = text;
+        return;
+      }
+
+      const data = await res.json();
+      localStorage.removeItem(TICKET_DRAFT_KEY);
+      window.location.href = `/ticket-confirmation.html?bookingId=${encodeURIComponent(data._id || "")}&from=stripe`;
+    }
+
+    function renderLoadingSkeleton() {
+      const container = document.getElementById("events");
+      container.innerHTML = `
+        <div class="animate-pulse rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <div class="h-4 w-2/3 rounded bg-slate-800"></div>
+          <div class="mt-2 h-3 w-full rounded bg-slate-800"></div>
+          <div class="mt-2 h-3 w-4/5 rounded bg-slate-800"></div>
+        </div>
+        <div class="animate-pulse rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <div class="h-4 w-2/3 rounded bg-slate-800"></div>
+          <div class="mt-2 h-3 w-full rounded bg-slate-800"></div>
+          <div class="mt-2 h-3 w-4/5 rounded bg-slate-800"></div>
+        </div>
+      `;
+    }
+
+    function renderEventCards(events) {
+      const container = document.getElementById("events");
+      container.innerHTML = events.map((e) => {
+        const remaining = Math.max(0, (e.capacity || 0) - (e.seatsBooked || 0));
+        const soldOut = remaining <= 0;
+        const tickets = Array.isArray(e.ticketTypes) ? e.ticketTypes : [];
+        const imageUrl = getEventImageUrl(e);
+        return `
+          <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+            ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(e.title || "Event")}" class="mb-3 h-36 w-full rounded-lg object-cover">` : `<div class="mb-3 flex h-36 items-center justify-center rounded-lg bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950/50"><img src="/assets/web-logo.png" alt="Smart Event System" class="h-14 w-14 rounded-xl object-cover opacity-80"></div>`}
+            <h3 class="font-semibold">${escapeHtml(e.title || "Untitled Event")}</h3>
+            <p class="mt-1 text-xs text-slate-300">${escapeHtml(e.description || "No description")}</p>
+            <p class="text-xs text-slate-500">${escapeHtml(e.location || "TBD")} | ${escapeHtml(e.category || "Other")} | ${escapeHtml(formatDateLocal(e.date))}</p>
+            <p class="mt-1 text-xs text-slate-400">Status: ${escapeHtml(e.status || "published")} | Seats left: ${escapeHtml(remaining)}</p>
+            ${Number(e.lowestTicketPrice || 0) > 0 ? `<p class="mt-1 text-xs font-medium text-amber-300">From $${escapeHtml(Number(e.lowestTicketPrice || 0).toFixed(2).replace(/\\.00$/, ""))} · ${escapeHtml(e.dynamicPricing?.label || "Dynamic pricing")}</p>` : ""}
+            <p class="mt-1 text-[11px] text-slate-500">Cancel window: ${Number(e.cancelWindowHoursBefore ?? 24)}h | Transfer window: ${Number(e.transferWindowHoursBefore ?? 2)}h before event</p>
+            <div class="mt-2 flex flex-wrap gap-1">
+              ${tickets.map((t) => `<span class="rounded bg-slate-800 px-2 py-0.5 text-[11px]">${escapeHtml(t.name)}: $${escapeHtml(t.price)}${Number(t.basePrice || t.price) !== Number(t.price) ? ` <span class="text-slate-400">(base $${escapeHtml(t.basePrice)})</span>` : ""} (${escapeHtml(Math.max(0, (t.quantity || 0) - (t.sold || 0)))} left)</span>`).join("")}
+            </div>
+            <button class="mt-2 rounded-md border border-slate-800 px-2 py-1 text-xs hover:bg-slate-800" onclick="selectEvent('${encodeURIComponent(String(e._id || ""))}')">Use This Event</button>
+            <button class="mt-2 ml-2 rounded-md border border-emerald-500/40 px-2 py-1 text-xs text-emerald-300 hover:bg-slate-800 ${soldOut ? "opacity-40 cursor-not-allowed" : ""}" ${soldOut ? "disabled" : ""} onclick="quickBookEvent('${encodeURIComponent(String(e._id || ""))}')">Quick Book 1</button>
+            ${soldOut && e.waitlistEnabled !== false
+              ? `<button class="mt-2 ml-2 rounded-md border border-indigo-500/40 px-2 py-1 text-xs text-indigo-200 hover:bg-slate-800" onclick="quickJoinWaitlist('${encodeURIComponent(String(e._id || ""))}')">Join Waitlist</button>`
+              : ""}
+            <button class="mt-2 ml-2 rounded-md border border-amber-400/40 px-2 py-1 text-xs text-amber-200 hover:bg-slate-800" onclick="openEventDetails('${encodeURIComponent(String(e._id || ""))}')">View Description</button>
+            <button class="mt-2 ml-2 rounded-md border border-cyan-400/40 px-2 py-1 text-xs text-cyan-200 hover:bg-slate-800" onclick="openShareModal('${encodeURIComponent(String(e._id || ""))}')">Share</button>
+            <a class="mt-2 ml-2 inline-block rounded-md border border-slate-700 px-2 py-1 text-xs hover:bg-slate-800" href="/event-details.html?id=${encodeURIComponent(String(e._id || ""))}">Full Details</a>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadEvents() {
+      renderLoadingSkeleton();
+      const select = document.getElementById("eventId");
+
+      const now = Date.now();
+      const cachedRaw = sessionStorage.getItem(EVENTS_CACHE_KEY);
+      if (cachedRaw) {
+        try {
+          const cached = JSON.parse(cachedRaw);
+          if (cached && Array.isArray(cached.events) && now - Number(cached.cachedAt || 0) < EVENTS_CACHE_TTL_MS) {
+            allEvents = cached.events;
+            renderEventCards(allEvents);
+            select.innerHTML = '<option value="">Select Event</option>' + allEvents.map((e) => `<option value="${encodeURIComponent(String(e._id || ""))}">${escapeHtml(e.title || "Untitled Event")}</option>`).join("");
+            updateTicketOptions(select.value);
+            return;
+          }
+        } catch (_) {}
+      }
+
+      const res = await fetch("/api/events?status=published&limit=20");
+      if (!res.ok) {
+        // Fallback to stale cache when backend is temporarily unavailable.
+        if (cachedRaw) {
+          try {
+            const cached = JSON.parse(cachedRaw);
+            if (cached && Array.isArray(cached.events) && cached.events.length) {
+              allEvents = cached.events;
+              renderEventCards(allEvents);
+              select.innerHTML = '<option value="">Select Event</option>' + allEvents.map((e) => `<option value="${encodeURIComponent(String(e._id || ""))}">${escapeHtml(e.title || "Untitled Event")}</option>`).join("");
+              updateTicketOptions(select.value);
+              return;
+            }
+          } catch (_) {}
+        }
+        document.getElementById("events").innerHTML = '<p class="text-rose-300 text-sm">Failed to load events. Please refresh after server/database is back.</p>';
+        return;
+      }
+
+      const events = await res.json();
+      allEvents = Array.isArray(events) ? events : [];
+      if (!allEvents.length) {
+        // Safety fallback for legacy data where status is missing in older records.
+        const fallbackRes = await fetch("/api/events?limit=20");
+        if (fallbackRes.ok) {
+          const fallbackEvents = await fallbackRes.json();
+          allEvents = Array.isArray(fallbackEvents) ? fallbackEvents : [];
+        }
+      }
+      sessionStorage.setItem(EVENTS_CACHE_KEY, JSON.stringify({ cachedAt: now, events: allEvents }));
+      if (!allEvents.length) {
+        document.getElementById("events").innerHTML = uiEmptyState("No events available", "Please check back later.");
+        select.innerHTML = '<option value="">Select Event</option>';
+        updateTicketOptions("");
+        return;
+      }
+      renderEventCards(allEvents);
+      select.innerHTML = '<option value="">Select Event</option>' + allEvents.map((e) => `<option value="${encodeURIComponent(String(e._id || ""))}">${escapeHtml(e.title || "Untitled Event")}</option>`).join("");
+      updateTicketOptions(select.value);
+    }
+
+    function openEventDetails(id) {
+      const event = allEvents.find((e) => e._id === id);
+      if (!event || !eventDetailModal) return;
+      document.getElementById("modalTitle").textContent = event.title || "Untitled Event";
+      document.getElementById("modalDescription").textContent = event.description || "No description available.";
+      const imageUrl = getEventImageUrl(event);
+      document.getElementById("modalMeta").innerHTML = `${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(event.title || "Event")}" class="mb-3 h-40 w-full rounded-lg object-cover">` : ""}${escapeHtml(event.location || "TBD")} | ${escapeHtml(event.category || "Other")} | ${escapeHtml(new Date(event.date).toLocaleDateString())}`;
+      eventDetailModal.showModal();
+    }
+    window.openEventDetails = openEventDetails;
+
+    if (closeEventModal) closeEventModal.addEventListener("click", () => eventDetailModal.close());
+    if (closeShareModal) closeShareModal.addEventListener("click", () => shareModal.close());
+
+    function selectEvent(id) {
+      document.getElementById("eventId").value = id;
+      updateTicketOptions(id);
+    }
+    window.selectEvent = selectEvent;
+
+    async function quickBookEvent(eventId) {
+      const res = await fetch("/api/bookings/book", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({ eventId })
+      });
+      const msg = document.getElementById("bookingMsg");
+      if (!res.ok) {
+        let text = "Quick booking failed.";
+        try {
+          const err = await res.json();
+          text = err.error || text;
+        } catch (_) {}
+        msg.classList.remove("text-emerald-300");
+        msg.classList.add("text-rose-300");
+        msg.textContent = text;
+        if (typeof showToast === "function") showToast(text, "error");
+        return;
+      }
+      const data = await res.json();
+      msg.classList.remove("text-rose-300");
+      msg.classList.add("text-emerald-300");
+      msg.textContent = `Quick booking created. Status: ${data.status}`;
+      if (typeof showToast === "function") showToast("Quick booking created.", "success");
+      sessionStorage.removeItem(EVENTS_CACHE_KEY);
+      await loadEvents();
+    }
+    window.quickBookEvent = quickBookEvent;
+
+    async function quickJoinWaitlist(eventId) {
+      const attendeeName = document.getElementById("attendeeName").value.trim();
+      const attendeeEmail = document.getElementById("attendeeEmail").value.trim();
+      const attendeeWhatsApp = document.getElementById("attendeeWhatsApp").value.trim();
+      if (!attendeeName || !attendeeEmail) {
+        showToast("Enter attendee name and email first, then join waitlist.", "warning");
+        selectEvent(eventId);
+        return;
+      }
+      const payload = {
+        eventId,
+        ticketType: document.getElementById("ticketType").value || "Standard",
+        quantity: Number(document.getElementById("quantity").value || 1),
+        attendeeName,
+        attendeeEmail
+      };
+      if (attendeeWhatsApp) payload.attendeeWhatsApp = attendeeWhatsApp;
+      const res = await fetch("/api/bookings/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) {
+        let text = "Failed to join waitlist.";
+        try {
+          const err = await res.json();
+          text = err.error || text;
+        } catch (_) {}
+        showToast(text, "error");
+        return;
+      }
+      showToast("Added to waitlist.", "success");
+    }
+    window.quickJoinWaitlist = quickJoinWaitlist;
+
+    async function copyShareUrl(text) {
+      if (!text) return false;
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function openShareModal(id) {
+      const event = allEvents.find((e) => e._id === id);
+      if (!event || !shareModal) return;
+      const url = eventDetailsUrl(event._id);
+      const text = shareTextForEvent(event);
+
+      shareTitle.textContent = event.title || "Untitled Event";
+      shareMeta.textContent = `${event.location || "TBD"} | ${new Date(event.date).toLocaleDateString()}`;
+      shareUrlText.textContent = url;
+      shareCopyBtn.dataset.url = url;
+      shareNativeBtn.dataset.url = url;
+      shareNativeBtn.dataset.text = text;
+      shareNativeBtn.dataset.title = event.title || "Event";
+
+      shareWhatsAppBtn.href = `https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`;
+      shareXBtn.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+      shareFacebookBtn.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+      shareLinkedInBtn.href = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+
+      if (!navigator.share) {
+        shareNativeBtn.classList.add("hidden");
+      } else {
+        shareNativeBtn.classList.remove("hidden");
+      }
+      shareModal.showModal();
+    }
+    window.openShareModal = openShareModal;
+
+    if (shareCopyBtn) {
+      shareCopyBtn.addEventListener("click", async () => {
+        const url = shareCopyBtn.dataset.url || "";
+        const copied = await copyShareUrl(url);
+        if (copied) {
+          const old = shareCopyBtn.textContent;
+          shareCopyBtn.textContent = "Copied";
+          setTimeout(() => {
+            shareCopyBtn.textContent = old;
+          }, 1200);
+        }
+      });
+    }
+    if (shareNativeBtn) {
+      shareNativeBtn.addEventListener("click", async () => {
+        if (!navigator.share) return;
+        const title = shareNativeBtn.dataset.title || "Event";
+        const text = shareNativeBtn.dataset.text || "";
+        const url = shareNativeBtn.dataset.url || "";
+        try {
+          await navigator.share({ title, text, url });
+        } catch (_) {}
+      });
+    }
+
+    function updateTicketOptions(eventId) {
+      const ticketSelect = document.getElementById("ticketType");
+      const event = allEvents.find((e) => e._id === eventId);
+      if (!event || !Array.isArray(event.ticketTypes)) {
+        ticketSelect.innerHTML = '<option value="">Select Ticket Type</option>';
+        return;
+      }
+      ticketSelect.innerHTML = '<option value="">Select Ticket Type</option>' + event.ticketTypes.map((t) => `<option value="${escapeHtml(t.name)}">${escapeHtml(t.name)} - $${escapeHtml(t.price)} (${escapeHtml(Math.max(0, (t.quantity || 0) - (t.sold || 0)))} left${Number(t.pricingMultiplier || 1) > 1 ? ` · ${escapeHtml(t.pricingTierLabel || "dynamic")}` : ""})</option>`).join("");
+    }
+
+    function applyTicketDraftIfAny() {
+      const raw = localStorage.getItem(TICKET_DRAFT_KEY);
+      if (!raw) return;
+      try {
+        const draft = JSON.parse(raw);
+        if (!draft || typeof draft !== "object") return;
+
+        if (draft.eventId) {
+          document.getElementById("eventId").value = draft.eventId;
+          updateTicketOptions(draft.eventId);
+        }
+        if (draft.ticketType) document.getElementById("ticketType").value = draft.ticketType;
+        if (draft.quantity) document.getElementById("quantity").value = String(draft.quantity);
+        if (draft.attendeeName) document.getElementById("attendeeName").value = draft.attendeeName;
+        if (draft.attendeeEmail) document.getElementById("attendeeEmail").value = draft.attendeeEmail;
+        if (draft.attendeeWhatsApp) document.getElementById("attendeeWhatsApp").value = draft.attendeeWhatsApp;
+        if (draft.paymentMethod) document.getElementById("paymentMethod").value = draft.paymentMethod;
+
+        const msg = document.getElementById("bookingMsg");
+        msg.classList.remove("text-rose-300");
+        msg.classList.add("text-emerald-300");
+        msg.textContent = "Ticketing details loaded. Review and continue payment.";
+      } catch (_) {
+        // Ignore malformed local draft silently.
+      }
+    }
+
+    document.getElementById("eventId").addEventListener("change", (e) => {
+      updateTicketOptions(e.target.value);
+    });
+
+    document.getElementById("bookingForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const eventId = document.getElementById("eventId").value;
+      const ticketType = document.getElementById("ticketType").value;
+      const quantity = Number(document.getElementById("quantity").value || 1);
+      const attendeeName = document.getElementById("attendeeName").value.trim();
+      const attendeeEmail = document.getElementById("attendeeEmail").value.trim();
+      const attendeeWhatsApp = document.getElementById("attendeeWhatsApp").value.trim();
+      const promoCode = document.getElementById("promoCode").value.trim().toUpperCase();
+      const paymentMethod = document.getElementById("paymentMethod").value;
+      const msg = document.getElementById("bookingMsg");
+      const payload = { eventId, ticketType, quantity, attendeeName, attendeeEmail, paymentMethod };
+      if (promoCode) payload.promoCode = promoCode;
+      if (attendeeWhatsApp) payload.attendeeWhatsApp = attendeeWhatsApp;
+
+      if (paymentMethod === "stripe") {
+        const sessionRes = await fetch("/api/bookings/stripe/checkout-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...authHeaders() },
+          body: JSON.stringify(payload)
+        });
+
+        if (!sessionRes.ok) {
+          let text = "Could not start Stripe checkout.";
+          try {
+            const err = await sessionRes.json();
+            text = err.error || text;
+          } catch (_) {}
+          msg.classList.remove("text-emerald-300");
+          msg.classList.add("text-rose-300");
+          msg.textContent = text;
+          return;
+        }
+
+        const sessionData = await sessionRes.json();
+        window.location.href = sessionData.url;
+        return;
+      }
+
+      const res = await fetch("/api/bookings/register-ticket", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        let text = "Booking failed.";
+        let errBody = null;
+        try {
+          errBody = await res.json();
+          text = errBody.error || text;
+        } catch (_) {}
+        const soldOut = /not enough|sold out|availability/i.test(text);
+        if (soldOut) {
+          const join = confirm(`${text}\n\nDo you want to join waitlist for this event?`);
+          if (join) {
+            await quickJoinWaitlist(eventId);
+          }
+        }
+        msg.classList.remove("text-emerald-300");
+        msg.classList.add("text-rose-300");
+        msg.textContent = text;
+        return;
+      }
+
+      const data = await res.json();
+      e.target.reset();
+      localStorage.removeItem(TICKET_DRAFT_KEY);
+      window.location.href = `/ticket-confirmation.html?bookingId=${encodeURIComponent(data._id || "")}&from=direct`;
+    });
+
+    confirmStripeSessionIfPresent();
+    loadEvents().then(() => {
+      applyTicketDraftIfAny();
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("from_ticketing") === "1") {
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, "", cleanUrl);
+      }
+    });
+  </script>
+  <script src="chat-widget.js"></script>
+  <script src="nav-auth.js?v=20260302a"></script>
+</body>
+</html>
+
+
+
+
+
+
+

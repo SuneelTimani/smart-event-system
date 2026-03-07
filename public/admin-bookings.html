@@ -1,0 +1,275 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Bookings | Admin</title>
+  <link rel="icon" type="image/png" href="/assets/web-logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="mx-auto max-w-6xl px-4 py-8">
+    <header class="flex flex-col gap-4">
+      <nav data-role-nav class="flex flex-col gap-4 border border-slate-800 bg-slate-900/70 px-4 py-3 backdrop-blur md:flex-row md:items-center md:justify-between rounded-xl">
+        <div class="flex items-center gap-3">
+          <img src="/assets/web-logo.png" alt="Smart Event System" class="h-9 w-9 rounded-lg object-cover">
+          <div>
+            <p class="text-sm font-semibold">Smart Event System</p>
+            <p class="text-xs text-slate-400">Manage and discover events</p>
+          </div>
+        </div>
+      </nav>
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-semibold">All Bookings</h1>
+          <p class="text-slate-400">Admin view of all user bookings and registrations.</p>
+        </div>
+        <div class="flex gap-2">
+          <a href="/admin.html" class="rounded-lg border border-slate-700 px-4 py-2 text-sm hover:bg-slate-800">Back to Admin</a>
+          <button id="exportCsvBtn" class="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 hover:bg-emerald-500/20">Export CSV</button>
+          <button id="refreshBtn" class="rounded-lg bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-300">Refresh</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="mt-8 grid gap-4 md:grid-cols-3">
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+        <p class="text-sm text-slate-400">Total Booking Records</p>
+        <p id="totalBookings" class="mt-2 text-2xl font-semibold">0</p>
+      </div>
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+        <p class="text-sm text-slate-400">Confirmed</p>
+        <p id="confirmedCount" class="mt-2 text-2xl font-semibold">0</p>
+      </div>
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+        <p class="text-sm text-slate-400">Cancelled</p>
+        <p id="cancelledCount" class="mt-2 text-2xl font-semibold">0</p>
+      </div>
+    </section>
+
+    <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
+      <h2 class="text-lg font-semibold">Filters</h2>
+      <div class="mt-3 grid gap-3 md:grid-cols-4">
+        <select id="statusFilter" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm">
+          <option value="">All Statuses</option>
+          <option value="pending">pending</option>
+          <option value="confirmed">confirmed</option>
+          <option value="checked_in">checked_in</option>
+          <option value="cancelled">cancelled</option>
+          <option value="refunded">refunded</option>
+        </select>
+        <select id="eventFilter" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm">
+          <option value="">All Events</option>
+        </select>
+        <input id="dateFrom" type="date" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm">
+        <input id="dateTo" type="date" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm">
+      </div>
+    </section>
+
+    <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
+      <h2 class="text-lg font-semibold">Bookings List</h2>
+      <div id="bookings" class="mt-4 grid gap-3 md:grid-cols-2"></div>
+      <div id="bookingsPager" class="mt-4"></div>
+    </section>
+  </div>
+
+  <script src="ui-feedback.js"></script>
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "/login.html";
+    let allBookings = [];
+    let bookingsPagination = null;
+    let bookingsPage = 1;
+
+    function authHeaders(extra = {}) {
+      return { Authorization: token, ...extra };
+    }
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+    function readableBookingId(id) {
+      const raw = String(id || "").trim();
+      if (!raw) return "-";
+      return `BK-${raw.slice(-8).toUpperCase()}`;
+    }
+
+    function renderPagination(pagination) {
+      const container = document.getElementById("bookingsPager");
+      const page = Number(pagination?.page || 1);
+      const totalPages = Number(pagination?.totalPages || 1);
+      const total = Number(pagination?.total || 0);
+      if (totalPages <= 1) {
+        container.innerHTML = total ? `<p class="text-xs text-slate-500">Showing page ${page} of ${totalPages} · ${total} total</p>` : "";
+        return;
+      }
+      container.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+          <p>Page ${page} of ${totalPages} · ${total} total</p>
+          <div class="flex gap-2">
+            <button ${page <= 1 ? "disabled" : ""} onclick="goToBookingsPage(${page - 1})" class="rounded-md border border-slate-700 px-3 py-1 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40">Prev</button>
+            <button ${page >= totalPages ? "disabled" : ""} onclick="goToBookingsPage(${page + 1})" class="rounded-md border border-slate-700 px-3 py-1 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40">Next</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function goToBookingsPage(page) {
+      bookingsPage = Math.max(1, Number(page || 1));
+      loadBookings();
+    }
+    window.goToBookingsPage = goToBookingsPage;
+
+    async function ensureAdmin() {
+      const res = await fetch("/api/auth/me", { headers: authHeaders() });
+      if (!res.ok) {
+        localStorage.removeItem("token");
+        window.location.href = "/login.html";
+        return false;
+      }
+      const me = await res.json();
+      if (me.role !== "admin") {
+        window.location.href = "/user.html";
+        return false;
+      }
+      return true;
+    }
+
+    async function loadBookings() {
+      if (!await ensureAdmin()) return;
+      document.getElementById("bookings").innerHTML = uiSkeletonCards(4);
+      const status = document.getElementById("statusFilter").value;
+      const eventId = document.getElementById("eventFilter").value;
+      const dateFrom = document.getElementById("dateFrom").value;
+      const dateTo = document.getElementById("dateTo").value;
+      const params = new URLSearchParams({ page: String(bookingsPage), pageSize: "24" });
+      if (status) params.set("status", status);
+      if (eventId) params.set("eventId", eventId);
+      if (dateFrom) params.set("dateFrom", dateFrom);
+      if (dateTo) params.set("dateTo", dateTo);
+      const res = await fetch(`/api/admin/bookings?${params.toString()}`, { headers: authHeaders() });
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        document.getElementById("bookings").innerHTML = uiEmptyState(
+          "Failed to load bookings",
+          payload.error || "Please refresh or check server logs."
+        );
+        return;
+      }
+
+      const payload = await res.json();
+      allBookings = Array.isArray(payload) ? payload : (payload.items || []);
+      bookingsPagination = payload.pagination || null;
+      await hydrateEventFilter();
+      renderBookings(allBookings);
+      renderPagination(bookingsPagination);
+    }
+
+    async function hydrateEventFilter() {
+      const select = document.getElementById("eventFilter");
+      const current = select.value;
+      const eventMap = new Map();
+      const res = await fetch("/api/admin/events?page=1&pageSize=200", { headers: authHeaders() });
+      if (res.ok) {
+        const payload = await res.json();
+        const events = Array.isArray(payload) ? payload : (payload.items || []);
+        events.forEach((e) => {
+          const id = String(e._id || "");
+          if (!id) return;
+          eventMap.set(id, e.title || "Unknown Event");
+        });
+      }
+      const options = ['<option value="">All Events</option>'];
+      eventMap.forEach((title, id) => {
+        options.push(`<option value="${encodeURIComponent(String(id))}">${escapeHtml(title)}</option>`);
+      });
+      select.innerHTML = options.join("");
+      if ([...eventMap.keys()].includes(current)) {
+        select.value = current;
+      }
+    }
+
+    function applyFilters() {
+      bookingsPage = 1;
+      loadBookings();
+    }
+
+    function renderBookings(bookings) {
+      const confirmed = bookings.filter((b) => b.status === "confirmed").length;
+      const cancelled = bookings.filter((b) => b.status === "cancelled").length;
+      document.getElementById("totalBookings").textContent = Number(bookingsPagination?.total || bookings.length);
+      document.getElementById("confirmedCount").textContent = confirmed;
+      document.getElementById("cancelledCount").textContent = cancelled;
+
+      const container = document.getElementById("bookings");
+      if (!bookings.length) {
+        container.innerHTML = uiEmptyState("No bookings found", "Try changing filters.");
+        return;
+      }
+
+      container.innerHTML = bookings.map((b) => `
+        <article class="rounded-lg border border-slate-800 bg-slate-950 p-4">
+          <p class="font-semibold">${escapeHtml(b.eventId?.title || "Unknown Event")}</p>
+          <p class="mt-1 text-xs text-cyan-300">Booking Ref: ${escapeHtml(readableBookingId(b._id))}</p>
+          <p class="mt-1 text-xs text-slate-400">${escapeHtml(b.userId?.email || "Unknown User")}</p>
+          <p class="mt-1 text-xs text-slate-400">Ticket: ${escapeHtml(b.ticketType || "Standard")} x ${escapeHtml(b.quantity || 1)}</p>
+          <p class="mt-1 text-xs text-slate-400">Amount: $${escapeHtml(b.totalAmount || 0)}</p>
+          <p class="mt-1 text-xs text-slate-500">Status: ${escapeHtml(b.status || "pending")} | Payment: ${escapeHtml(b.paymentStatus || "unpaid")}</p>
+          <p class="mt-2 text-xs text-slate-500">${escapeHtml(new Date(b.date).toLocaleDateString())}</p>
+        </article>
+      `).join("");
+    }
+
+    function exportCsv() {
+      if (!allBookings.length) {
+        showToast("No filtered bookings to export.", "warning");
+        return;
+      }
+      const rows = [
+        ["Event", "User Email", "Ticket Type", "Quantity", "Total Amount", "Status", "Payment Status", "Date"]
+      ];
+      allBookings.forEach((b) => {
+        rows.push([
+          b.eventId?.title || "Unknown Event",
+          b.userId?.email || "Unknown User",
+          b.ticketType || "Standard",
+          String(b.quantity || 1),
+          String(b.totalAmount || 0),
+          b.status || "pending",
+          b.paymentStatus || "unpaid",
+          new Date(b.date).toISOString()
+        ]);
+      });
+
+      const csv = rows
+        .map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+        .join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `admin-bookings-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("CSV exported.", "success");
+    }
+
+    document.getElementById("refreshBtn").addEventListener("click", loadBookings);
+    document.getElementById("statusFilter").addEventListener("change", () => { bookingsPage = 1; loadBookings(); });
+    document.getElementById("eventFilter").addEventListener("change", () => { bookingsPage = 1; loadBookings(); });
+    document.getElementById("dateFrom").addEventListener("change", applyFilters);
+    document.getElementById("dateTo").addEventListener("change", applyFilters);
+    document.getElementById("exportCsvBtn").addEventListener("click", exportCsv);
+    loadBookings();
+  </script>
+  <script src="nav-auth.js?v=20260302a"></script>
+</body>
+</html>
+
+

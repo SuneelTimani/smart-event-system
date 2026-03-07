@@ -1,0 +1,748 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Details | Smart Event System</title>
+  <link rel="icon" type="image/png" href="/assets/web-logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="mx-auto max-w-5xl px-4 py-8">
+    <header class="flex flex-col gap-4">
+      <nav data-role-nav class="flex flex-col gap-4 border border-slate-800 bg-slate-900/70 px-4 py-3 backdrop-blur md:flex-row md:items-center md:justify-between rounded-xl">
+        <div class="flex items-center gap-3">
+          <img src="/assets/web-logo.png" alt="Smart Event System" class="h-9 w-9 rounded-lg object-cover">
+          <div>
+            <p class="text-sm font-semibold">Smart Event System</p>
+            <p class="text-xs text-slate-400">Manage and discover events</p>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <section id="eventCard" class="mt-8 rounded-xl border border-slate-800 bg-slate-900 p-6">
+      <p class="text-slate-400">Loading event details...</p>
+    </section>
+    <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-semibold">Event Discussion</h2>
+          <p id="viewerCount" class="text-xs text-slate-400">0 viewers online</p>
+        </div>
+        <button id="refreshCommentsBtn" type="button" class="inline-flex items-center gap-2 rounded-lg border border-slate-700 px-3 py-1.5 text-xs hover:bg-slate-800">
+          <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+            <path d="M21 3v6h-6" />
+          </svg>
+          <span>Refresh</span>
+        </button>
+      </div>
+      <form id="commentForm" class="mt-4 grid gap-3">
+        <textarea id="commentText" rows="3" maxlength="500" placeholder="Write your comment..."
+          class="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400"></textarea>
+        <div class="flex items-center gap-3">
+          <button type="submit" class="rounded-lg bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-300">Post Comment</button>
+          <p id="commentStatus" class="text-xs text-slate-400"></p>
+        </div>
+      </form>
+      <p id="typingIndicator" class="mt-2 text-xs text-cyan-300"></p>
+      <div id="commentsList" class="mt-3 grid gap-3">
+        <p class="text-sm text-slate-400">Loading comments...</p>
+      </div>
+    </section>
+  </div>
+
+  <script src="i18n-time.js"></script>
+  <script src="calendar-utils.js"></script>
+  <script>
+    const eventCard = document.getElementById("eventCard");
+    const commentsList = document.getElementById("commentsList");
+    const commentForm = document.getElementById("commentForm");
+    const commentText = document.getElementById("commentText");
+    const commentStatus = document.getElementById("commentStatus");
+    const refreshCommentsBtn = document.getElementById("refreshCommentsBtn");
+    const viewerCountEl = document.getElementById("viewerCount");
+    const typingIndicatorEl = document.getElementById("typingIndicator");
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get("id");
+    const authToken = localStorage.getItem("token") || "";
+    let commentsState = [];
+    let commentsStream = null;
+    let currentCreatorId = "";
+    let typingClearTimer = null;
+    let lastTypingAt = 0;
+    const replyDraftByComment = {};
+
+    function getTokenUserId(token) {
+      try {
+        const payload = JSON.parse(atob(String(token || "").split(".")[1] || ""));
+        return String(payload.id || "");
+      } catch {
+        return "";
+      }
+    }
+
+    function formatDate(value) {
+      if (!value) return "No date";
+      if (window.AppI18nTime && typeof window.AppI18nTime.formatDateTimeWithZone === "function") {
+        return window.AppI18nTime.formatDateTimeWithZone(value);
+      }
+      if (window.AppI18nTime) return window.AppI18nTime.formatDateTime(value);
+      return new Date(value).toLocaleString();
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function upsertEventJsonLd(event) {
+      const id = "eventJsonLd";
+      let node = document.getElementById(id);
+      if (!node) {
+        node = document.createElement("script");
+        node.type = "application/ld+json";
+        node.id = id;
+        document.head.appendChild(node);
+      }
+      const startDate = event?.date ? new Date(event.date).toISOString() : undefined;
+      const endDate = event?.date ? new Date(new Date(event.date).getTime() + 2 * 60 * 60 * 1000).toISOString() : undefined;
+      const data = {
+        "@context": "https://schema.org",
+        "@type": "Event",
+        name: event?.title || "Event",
+        description: event?.description || "",
+        startDate,
+        endDate,
+        eventStatus: event?.status === "cancelled"
+          ? "https://schema.org/EventCancelled"
+          : "https://schema.org/EventScheduled",
+        eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+        location: {
+          "@type": "Place",
+          name: event?.location || "TBD",
+          address: event?.location || "TBD"
+        },
+        organizer: {
+          "@type": "Organization",
+          name: event?.organizer || "Organizer"
+        },
+        image: event?.coverImage || undefined,
+        offers: Array.isArray(event?.ticketTypes) && event.ticketTypes.length
+          ? event.ticketTypes.map((t) => ({
+              "@type": "Offer",
+              price: Number(t.price || 0),
+              priceCurrency: "USD",
+              availability: Number(t.quantity || 0) - Number(t.sold || 0) > 0
+                ? "https://schema.org/InStock"
+                : "https://schema.org/SoldOut"
+            }))
+          : undefined,
+        url: window.location.href
+      };
+      node.textContent = JSON.stringify(data);
+    }
+
+    function setSeoMeta(event) {
+      const title = `${String(event?.title || "Event")} | Smart Event System`;
+      const descRaw = String(event?.description || "Discover event details, schedule, location, tickets, and discussion.");
+      const description = descRaw.length > 155 ? `${descRaw.slice(0, 152)}...` : descRaw;
+
+      document.title = title;
+
+      let meta = document.querySelector('meta[name="description"]');
+      if (!meta) {
+        meta = document.createElement("meta");
+        meta.setAttribute("name", "description");
+        document.head.appendChild(meta);
+      }
+      meta.setAttribute("content", description);
+    }
+
+    function getMapUrls(event) {
+      const location = String(event.location || "Pakistan");
+      const mapLink = String(event.mapLink || "").trim();
+      if (mapLink) {
+        try {
+          const parsed = new URL(mapLink);
+          // If already embed link, use directly.
+          if (parsed.hostname.includes("google.") && parsed.pathname.includes("/maps/embed")) {
+            return { embed: parsed.toString(), open: parsed.toString() };
+          }
+          // Convert generic google maps URL to search embed fallback with q.
+          const q = parsed.searchParams.get("q") || parsed.searchParams.get("query") || location;
+          return {
+            embed: `https://www.google.com/maps?q=${encodeURIComponent(q)}&output=embed`,
+            open: mapLink
+          };
+        } catch {
+          // fallback below
+        }
+      }
+      return {
+        embed: `https://www.google.com/maps?q=${encodeURIComponent(location)}&output=embed`,
+        open: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`
+      };
+    }
+
+    function getAvatarUrl(comment) {
+      if (comment.userProfileImage && String(comment.userProfileImage).startsWith("data:image/")) {
+        return comment.userProfileImage;
+      }
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.userName || "User")}&background=0f172a&color=f59e0b&size=96`;
+    }
+
+    function getEventImageUrl(event) {
+      const src = String(event?.coverImage || "").trim();
+      if (/^data:image\//i.test(src)) return src;
+      if (/^https?:\/\//i.test(src)) return src;
+      return "";
+    }
+
+    function renderComments(comments) {
+      if (!Array.isArray(comments) || !comments.length) {
+        commentsList.innerHTML = '<p class="text-sm text-slate-400">No comments yet. Be the first to comment.</p>';
+        return;
+      }
+      commentsList.innerHTML = comments.map((c) => renderCommentItem(c, false)).join("");
+    }
+
+    function renderCommentItem(c, isReply) {
+      const id = encodeURIComponent(String(c._id || ""));
+      const replies = Array.isArray(c.replies) ? c.replies : [];
+      const draft = replyDraftByComment[String(c._id || "")] || "";
+      return `
+        <article class="rounded-lg border border-slate-800 bg-slate-950 p-3 ${isReply ? "ml-7 border-slate-700" : ""}">
+          <div class="flex items-center gap-2">
+            <img src="${escapeHtml(getAvatarUrl(c))}" alt="avatar" class="h-7 w-7 rounded-full object-cover">
+            <p class="text-sm font-semibold">${escapeHtml(c.userName || "User")}</p>
+            <p class="text-xs text-slate-500">${new Date(c.createdAt).toLocaleString()}</p>
+          </div>
+          <p class="mt-2 whitespace-pre-wrap text-sm text-slate-300">${escapeHtml(c.text)}</p>
+          <div class="mt-2 flex flex-wrap items-center gap-2">
+            <button type="button" class="rounded border border-emerald-500/40 px-2 py-1 text-[11px] text-emerald-300 hover:bg-slate-900"
+                    onclick="toggleHelpful('${id}')">
+              Helpful (${Number(c.helpfulCount || 0)})
+            </button>
+            ${!isReply && authToken ? `<button type="button" class="rounded border border-cyan-500/40 px-2 py-1 text-[11px] text-cyan-300 hover:bg-slate-900" onclick="toggleReplyBox('${id}')">Reply</button>` : ""}
+            ${authToken ? `<button type="button" class="rounded border border-rose-500/40 px-2 py-1 text-[11px] text-rose-300 hover:bg-slate-900" onclick="reportComment('${id}')">Report</button>` : ""}
+            <span class="text-[11px] text-slate-500">Reports: ${Number(c.reportCount || 0)}</span>
+          </div>
+          ${!isReply && authToken ? `
+            <div id="replyBox-${id}" class="mt-2 hidden">
+              <textarea id="replyText-${id}" rows="2" maxlength="500"
+                        class="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                        placeholder="Write a reply...">${escapeHtml(draft)}</textarea>
+              <div class="mt-2 flex gap-2">
+                <button type="button" class="rounded border border-cyan-500/40 px-2 py-1 text-xs text-cyan-300 hover:bg-slate-900" onclick="postReply('${id}')">Post Reply</button>
+                <button type="button" class="rounded border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:bg-slate-900" onclick="toggleReplyBox('${id}')">Cancel</button>
+              </div>
+            </div>
+          ` : ""}
+          ${!isReply && replies.length ? `<div class="mt-3 grid gap-2">${replies.map((r) => renderCommentItem(r, true)).join("")}</div>` : ""}
+        </article>
+      `;
+    }
+
+    function upsertComment(comment) {
+      const id = String(comment?._id || "");
+      if (!id) return;
+      const parentId = String(comment?.parentId || "");
+      if (parentId) {
+        const parentIdx = commentsState.findIndex((row) => String(row._id) === parentId);
+        if (parentIdx >= 0) {
+          const parent = commentsState[parentIdx];
+          const replies = Array.isArray(parent.replies) ? parent.replies : [];
+          const replyIdx = replies.findIndex((r) => String(r._id) === id);
+          if (replyIdx >= 0) {
+            replies[replyIdx] = { ...replies[replyIdx], ...comment };
+          } else {
+            replies.push(comment);
+          }
+          parent.replies = replies;
+          commentsState[parentIdx] = parent;
+          renderComments(commentsState);
+          return;
+        }
+      }
+      const idx = commentsState.findIndex((c) => String(c._id) === id);
+      if (idx >= 0) {
+        commentsState[idx] = { ...commentsState[idx], ...comment };
+      } else {
+        commentsState.unshift({ ...comment, replies: [] });
+      }
+      commentsState = commentsState.slice(0, 50);
+      renderComments(commentsState);
+    }
+
+    async function loadComments() {
+      if (!eventId) return;
+      commentsList.innerHTML = '<p class="text-sm text-slate-400">Loading comments...</p>';
+      const res = await fetch(`/api/events/${encodeURIComponent(eventId)}/comments?limit=50`);
+      if (!res.ok) {
+        commentsList.innerHTML = '<p class="text-sm text-rose-300">Failed to load comments.</p>';
+        return;
+      }
+      const comments = await res.json();
+      commentsState = Array.isArray(comments) ? comments : [];
+      renderComments(commentsState);
+    }
+
+    function startCommentsStream() {
+      if (!eventId || typeof EventSource === "undefined") return;
+      if (commentsStream) {
+        commentsStream.close();
+        commentsStream = null;
+      }
+      const viewerId = localStorage.getItem("viewer_id") || (() => {
+        const id = Math.random().toString(36).slice(2);
+        localStorage.setItem("viewer_id", id);
+        return id;
+      })();
+      commentsStream = new EventSource(`/api/events/${encodeURIComponent(eventId)}/comments/stream?viewerId=${encodeURIComponent(viewerId)}`);
+      commentsStream.addEventListener("comment_created", (ev) => {
+        try {
+          const comment = JSON.parse(ev.data);
+          upsertComment(comment);
+        } catch (_) {}
+      });
+      commentsStream.addEventListener("comment_updated", (ev) => {
+        try {
+          const payload = JSON.parse(ev.data);
+          upsertComment(payload);
+        } catch (_) {}
+      });
+      commentsStream.addEventListener("viewer_count", (ev) => {
+        try {
+          const payload = JSON.parse(ev.data || "{}");
+          const count = Number(payload.count || 0);
+          if (viewerCountEl) viewerCountEl.textContent = `${count} viewer${count === 1 ? "" : "s"} online`;
+        } catch (_) {}
+      });
+      commentsStream.addEventListener("typing", (ev) => {
+        try {
+          const payload = JSON.parse(ev.data || "{}");
+          const meId = getTokenUserId(authToken);
+          if (payload.userId && String(payload.userId) === String(meId)) return;
+          if (!typingIndicatorEl) return;
+          typingIndicatorEl.textContent = `${payload.userName || "Someone"} is typing...`;
+          if (typingClearTimer) clearTimeout(typingClearTimer);
+          typingClearTimer = setTimeout(() => {
+            typingIndicatorEl.textContent = "";
+          }, 1800);
+        } catch (_) {}
+      });
+      commentsStream.onerror = () => {
+        commentStatus.classList.remove("text-emerald-300");
+        commentStatus.classList.add("text-slate-400");
+        commentStatus.textContent = "Live comments reconnecting...";
+      };
+      commentsStream.addEventListener("ready", () => {
+        commentStatus.classList.remove("text-rose-300");
+        commentStatus.classList.add("text-emerald-300");
+        commentStatus.textContent = "Live discussion connected.";
+      });
+      window.addEventListener("beforeunload", () => {
+        if (commentsStream) commentsStream.close();
+      });
+    }
+
+    async function loadDetails() {
+      if (!eventId) {
+        eventCard.innerHTML = '<p class="text-rose-300">Missing event id.</p>';
+        return;
+      }
+
+      const res = await fetch("/api/events");
+      if (!res.ok) {
+        eventCard.innerHTML = '<p class="text-rose-300">Failed to load events.</p>';
+        return;
+      }
+
+      const events = await res.json();
+      const event = events.find((e) => e._id === eventId);
+      if (!event) {
+        eventCard.innerHTML = '<p class="text-rose-300">Event not found.</p>';
+        return;
+      }
+
+      const seatsBooked = Number(event.seatsBooked || 0);
+      const capacity = Number(event.capacity || 0);
+      const seatsLeft = Math.max(0, capacity - seatsBooked);
+      const tickets = Array.isArray(event.ticketTypes) ? event.ticketTypes : [];
+      const mapUrls = getMapUrls(event);
+      upsertEventJsonLd(event);
+      setSeoMeta(event);
+      currentCreatorId = String(event.createdBy?._id || event.createdBy || "");
+      let creatorBlock = `<p class="text-xs text-slate-500">Creator info unavailable.</p>`;
+      if (currentCreatorId) {
+        const creatorRes = await fetch(`/api/auth/users/${encodeURIComponent(currentCreatorId)}/public`);
+        if (creatorRes.ok) {
+          const creator = await creatorRes.json();
+          let isFollowing = false;
+          if (authToken) {
+            const meRes = await fetch("/api/auth/me", { headers: { Authorization: authToken } });
+            if (meRes.ok) {
+              const me = await meRes.json();
+              const following = Array.isArray(me.following) ? me.following.map((id) => String(id)) : [];
+              isFollowing = following.includes(currentCreatorId);
+            }
+          }
+          const avatar = creator.profileImage && creator.profileImage.startsWith("data:image/")
+            ? creator.profileImage
+            : `https://ui-avatars.com/api/?name=${encodeURIComponent(creator.name || "Creator")}&background=0f172a&color=f59e0b&size=96`;
+          creatorBlock = `
+            <div class="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-950 p-3">
+              <img src="${escapeHtml(avatar)}" alt="creator" class="h-11 w-11 rounded-full object-cover">
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-semibold">${escapeHtml(creator.name || "Creator")}</p>
+                <p class="text-xs text-slate-400">${escapeHtml(creator.role || "user")} | ${Number(creator.followerCount || 0)} followers</p>
+                <a href="/creator.html?id=${encodeURIComponent(currentCreatorId)}" class="mt-1 inline-block text-xs text-cyan-300 hover:underline">View Creator Profile</a>
+              </div>
+              ${authToken && currentCreatorId !== getTokenUserId(authToken)
+                ? `<button id="followCreatorBtn" class="rounded-lg border border-cyan-500/40 px-3 py-1.5 text-xs text-cyan-200 hover:bg-slate-800">${isFollowing ? "Unfollow" : "Follow"}</button>`
+                : ""}
+            </div>
+          `;
+        }
+      }
+
+      eventCard.innerHTML = `
+        ${getEventImageUrl(event) ? `<div class="mb-5 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950"><img src="${escapeHtml(getEventImageUrl(event))}" alt="${escapeHtml(event.title || "Event")}" class="h-72 w-full object-cover"></div>` : ""}
+        <p class="text-xs uppercase tracking-[0.18em] text-amber-300">${escapeHtml(event.category || "Other")}</p>
+        <h1 class="mt-2 text-3xl font-bold">${escapeHtml(event.title || "Untitled Event")}</h1>
+        <p class="mt-4 text-slate-300">${escapeHtml(event.description || "No description available.")}</p>
+        <div class="mt-6 grid gap-3 text-sm md:grid-cols-2">
+          <p><span class="text-amber-300">Date:</span> ${escapeHtml(formatDate(event.date))}</p>
+          <p><span class="text-amber-300">Location:</span> ${escapeHtml(event.location || "TBD")}</p>
+          <p><span class="text-amber-300">Organizer:</span> ${escapeHtml(event.organizer || "TBD")}</p>
+          <p><span class="text-amber-300">Status:</span> ${escapeHtml(event.status || "published")}</p>
+          <p><span class="text-amber-300">Coming People:</span> ${escapeHtml(seatsBooked)}</p>
+          <p><span class="text-amber-300">Seats Left:</span> ${escapeHtml(seatsLeft)}</p>
+        </div>
+        ${Number(event.lowestTicketPrice || 0) > 0 ? `<div class="mt-4 rounded-lg border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">Current demand pricing: <span class="font-semibold">${escapeHtml(event.dynamicPricing?.label || "Dynamic pricing")}</span> · from $${escapeHtml(Number(event.lowestTicketPrice || 0).toFixed(2).replace(/\\.00$/, ""))}</div>` : ""}
+        <div class="mt-6">
+          <p class="mb-2 text-sm font-semibold text-amber-200">Map</p>
+          <div class="overflow-hidden rounded-lg border border-slate-700">
+            <iframe
+              id="eventMapFrame"
+              title="Event location map"
+              class="h-64 w-full"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              src="${escapeHtml(mapUrls.embed)}">
+            </iframe>
+          </div>
+          <a
+            id="openMapLink"
+            target="_blank"
+            rel="noopener"
+            class="mt-2 inline-block rounded-lg border border-slate-700 px-3 py-1.5 text-xs hover:bg-slate-800"
+            href="${escapeHtml(mapUrls.open)}">
+            Open in Maps
+          </a>
+        </div>
+        <div class="mt-6">
+          <p class="mb-2 text-sm font-semibold text-amber-200">Event Creator</p>
+          ${creatorBlock}
+        </div>
+        <div class="mt-6">
+          <p class="mb-2 text-sm font-semibold text-amber-200">Ticket Types</p>
+          <div class="grid gap-2 sm:grid-cols-2">
+            ${tickets.map((t) => `<div class="rounded-lg border border-slate-700 bg-slate-950 p-3 text-sm">${escapeHtml(t.name)}: $${escapeHtml(t.price)}${Number(t.basePrice || t.price) !== Number(t.price) ? ` <span class="text-xs text-slate-400">(base $${escapeHtml(t.basePrice)})</span>` : ""} <span class="block text-xs text-slate-400">${escapeHtml(Math.max(0, (t.quantity || 0) - (t.sold || 0)))} left${t.pricingTierLabel ? ` · ${escapeHtml(t.pricingTierLabel)}` : ""}</span></div>`).join("") || '<p class="text-slate-400">No ticket data available.</p>'}
+          </div>
+        </div>
+        <div class="mt-6 flex gap-2">
+          <a href="/book.html" class="rounded-lg bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-300">Book This Event</a>
+          <a href="/" class="rounded-lg border border-slate-700 px-4 py-2 text-sm hover:bg-slate-800">Back Home</a>
+        </div>
+        <div class="mt-5 border-t border-slate-800 pt-4">
+          <p class="mb-2 text-xs uppercase tracking-[0.16em] text-slate-400">Share Event</p>
+          <div class="flex flex-wrap gap-2">
+            <button id="shareNative" type="button" class="rounded-lg border border-amber-400/40 px-3 py-2 text-xs hover:bg-slate-800">Share</button>
+            <button id="copyLink" type="button" class="rounded-lg border border-amber-400/40 px-3 py-2 text-xs hover:bg-slate-800">Copy Link</button>
+            <a id="shareWhatsApp" target="_blank" rel="noopener" class="rounded-lg border border-slate-700 px-3 py-2 text-xs hover:bg-slate-800">WhatsApp</a>
+            <a id="shareX" target="_blank" rel="noopener" class="rounded-lg border border-slate-700 px-3 py-2 text-xs hover:bg-slate-800">X</a>
+            <a id="shareFacebook" target="_blank" rel="noopener" class="rounded-lg border border-slate-700 px-3 py-2 text-xs hover:bg-slate-800">Facebook</a>
+            <a id="shareLinkedIn" target="_blank" rel="noopener" class="rounded-lg border border-slate-700 px-3 py-2 text-xs hover:bg-slate-800">LinkedIn</a>
+          </div>
+        </div>
+        <div class="mt-4 border-t border-slate-800 pt-4">
+          <p class="mb-2 text-xs uppercase tracking-[0.16em] text-slate-400">Add To Calendar</p>
+          <div class="flex flex-wrap gap-2">
+            <a id="addGoogleCalendar" target="_blank" rel="noopener" class="rounded-lg border border-slate-700 px-3 py-2 text-xs hover:bg-slate-800">Google Calendar</a>
+            <a id="addOutlookCalendar" target="_blank" rel="noopener" class="rounded-lg border border-slate-700 px-3 py-2 text-xs hover:bg-slate-800">Outlook</a>
+            <button id="addAppleCalendarBtn" type="button" class="rounded-lg border border-slate-700 px-3 py-2 text-xs hover:bg-slate-800">Apple Calendar</button>
+            <button id="downloadIcsBtn" type="button" class="rounded-lg border border-cyan-500/40 px-3 py-2 text-xs text-cyan-200 hover:bg-slate-800">Download ICS</button>
+          </div>
+        </div>
+      `;
+
+      const shareUrl = window.location.href;
+      const shareText = `${event.title || "Event"} | ${formatDate(event.date)} | ${event.location || "TBD"}`;
+      const copyBtn = document.getElementById("copyLink");
+      const shareNativeBtn = document.getElementById("shareNative");
+      const wa = document.getElementById("shareWhatsApp");
+      const x = document.getElementById("shareX");
+      const fb = document.getElementById("shareFacebook");
+      const li = document.getElementById("shareLinkedIn");
+      const gcal = document.getElementById("addGoogleCalendar");
+      const ocal = document.getElementById("addOutlookCalendar");
+      const appleBtn = document.getElementById("addAppleCalendarBtn");
+      const icsBtn = document.getElementById("downloadIcsBtn");
+      const calendarEvent = {
+        title: event.title || "Event",
+        description: event.description || "",
+        location: event.location || "",
+        start: event.date,
+        durationMin: 120
+      };
+
+      if (wa) wa.href = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`;
+      if (x) x.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+      if (fb) fb.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+      if (li) li.href = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+      if (gcal && window.CalendarUtils) gcal.href = window.CalendarUtils.toGoogleCalendarUrl(calendarEvent);
+      if (ocal && window.CalendarUtils) ocal.href = window.CalendarUtils.toOutlookCalendarUrl(calendarEvent);
+      if (appleBtn && window.CalendarUtils) {
+        appleBtn.addEventListener("click", () => {
+          const ok = window.CalendarUtils.addToAppleCalendar(
+            calendarEvent,
+            `${String(event.title || "event").toLowerCase().replace(/[^a-z0-9]+/g, "-") || "event"}.ics`
+          );
+          if (!ok) {
+            commentStatus.classList.remove("text-emerald-300");
+            commentStatus.classList.add("text-rose-300");
+            commentStatus.textContent = "Failed to create Apple calendar file.";
+          }
+        });
+      }
+      if (icsBtn && window.CalendarUtils) {
+        icsBtn.addEventListener("click", () => {
+          const ok = window.CalendarUtils.downloadIcsFile(
+            calendarEvent,
+            `${String(event.title || "event").toLowerCase().replace(/[^a-z0-9]+/g, "-") || "event"}.ics`
+          );
+          if (!ok) {
+            commentStatus.classList.remove("text-emerald-300");
+            commentStatus.classList.add("text-rose-300");
+            commentStatus.textContent = "Failed to create ICS file.";
+          }
+        });
+      }
+
+      if (copyBtn) {
+        copyBtn.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(shareUrl);
+            copyBtn.textContent = "Copied";
+            setTimeout(() => {
+              copyBtn.textContent = "Copy Link";
+            }, 1200);
+          } catch {}
+        });
+      }
+
+      if (shareNativeBtn) {
+        if (!navigator.share) {
+          shareNativeBtn.classList.add("hidden");
+        } else {
+          shareNativeBtn.addEventListener("click", async () => {
+            try {
+              await navigator.share({
+                title: event.title || "Event",
+                text: shareText,
+                url: shareUrl
+              });
+            } catch {}
+          });
+        }
+      }
+
+      const followBtn = document.getElementById("followCreatorBtn");
+      if (followBtn && currentCreatorId) {
+        followBtn.addEventListener("click", async () => {
+          const isUnfollow = followBtn.textContent.trim().toLowerCase() === "unfollow";
+          const method = isUnfollow ? "DELETE" : "POST";
+          const res = await fetch(`/api/auth/follow/${encodeURIComponent(currentCreatorId)}`, {
+            method,
+            headers: { Authorization: authToken }
+          });
+          const out = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            commentStatus.classList.remove("text-emerald-300");
+            commentStatus.classList.add("text-rose-300");
+            commentStatus.textContent = out.error || "Follow action failed.";
+            return;
+          }
+          followBtn.textContent = isUnfollow ? "Follow" : "Unfollow";
+          commentStatus.classList.remove("text-rose-300");
+          commentStatus.classList.add("text-emerald-300");
+          commentStatus.textContent = isUnfollow ? "Unfollowed creator." : "Following creator.";
+        });
+      }
+    }
+
+    commentForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      commentStatus.classList.remove("text-emerald-300");
+      commentStatus.classList.add("text-slate-400");
+      const text = commentText.value.trim();
+      if (!text) {
+        commentStatus.textContent = "Write a comment first.";
+        return;
+      }
+      if (!authToken) {
+        commentStatus.classList.remove("text-slate-400");
+        commentStatus.classList.add("text-rose-300");
+        commentStatus.textContent = "Please login to comment.";
+        return;
+      }
+      commentStatus.textContent = "Posting...";
+      const res = await fetch(`/api/events/${encodeURIComponent(eventId)}/comments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authToken
+        },
+        body: JSON.stringify({ text })
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        commentStatus.classList.remove("text-slate-400", "text-emerald-300");
+        commentStatus.classList.add("text-rose-300");
+        commentStatus.textContent = body.error || "Failed to post comment.";
+        return;
+      }
+      commentText.value = "";
+      commentStatus.classList.remove("text-slate-400", "text-rose-300");
+      commentStatus.classList.add("text-emerald-300");
+      commentStatus.textContent = "Comment posted.";
+    });
+
+    commentText.addEventListener("input", async () => {
+      if (!authToken || !eventId) return;
+      if (!commentText.value.trim()) return;
+      const now = Date.now();
+      if (now - lastTypingAt < 1200) return;
+      lastTypingAt = now;
+      try {
+        await fetch(`/api/events/${encodeURIComponent(eventId)}/comments/typing`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: authToken
+          },
+          body: "{}"
+        });
+      } catch (_) {}
+    });
+
+    refreshCommentsBtn.addEventListener("click", loadComments);
+    window.toggleReplyBox = (commentId) => {
+      const el = document.getElementById(`replyBox-${commentId}`);
+      if (!el) return;
+      el.classList.toggle("hidden");
+      if (!el.classList.contains("hidden")) {
+        const input = document.getElementById(`replyText-${commentId}`);
+        if (input) input.focus();
+      }
+    };
+
+    window.postReply = async (commentId) => {
+      if (!authToken) {
+        commentStatus.classList.remove("text-emerald-300");
+        commentStatus.classList.add("text-rose-300");
+        commentStatus.textContent = "Please login to reply.";
+        return;
+      }
+      const input = document.getElementById(`replyText-${commentId}`);
+      const text = String(input?.value || "").trim();
+      if (!text) return;
+      replyDraftByComment[String(commentId)] = text;
+      const res = await fetch(`/api/events/${encodeURIComponent(eventId)}/comments/${encodeURIComponent(commentId)}/reply`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authToken
+        },
+        body: JSON.stringify({ text })
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        commentStatus.classList.remove("text-emerald-300");
+        commentStatus.classList.add("text-rose-300");
+        commentStatus.textContent = body.error || "Failed to post reply.";
+        return;
+      }
+      delete replyDraftByComment[String(commentId)];
+      await loadComments();
+      commentStatus.classList.remove("text-rose-300");
+      commentStatus.classList.add("text-emerald-300");
+      commentStatus.textContent = "Reply posted.";
+    };
+
+    window.toggleHelpful = async (commentId) => {
+      if (!authToken) {
+        commentStatus.classList.remove("text-emerald-300");
+        commentStatus.classList.add("text-rose-300");
+        commentStatus.textContent = "Please login to vote.";
+        return;
+      }
+      const res = await fetch(`/api/events/${encodeURIComponent(eventId)}/comments/${encodeURIComponent(commentId)}/helpful`, {
+        method: "PATCH",
+        headers: { Authorization: authToken }
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        commentStatus.classList.remove("text-emerald-300");
+        commentStatus.classList.add("text-rose-300");
+        commentStatus.textContent = body.error || "Failed to update helpful vote.";
+        return;
+      }
+      upsertComment(body);
+    };
+
+    window.reportComment = async (commentId) => {
+      if (!authToken) {
+        commentStatus.classList.remove("text-emerald-300");
+        commentStatus.classList.add("text-rose-300");
+        commentStatus.textContent = "Please login to report comments.";
+        return;
+      }
+      const reason = prompt("Optional report reason:", "") || "";
+      const res = await fetch(`/api/events/${encodeURIComponent(eventId)}/comments/${encodeURIComponent(commentId)}/report`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authToken
+        },
+        body: JSON.stringify({ reason })
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        commentStatus.classList.remove("text-emerald-300");
+        commentStatus.classList.add("text-rose-300");
+        commentStatus.textContent = body.error || "Failed to report comment.";
+        return;
+      }
+      commentStatus.classList.remove("text-rose-300");
+      commentStatus.classList.add("text-emerald-300");
+      commentStatus.textContent = "Comment reported. Admin will review it.";
+      await loadComments();
+    };
+
+    loadDetails();
+    loadComments();
+    startCommentsStream();
+  </script>
+  <script src="nav-auth.js?v=20260302a"></script>
+</body>
+</html>
+
+

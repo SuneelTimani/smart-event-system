@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Organizer Tools | Smart Event System</title>
+  <link rel="icon" type="image/png" href="/assets/web-logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="mx-auto max-w-6xl px-4 py-8">
+    <nav data-role-nav class="flex flex-col gap-4 border border-slate-800 bg-slate-900/70 px-4 py-3 backdrop-blur md:flex-row md:items-center md:justify-between rounded-xl">
+      <div class="flex items-center gap-3">
+        <img src="/assets/web-logo.png" alt="Smart Event System" class="h-9 w-9 rounded-lg object-cover">
+        <div>
+          <p class="text-sm font-semibold">Smart Event System</p>
+          <p class="text-xs text-slate-400">Manage and discover events</p>
+        </div>
+      </div>
+    </nav>
+    <h1 class="text-3xl font-semibold">Organizer Tools</h1>
+    <p class="mt-1 text-slate-400">Organizer analytics, promo codes, attendee check-in, and pass export.</p>
+
+    <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-semibold">Organizer Analytics</h2>
+          <p class="text-xs text-slate-400">Scoped to your own events only.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="analyticsEventSelect" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+            <option value="">Select event for ML details</option>
+          </select>
+          <button id="refreshAnalyticsBtn" class="rounded border border-cyan-500/40 bg-cyan-500/10 px-3 py-2 text-sm text-cyan-200 hover:bg-cyan-500/20">Refresh Analytics</button>
+        </div>
+      </div>
+
+      <div class="mt-4 grid gap-3 md:grid-cols-4">
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <p class="text-xs uppercase tracking-wide text-slate-400">My Events</p>
+          <p id="orgTotalEvents" class="mt-2 text-2xl font-semibold text-slate-100">-</p>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <p class="text-xs uppercase tracking-wide text-slate-400">My Bookings</p>
+          <p id="orgTotalBookings" class="mt-2 text-2xl font-semibold text-slate-100">-</p>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <p class="text-xs uppercase tracking-wide text-slate-400">Revenue</p>
+          <p id="orgRevenue" class="mt-2 text-2xl font-semibold text-slate-100">-</p>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <p class="text-xs uppercase tracking-wide text-slate-400">Upcoming Events</p>
+          <p id="orgUpcoming" class="mt-2 text-2xl font-semibold text-slate-100">-</p>
+        </div>
+      </div>
+
+      <div class="mt-4 grid gap-4 lg:grid-cols-2">
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <p class="text-xs uppercase tracking-wide text-slate-400">Bookings Trend</p>
+          <canvas id="orgTrendChart" class="mt-2"></canvas>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <p class="text-xs uppercase tracking-wide text-slate-400">Revenue by Event</p>
+          <canvas id="orgRevenueChart" class="mt-2"></canvas>
+        </div>
+      </div>
+
+      <div class="mt-4 grid gap-3 md:grid-cols-2">
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-4">
+          <p class="text-xs uppercase tracking-wide text-slate-400">Attendance Prediction</p>
+          <div id="orgAttendancePrediction" class="mt-3 text-sm text-slate-300">Select an event to view attendance prediction.</div>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-4">
+          <p class="text-xs uppercase tracking-wide text-slate-400">At-Risk Attendees</p>
+          <div id="orgChurnPrediction" class="mt-3 text-sm text-slate-300">Select an event to view churn signals.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
+      <h2 class="text-lg font-semibold">Promo Codes</h2>
+      <form id="promoForm" class="mt-3 grid gap-2 md:grid-cols-6">
+        <select id="promoEvent" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm"></select>
+        <input id="promoCode" placeholder="Code (e.g. HOLI20)" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+        <select id="promoType" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <option value="percent">percent</option>
+          <option value="fixed">fixed</option>
+        </select>
+        <input id="promoValue" type="number" min="0.01" step="0.01" placeholder="Discount value" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+        <input id="promoMaxUses" type="number" min="0" value="0" placeholder="Max uses (0 unlimited)" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+        <button class="rounded bg-amber-400 px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-300">Create</button>
+      </form>
+      <p id="promoMsg" class="mt-2 text-xs text-slate-400"></p>
+      <div id="promoList" class="mt-3 grid gap-2"></div>
+    </section>
+
+    <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
+      <h2 class="text-lg font-semibold">Attendee Check-in</h2>
+      <p class="text-xs text-slate-400">Scan QR or enter booking ref like BK-1234ABCD, then check in.</p>
+      <div class="mt-3 rounded border border-slate-800 bg-slate-950 p-3">
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="startScanBtn" class="rounded border border-slate-700 px-3 py-1.5 text-xs hover:bg-slate-800">Start QR Scan</button>
+          <button id="stopScanBtn" class="rounded border border-slate-700 px-3 py-1.5 text-xs hover:bg-slate-800">Stop</button>
+          <p id="scanMsg" class="text-xs text-slate-400">Camera scanner idle.</p>
+        </div>
+        <video id="scanVideo" class="mt-3 hidden w-full max-w-md rounded border border-slate-800" playsinline muted></video>
+      </div>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <input id="checkinBookingId" placeholder="Booking ID or Ref (BK-XXXXXXXX)" class="w-full max-w-lg rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+        <button id="checkinBtn" class="rounded bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-400">Check In</button>
+      </div>
+      <p id="checkinMsg" class="mt-2 text-xs text-slate-400"></p>
+    </section>
+
+    <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
+      <h2 class="text-lg font-semibold">Export Passes</h2>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <select id="exportEvent" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm"></select>
+        <button id="exportBtn" class="rounded border border-cyan-500/40 bg-cyan-500/10 px-3 py-2 text-sm text-cyan-200 hover:bg-cyan-500/20">Download CSV</button>
+      </div>
+      <p id="exportMsg" class="mt-2 text-xs text-slate-400"></p>
+    </section>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "/login.html";
+    const headers = (extra = {}) => ({ Authorization: token, ...extra });
+    let organizerEvents = [];
+    let organizerBookings = [];
+    let orgTrendChart = null;
+    let orgRevenueChart = null;
+
+    function esc(v) {
+      return String(v || "").replace(/[&<>"']/g, (s) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[s]));
+    }
+
+    async function ensureAdmin() {
+      const me = await fetch("/api/auth/me", { headers: headers() });
+      if (!me.ok) {
+        localStorage.removeItem("token");
+        window.location.href = "/login.html";
+        return false;
+      }
+      const data = await me.json();
+      if (data.role !== "admin") {
+        window.location.href = "/user.html";
+        return false;
+      }
+      return true;
+    }
+
+    let scanStream = null;
+    let scanTimer = null;
+
+    function destroyOrganizerCharts() {
+      if (orgTrendChart) {
+        orgTrendChart.destroy();
+        orgTrendChart = null;
+      }
+      if (orgRevenueChart) {
+        orgRevenueChart.destroy();
+        orgRevenueChart = null;
+      }
+    }
+
+    async function loadEvents() {
+      const res = await fetch("/api/admin/events?page=1&pageSize=200", { headers: headers() });
+      if (!res.ok) return;
+      const payload = await res.json();
+      organizerEvents = Array.isArray(payload) ? payload : (payload.items || []);
+      const opts = '<option value="">Select Event</option>' + organizerEvents.map((e) => `<option value="${e._id}">${esc(e.title)}</option>`).join("");
+      document.getElementById("promoEvent").innerHTML = opts;
+      document.getElementById("exportEvent").innerHTML = opts;
+      document.getElementById("analyticsEventSelect").innerHTML = '<option value="">Select event for ML details</option>' + organizerEvents.map((e) => `<option value="${e._id}">${esc(e.title)}</option>`).join("");
+    }
+
+    async function loadOrganizerBookings() {
+      const res = await fetch("/api/admin/bookings?page=1&pageSize=500", { headers: headers() });
+      if (!res.ok) {
+        organizerBookings = [];
+        return;
+      }
+      const payload = await res.json();
+      organizerBookings = Array.isArray(payload) ? payload : (payload.items || []);
+    }
+
+    function renderOrganizerSummary() {
+      const revenue = organizerBookings.reduce((sum, b) => sum + Number(b.totalAmount || 0), 0);
+      const upcoming = organizerEvents.filter((e) => new Date(e.date).getTime() >= Date.now() && e.status !== "cancelled").length;
+      document.getElementById("orgTotalEvents").textContent = String(organizerEvents.length);
+      document.getElementById("orgTotalBookings").textContent = String(organizerBookings.length);
+      document.getElementById("orgRevenue").textContent = `$${revenue.toFixed(2)}`;
+      document.getElementById("orgUpcoming").textContent = String(upcoming);
+    }
+
+    function renderOrganizerCharts() {
+      destroyOrganizerCharts();
+
+      const bookingsByDay = new Map();
+      organizerBookings.forEach((b) => {
+        const d = new Date(b.date || Date.now());
+        const key = d.toISOString().slice(0, 10);
+        bookingsByDay.set(key, Number(bookingsByDay.get(key) || 0) + 1);
+      });
+      const trendLabels = [...bookingsByDay.keys()].sort();
+      const trendData = trendLabels.map((key) => bookingsByDay.get(key));
+      orgTrendChart = new Chart(document.getElementById("orgTrendChart"), {
+        type: "line",
+        data: {
+          labels: trendLabels.length ? trendLabels : ["No Data"],
+          datasets: [{
+            label: "Bookings",
+            data: trendData.length ? trendData : [0],
+            borderColor: "#22d3ee",
+            backgroundColor: "rgba(34,211,238,0.18)",
+            tension: 0.3,
+            fill: true
+          }]
+        },
+        options: {
+          plugins: { legend: { labels: { color: "#e2e8f0" } } },
+          scales: {
+            x: { ticks: { color: "#cbd5e1" }, grid: { color: "rgba(148,163,184,0.12)" } },
+            y: { ticks: { color: "#cbd5e1", precision: 0 }, grid: { color: "rgba(148,163,184,0.12)" } }
+          }
+        }
+      });
+
+      const revenueByEvent = new Map();
+      organizerBookings.forEach((b) => {
+        const key = String(b.eventId?._id || b.eventId || "unknown");
+        const title = b.eventId?.title || "Unknown Event";
+        if (!revenueByEvent.has(key)) revenueByEvent.set(key, { title, amount: 0 });
+        revenueByEvent.get(key).amount += Number(b.totalAmount || 0);
+      });
+      const revenueRows = [...revenueByEvent.values()].sort((a, b) => b.amount - a.amount).slice(0, 8);
+      orgRevenueChart = new Chart(document.getElementById("orgRevenueChart"), {
+        type: "bar",
+        data: {
+          labels: revenueRows.length ? revenueRows.map((r) => r.title) : ["No Data"],
+          datasets: [{
+            label: "Revenue ($)",
+            data: revenueRows.length ? revenueRows.map((r) => Number(r.amount.toFixed(2))) : [0],
+            backgroundColor: "#f59e0b"
+          }]
+        },
+        options: {
+          plugins: { legend: { labels: { color: "#e2e8f0" } } },
+          scales: {
+            x: { ticks: { color: "#cbd5e1" }, grid: { color: "rgba(148,163,184,0.12)" } },
+            y: { ticks: { color: "#cbd5e1" }, grid: { color: "rgba(148,163,184,0.12)" } }
+          }
+        }
+      });
+    }
+
+    async function loadOrganizerMl() {
+      const eventId = document.getElementById("analyticsEventSelect").value;
+      const attendanceBox = document.getElementById("orgAttendancePrediction");
+      const churnBox = document.getElementById("orgChurnPrediction");
+      if (!eventId) {
+        attendanceBox.textContent = "Select an event to view attendance prediction.";
+        churnBox.textContent = "Select an event to view churn signals.";
+        return;
+      }
+
+      attendanceBox.textContent = "Loading prediction...";
+      churnBox.textContent = "Loading churn signals...";
+
+      const [attRes, churnRes] = await Promise.all([
+        fetch(`/api/ml/attendance/${encodeURIComponent(eventId)}`, { headers: headers() }),
+        fetch(`/api/ml/churn/${encodeURIComponent(eventId)}`, { headers: headers() })
+      ]);
+
+      if (attRes.ok) {
+        const att = await attRes.json();
+        attendanceBox.innerHTML = `
+          <div class="space-y-2">
+            <p><span class="text-cyan-300">Booked:</span> ${Number(att.totalBooked || 0)}</p>
+            <p><span class="text-cyan-300">Predicted Attendance:</span> ${Number(att.predictedAttendance || 0)}</p>
+            <p><span class="text-cyan-300">Predicted No-Shows:</span> ${Number(att.predictedNoShows || 0)}</p>
+            <p><span class="text-cyan-300">Show-up Rate:</span> ${Number(att.showUpRate || 0)}%</p>
+            <p><span class="text-cyan-300">Confidence:</span> ${esc(att.confidence || "n/a")}</p>
+          </div>
+        `;
+      } else {
+        attendanceBox.textContent = "Failed to load attendance prediction.";
+      }
+
+      if (churnRes.ok) {
+        const churn = await churnRes.json();
+        const summary = churn.summary || {};
+        const topRisk = Array.isArray(churn.results) ? churn.results.slice(0, 5) : [];
+        churnBox.innerHTML = `
+          <div class="space-y-2">
+            <p><span class="text-amber-300">At Risk:</span> ${Number(summary.atRiskCount || 0)}</p>
+            <p><span class="text-amber-300">High:</span> ${Number(summary.high || 0)} | <span class="text-amber-300">Medium:</span> ${Number(summary.medium || 0)}</p>
+            <p><span class="text-amber-300">Average Score:</span> ${Number(summary.averageChurnScore || 0)}%</p>
+            ${topRisk.length ? `<div class="mt-3 space-y-2">${topRisk.map((row) => `<div class="rounded border border-slate-800 bg-slate-900 px-3 py-2 text-xs"><span class="font-semibold">${esc(row.userName || row.userEmail || "User")}</span> · ${esc(row.churnRisk || "n/a")} risk · ${Number(row.churnScore || 0)}%</div>`).join("")}</div>` : '<p class="text-slate-400">No at-risk attendees found.</p>'}
+          </div>
+        `;
+      } else {
+        churnBox.textContent = "Failed to load churn signals.";
+      }
+    }
+
+    async function loadPromos() {
+      const eventId = document.getElementById("promoEvent").value;
+      const url = eventId ? `/api/admin/promo-codes?eventId=${encodeURIComponent(eventId)}` : "/api/admin/promo-codes";
+      const res = await fetch(url, { headers: headers() });
+      const list = document.getElementById("promoList");
+      if (!res.ok) {
+        list.innerHTML = '<p class="text-sm text-rose-300">Failed to load promo codes.</p>';
+        return;
+      }
+      const items = await res.json();
+      if (!Array.isArray(items) || !items.length) {
+        list.innerHTML = '<p class="text-sm text-slate-400">No promo codes yet.</p>';
+        return;
+      }
+      list.innerHTML = items.map((p) => `
+        <div class="rounded border border-slate-800 bg-slate-950 p-3 text-sm">
+          <p><span class="font-semibold">${esc(p.code)}</span> | ${esc(p.discountType)} ${esc(p.discountValue)} | used ${esc(p.usedCount)}/${Number(p.maxUses || 0) || "∞"} | ${p.active ? "active" : "inactive"}</p>
+          <button class="mt-2 rounded border border-slate-700 px-2 py-1 text-xs hover:bg-slate-800" onclick="togglePromo('${p._id}')">${p.active ? "Deactivate" : "Activate"}</button>
+        </div>
+      `).join("");
+    }
+
+    async function togglePromo(id) {
+      await fetch(`/api/admin/promo-codes/${encodeURIComponent(id)}/toggle`, { method: "PATCH", headers: headers() });
+      await loadPromos();
+    }
+    window.togglePromo = togglePromo;
+
+    document.getElementById("promoForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const body = {
+        eventId: document.getElementById("promoEvent").value,
+        code: document.getElementById("promoCode").value.trim().toUpperCase(),
+        discountType: document.getElementById("promoType").value,
+        discountValue: Number(document.getElementById("promoValue").value || 0),
+        maxUses: Number(document.getElementById("promoMaxUses").value || 0)
+      };
+      const res = await fetch("/api/admin/promo-codes", {
+        method: "POST",
+        headers: headers({ "Content-Type": "application/json" }),
+        body: JSON.stringify(body)
+      });
+      const msg = document.getElementById("promoMsg");
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        msg.textContent = err.error || "Failed to create promo code.";
+        msg.className = "mt-2 text-xs text-rose-300";
+        return;
+      }
+      msg.textContent = "Promo code created.";
+      msg.className = "mt-2 text-xs text-emerald-300";
+      e.target.reset();
+      await loadPromos();
+    });
+
+    document.getElementById("promoEvent").addEventListener("change", loadPromos);
+    document.getElementById("refreshAnalyticsBtn").addEventListener("click", async () => {
+      await loadEvents();
+      await loadOrganizerBookings();
+      renderOrganizerSummary();
+      renderOrganizerCharts();
+      await loadOrganizerMl();
+    });
+    document.getElementById("analyticsEventSelect").addEventListener("change", loadOrganizerMl);
+
+    document.getElementById("checkinBtn").addEventListener("click", async () => {
+      const bookingId = document.getElementById("checkinBookingId").value.trim();
+      const msg = document.getElementById("checkinMsg");
+      if (!bookingId) return;
+      const res = await fetch(`/api/admin/bookings/${encodeURIComponent(bookingId)}/check-in`, {
+        method: "PATCH",
+        headers: headers()
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        msg.textContent = err.error || "Check-in failed.";
+        msg.className = "mt-2 text-xs text-rose-300";
+        return;
+      }
+      msg.textContent = "Checked in successfully.";
+      msg.className = "mt-2 text-xs text-emerald-300";
+    });
+
+    async function stopScanner() {
+      const video = document.getElementById("scanVideo");
+      if (scanTimer) {
+        clearInterval(scanTimer);
+        scanTimer = null;
+      }
+      if (scanStream) {
+        scanStream.getTracks().forEach((t) => t.stop());
+        scanStream = null;
+      }
+      video.srcObject = null;
+      video.classList.add("hidden");
+      document.getElementById("scanMsg").textContent = "Camera scanner idle.";
+    }
+
+    async function startScanner() {
+      const scanMsg = document.getElementById("scanMsg");
+      const video = document.getElementById("scanVideo");
+      if (!("BarcodeDetector" in window)) {
+        scanMsg.textContent = "BarcodeDetector not supported. Use manual booking ID or booking ref input.";
+        return;
+      }
+      try {
+        await stopScanner();
+        scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+        video.srcObject = scanStream;
+        video.classList.remove("hidden");
+        await video.play();
+        const detector = new BarcodeDetector({ formats: ["qr_code"] });
+        scanMsg.textContent = "Scanning...";
+        scanTimer = setInterval(async () => {
+          if (!video.videoWidth || !video.videoHeight) return;
+          try {
+            const codes = await detector.detect(video);
+            if (!codes.length) return;
+            const raw = String(codes[0].rawValue || "").trim();
+            let bookingId = raw;
+            if (raw.startsWith("{")) {
+              try {
+                const obj = JSON.parse(raw);
+                if (obj.bookingRef) bookingId = String(obj.bookingRef);
+                else if (obj.bookingId) bookingId = String(obj.bookingId);
+              } catch (_) {}
+            }
+            if (bookingId) {
+              document.getElementById("checkinBookingId").value = bookingId;
+              scanMsg.textContent = `Detected booking: ${bookingId}`;
+              await stopScanner();
+            }
+          } catch (_) {}
+        }, 500);
+      } catch (err) {
+        scanMsg.textContent = `Scanner failed: ${err.message || "camera access error"}`;
+      }
+    }
+
+    document.getElementById("startScanBtn").addEventListener("click", startScanner);
+    document.getElementById("stopScanBtn").addEventListener("click", stopScanner);
+
+    document.getElementById("exportBtn").addEventListener("click", async () => {
+      const eventId = document.getElementById("exportEvent").value;
+      const msg = document.getElementById("exportMsg");
+      if (!eventId) {
+        msg.textContent = "Select event first.";
+        msg.className = "mt-2 text-xs text-rose-300";
+        return;
+      }
+      const res = await fetch(`/api/admin/events/${encodeURIComponent(eventId)}/passes-export`, { headers: headers() });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        msg.textContent = err.error || "Export failed.";
+        msg.className = "mt-2 text-xs text-rose-300";
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `passes-${eventId}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      msg.textContent = "Download started.";
+      msg.className = "mt-2 text-xs text-emerald-300";
+    });
+
+    (async function init() {
+      if (!await ensureAdmin()) return;
+      await loadEvents();
+      await loadOrganizerBookings();
+      renderOrganizerSummary();
+      renderOrganizerCharts();
+      await loadOrganizerMl();
+      await loadPromos();
+    })();
+    window.addEventListener("beforeunload", stopScanner);
+  </script>
+  <script src="nav-auth.js?v=20260302a"></script>
+</body>
+</html>

@@ -1,0 +1,263 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registration & Ticketing | Smart Event System</title>
+  <link rel="icon" type="image/png" href="/assets/web-logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="mx-auto max-w-6xl px-4 py-8">
+    <header class="flex flex-col gap-4">
+      <nav data-role-nav class="flex flex-col gap-4 rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-3 backdrop-blur md:flex-row md:items-center md:justify-between">
+        <div class="flex items-center gap-3">
+          <img src="/assets/web-logo.png" alt="Smart Event System" class="h-9 w-9 rounded-lg object-cover">
+          <div>
+            <p class="text-sm font-semibold">Smart Event System</p>
+            <p class="text-xs text-slate-400">Manage and discover events</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 text-sm">
+          <a href="/">Home</a>
+          <a data-nav="auth" class="hidden" href="/book.html">Book Event</a>
+          <a data-nav="admin" class="hidden" href="/create-event.html">Create Event</a>
+          <a data-nav="admin" class="hidden" href="/admin.html">Admin Dashboard</a>
+          <a data-nav="guest" href="/login.html">Login</a>
+          <a data-nav="guest" href="/signup.html">Sign Up</a>
+          
+            <a data-nav="auth-avatar" class="hidden inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ring-2 ring-amber-300/40" href="/profile.html"><img data-nav-avatar-img src="https://ui-avatars.com/api/?name=U&background=0f172a&color=f59e0b&size=96" alt="Profile" class="h-full w-full object-cover"></a>
+        </div>
+      </nav>
+      <div>
+        <h1 class="text-3xl font-semibold">Registration & Ticketing</h1>
+        <p class="text-slate-400">Register attendees, select ticket type, and complete online payment.</p>
+      </div>
+    </header>
+
+    <section class="mt-8 grid gap-6 lg:grid-cols-3">
+      <div class="lg:col-span-2 rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <h2 class="text-lg font-semibold">Event Selection</h2>
+        <div id="events" class="mt-4 grid gap-3 sm:grid-cols-2"></div>
+      </div>
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <h2 class="text-lg font-semibold">Ticket Summary</h2>
+        <p class="mt-3 text-sm text-slate-300">Type: <span id="summaryType">-</span></p>
+        <p class="text-sm text-slate-300">Qty: <span id="summaryQty">1</span></p>
+        <p class="text-sm text-slate-300">Total: $<span id="summaryTotal">0</span></p>
+      </div>
+    </section>
+
+    <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-6">
+      <h2 class="text-lg font-semibold">Register & Pay</h2>
+      <form id="ticketForm" class="mt-4 grid gap-4 md:grid-cols-2">
+        <input id="attendeeName" placeholder="Attendee Name" required
+               class="rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-100 placeholder-slate-500">
+        <input id="attendeeEmail" type="email" placeholder="Attendee Email" required
+               class="rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-100 placeholder-slate-500">
+        <input id="attendeeWhatsApp" type="text" placeholder="WhatsApp (+15551234567) optional"
+               class="rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-100 placeholder-slate-500">
+        <select id="eventId" required
+                class="rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-100">
+          <option value="">Select Event</option>
+        </select>
+        <select id="ticketType"
+                class="rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-100">
+          <option value="">Select Ticket Type</option>
+        </select>
+        <input id="quantity" type="number" min="1" max="10" value="1"
+               class="rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-100">
+        <select id="paymentMethod"
+                class="rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-100">
+          <option value="card">Card</option>
+          <option value="wallet">Wallet</option>
+          <option value="bank">Bank Transfer</option>
+        </select>
+        <input id="cardNumber" placeholder="Card Number (demo)" maxlength="19"
+               class="rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-100 placeholder-slate-500 md:col-span-2">
+        <button type="submit"
+                class="rounded-lg bg-amber-400 px-4 py-3 font-semibold text-slate-900 hover:bg-amber-300 md:col-span-2">
+          Continue To Booking
+        </button>
+      </form>
+      <p id="ticketMsg" class="mt-3 text-sm text-slate-300"></p>
+    </section>
+  </div>
+
+  <script src="ui-feedback.js"></script>
+  <script>
+    const token = localStorage.getItem("token");
+    let eventsById = new Map();
+    if (!token) window.location.href = "/login.html";
+
+    function authHeaders(extra = {}) {
+      return { Authorization: token, ...extra };
+    }
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function updateSummary() {
+      const ticketSelect = document.getElementById("ticketType");
+      const qtyInput = document.getElementById("quantity");
+      const type = ticketSelect.value || "-";
+      const selectedOption = ticketSelect.options[ticketSelect.selectedIndex] || null;
+      const unitPrice = Number(selectedOption?.dataset?.price || 0);
+      const left = Number(selectedOption?.dataset?.left || 0);
+      const pricingLabel = String(selectedOption?.dataset?.pricingLabel || "");
+
+      const maxQty = left > 0 ? Math.max(1, Math.min(10, left)) : 10;
+      qtyInput.max = String(maxQty);
+
+      let qty = Math.max(1, Number(qtyInput.value || 1));
+      if (left > 0 && qty > maxQty) {
+        qty = maxQty;
+        qtyInput.value = String(maxQty);
+      }
+
+      const total = unitPrice * qty;
+      document.getElementById("summaryType").textContent = type;
+      document.getElementById("summaryQty").textContent = String(qty);
+      document.getElementById("summaryTotal").textContent = `${String(total)}${pricingLabel ? ` (${pricingLabel})` : ""}`;
+    }
+
+    function setTicketOptionsForEvent(encodedEventId) {
+      const ticketSelect = document.getElementById("ticketType");
+      if (!encodedEventId || !eventsById.has(encodedEventId)) {
+        ticketSelect.innerHTML = '<option value="">Select Ticket Type</option>';
+        updateSummary();
+        return;
+      }
+      const event = eventsById.get(encodedEventId);
+      const tickets = Array.isArray(event.ticketTypes) && event.ticketTypes.length
+        ? event.ticketTypes
+        : [{ name: "Standard", price: 25 }];
+
+      ticketSelect.innerHTML = '<option value="">Select Ticket Type</option>' + tickets.map((t) => {
+        const name = String(t.name || "Standard");
+        const price = Number(t.price || 0);
+        const quantity = Number(t.quantity || 0);
+        const sold = Number(t.sold || 0);
+        const left = Math.max(0, quantity - sold);
+        const soldOut = left <= 0;
+        const pricingLabel = String(t.pricingTierLabel || "");
+        return `<option value="${escapeHtml(name)}" data-price="${price}" data-left="${left}" data-pricing-label="${escapeHtml(pricingLabel)}" ${soldOut ? "disabled" : ""}>${escapeHtml(name)} - $${escapeHtml(price)} (${escapeHtml(left)} left${soldOut ? ", sold out" : ""}${pricingLabel ? `, ${escapeHtml(pricingLabel)}` : ""})</option>`;
+      }).join("");
+
+      const firstAvailable = ticketSelect.querySelector('option[value]:not([value=""]):not([disabled])');
+      if (firstAvailable) {
+        ticketSelect.value = firstAvailable.value;
+      }
+      updateSummary();
+    }
+
+    async function loadEvents() {
+      document.getElementById("events").innerHTML = uiSkeletonCards(4);
+      const res = await fetch("/api/events");
+      const events = await res.json();
+      const list = document.getElementById("events");
+      const select = document.getElementById("eventId");
+      eventsById = new Map();
+
+      if (!Array.isArray(events) || !events.length) {
+        list.innerHTML = uiEmptyState("No events available", "Ask admin to publish events.");
+        select.innerHTML = '<option value="">Select Event</option>';
+        setTicketOptionsForEvent("");
+        return;
+      }
+
+      events.forEach((e) => {
+        const key = encodeURIComponent(String(e._id || ""));
+        eventsById.set(key, e);
+      });
+
+      list.innerHTML = events.map((e) => {
+        const totalLeft = Math.max(0, Number(e.capacity || 0) - Number(e.seatsBooked || 0));
+        const tickets = Array.isArray(e.ticketTypes) ? e.ticketTypes : [];
+        return `
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <h3 class="font-semibold">${escapeHtml(e.title || "Untitled Event")}</h3>
+          <p class="text-xs text-slate-500">${escapeHtml(e.location || "TBD")}</p>
+          <p class="mt-1 text-[11px] text-slate-400">${escapeHtml(new Date(e.date).toLocaleDateString())} | ${escapeHtml(e.category || "Other")} | ${escapeHtml(totalLeft)} seats left</p>
+          ${Number(e.lowestTicketPrice || 0) > 0 ? `<p class="mt-1 text-xs font-medium text-amber-300">From $${escapeHtml(Number(e.lowestTicketPrice || 0).toFixed(2).replace(/\\.00$/, ""))} · ${escapeHtml(e.dynamicPricing?.label || "Dynamic pricing")}</p>` : ""}
+          <div class="mt-2 flex flex-wrap gap-1">
+            ${tickets.map((t) => {
+              const left = Math.max(0, Number(t.quantity || 0) - Number(t.sold || 0));
+              return `<span class="rounded bg-slate-800 px-2 py-0.5 text-[11px]">${escapeHtml(t.name)}: $${escapeHtml(t.price)} (${escapeHtml(left)} left${t.pricingTierLabel ? ` · ${escapeHtml(t.pricingTierLabel)}` : ""})</span>`;
+            }).join("")}
+          </div>
+          <button class="mt-2 rounded-md bg-slate-800 px-2 py-1 text-xs hover:bg-slate-700"
+                  onclick="(function(){ const s=document.getElementById('eventId'); s.value='${encodeURIComponent(String(e._id || ""))}'; s.dispatchEvent(new Event('change')); })()">
+            Select
+          </button>
+        </div>
+      `;
+      }).join("");
+
+      select.innerHTML = '<option value="">Select Event</option>' + events.map((e) => {
+        const totalLeft = Math.max(0, Number(e.capacity || 0) - Number(e.seatsBooked || 0));
+        return `<option value="${encodeURIComponent(String(e._id || ""))}">${escapeHtml(e.title || "Untitled Event")} (${escapeHtml(totalLeft)} seats left)</option>`;
+      }).join("");
+      setTicketOptionsForEvent(select.value);
+    }
+
+    document.getElementById("eventId").addEventListener("change", (e) => {
+      setTicketOptionsForEvent(e.target.value);
+    });
+    document.getElementById("ticketType").addEventListener("change", updateSummary);
+    document.getElementById("quantity").addEventListener("input", updateSummary);
+
+    document.getElementById("ticketForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const payload = {
+        eventId: document.getElementById("eventId").value,
+        attendeeName: document.getElementById("attendeeName").value.trim(),
+        attendeeEmail: document.getElementById("attendeeEmail").value.trim(),
+        attendeeWhatsApp: document.getElementById("attendeeWhatsApp").value.trim(),
+        ticketType: document.getElementById("ticketType").value,
+        quantity: Number(document.getElementById("quantity").value || 1),
+        paymentMethod: document.getElementById("paymentMethod").value
+      };
+      if (!payload.attendeeWhatsApp) delete payload.attendeeWhatsApp;
+
+      const msg = document.getElementById("ticketMsg");
+      if (!payload.eventId || !payload.attendeeName || !payload.attendeeEmail || !payload.ticketType) {
+        msg.textContent = "Please fill attendee details and select an event/ticket.";
+        msg.classList.add("text-rose-300");
+        return;
+      }
+      if (!eventsById.has(payload.eventId)) {
+        msg.textContent = "Selected event is invalid. Please choose again.";
+        msg.classList.add("text-rose-300");
+        return;
+      }
+
+      localStorage.setItem("ticketDraft", JSON.stringify(payload));
+      msg.classList.remove("text-rose-300");
+      msg.classList.add("text-emerald-300");
+      msg.textContent = "Saved. Redirecting to booking page...";
+      showToast("Ticket details saved.", "success");
+      window.location.href = "/book.html?from_ticketing=1";
+    });
+
+    updateSummary();
+    loadEvents();
+  </script>
+  <script src="nav-auth.js?v=20260302a"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

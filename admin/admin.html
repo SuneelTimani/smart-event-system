@@ -1,0 +1,19 @@
+<h1>Admin Dashboard</h1>
+<button onclick="loadEvents()">Load Events</button>
+<div id="events"></div>
+
+<script>
+async function loadEvents() {
+  const res = await fetch("/api/admin/events");
+  const data = await res.json();
+
+  document.getElementById("events").innerHTML =
+    data.map(e => `<p>${e.name} 
+    <button onclick="deleteEvent('${e._id}')">Delete</button></p>`).join("");
+}
+
+async function deleteEvent(id) {
+  await fetch(`/api/admin/event/${id}`, { method: "DELETE" });
+  alert("Deleted!");
+}
+</script>

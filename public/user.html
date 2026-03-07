@@ -1,0 +1,372 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard | Smart Event System</title>
+  <link rel="icon" type="image/png" href="/assets/web-logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="mx-auto max-w-6xl px-4 py-8">
+    <header class="flex flex-col gap-4">
+      <nav data-role-nav class="flex flex-col gap-4 border border-slate-800 bg-slate-900/70 px-4 py-3 backdrop-blur md:flex-row md:items-center md:justify-between rounded-xl">
+        <div class="flex items-center gap-3">
+          <img src="/assets/web-logo.png" alt="Smart Event System" class="h-9 w-9 rounded-lg object-cover">
+          <div>
+            <p class="text-sm font-semibold">Smart Event System</p>
+            <p class="text-xs text-slate-400">Manage and discover events</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 text-sm">
+          <a class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800" href="/">Home</a>
+          <a data-nav="auth" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/user.html">User Dashboard</a>
+          <a data-nav="auth" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/book.html">Book Event</a>
+          <a data-nav="admin" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/create-event.html">Create Event</a>
+          <a data-nav="admin" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/admin.html">Admin Dashboard</a>
+          <a data-nav="guest" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800" href="/login.html">Login</a>
+          
+            <a data-nav="auth-avatar" class="hidden inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ring-2 ring-amber-300/40" href="/profile.html"><img data-nav-avatar-img src="https://ui-avatars.com/api/?name=U&background=0f172a&color=f59e0b&size=96" alt="Profile" class="h-full w-full object-cover"></a>
+        </div>
+      </nav>
+      <div>
+        <h1 id="dashboardTitle" class="text-3xl font-semibold">Dashboard</h1>
+        <p class="text-slate-400">Your bookings and personalized insights.</p>
+      </div>
+    </header>
+
+    <section class="mt-8 grid gap-4 md:grid-cols-3">
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+        <p class="text-sm text-slate-400">Total Bookings</p>
+        <p id="totalBookings" class="mt-2 text-2xl font-semibold">0</p>
+      </div>
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+        <p class="text-sm text-slate-400">Upcoming Event</p>
+        <p id="nextEvent" class="mt-2 text-sm text-slate-300">-</p>
+      </div>
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+        <p class="text-sm text-slate-400">Recent Activity</p>
+        <p id="recentActivity" class="mt-2 text-sm text-slate-300">-</p>
+      </div>
+    </section>
+
+    <section class="mt-8 grid gap-6 lg:grid-cols-3">
+      <div class="lg:col-span-2 rounded-xl border border-slate-800 bg-slate-900 p-4">
+        <div class="mb-3 flex items-center justify-between">
+          <h2 class="text-lg font-semibold">My Bookings</h2>
+          <button id="refreshBtn"
+                  class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 text-sm hover:bg-slate-800">
+            Refresh
+          </button>
+        </div>
+        <div id="bookings" class="grid gap-3 md:grid-cols-2"></div>
+      </div>
+
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+        <h2 class="text-lg font-semibold">Recommended Events</h2>
+        <div id="recommended" class="mt-3 grid gap-2 text-sm text-slate-400"></div>
+      </div>
+    </section>
+
+    <section class="mt-6">
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+        <h2 class="text-lg font-semibold">From Creators You Follow</h2>
+        <div id="followingFeed" class="mt-3 grid gap-3 md:grid-cols-2"></div>
+      </div>
+    </section>
+
+    <section class="mt-6">
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+        <h2 class="text-lg font-semibold">Saved Events & Reminders</h2>
+        <div id="savedEvents" class="mt-3 grid gap-3 md:grid-cols-2"></div>
+      </div>
+    </section>
+  </div>
+
+  <script src="ui-feedback.js"></script>
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/login.html";
+    }
+
+    function authHeaders() {
+      return token ? { Authorization: token } : {};
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function recommendationLabel(reason) {
+      const map = {
+        creator_you_follow: "Creator you follow",
+        similar_creators: "Similar to creators you book",
+        category_match: "Matches your categories",
+        near_you: "Near your preferred location",
+        happening_soon: "Happening soon",
+        upcoming: "Upcoming event",
+        trending: "Trending"
+      };
+      return map[String(reason || "")] || "Recommended";
+    }
+
+    function renderRecommendationChips(reasons) {
+      const rows = Array.isArray(reasons) ? reasons.slice(0, 3) : [];
+      if (!rows.length) {
+        return '<span class="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 text-[11px] text-cyan-200">Recommended</span>';
+      }
+      return rows.map((r) =>
+        `<span class="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 text-[11px] text-cyan-200">${escapeHtml(recommendationLabel(r))}</span>`
+      ).join(" ");
+    }
+
+    async function cancelBooking(id) {
+      const res = await fetch(`/api/bookings/${id}/cancel`, {
+        method: "PATCH",
+        headers: authHeaders()
+      });
+
+      if (!res.ok) {
+        let message = "Failed to cancel booking.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        showToast(message, "error");
+        return;
+      }
+
+      showToast("Booking cancelled.", "success");
+      await loadDashboard();
+    }
+
+    async function transferBooking(id) {
+      const attendeeName = prompt("New attendee name:");
+      if (!attendeeName) return;
+      const attendeeEmail = prompt("New attendee email:");
+      if (!attendeeEmail) return;
+      const attendeeWhatsApp = prompt("New attendee WhatsApp in +E164 (optional):", "") || "";
+
+      const res = await fetch(`/api/bookings/${id}/transfer`, {
+        method: "PATCH",
+        headers: { ...authHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({
+          attendeeName: attendeeName.trim(),
+          attendeeEmail: attendeeEmail.trim(),
+          attendeeWhatsApp: attendeeWhatsApp.trim()
+        })
+      });
+
+      if (!res.ok) {
+        let message = "Failed to transfer booking.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        showToast(message, "error");
+        return;
+      }
+
+      showToast("Booking transferred.", "success");
+      await loadDashboard();
+    }
+
+    async function saveEvent(eventId, reminderHoursBefore = 24) {
+      const res = await fetch(`/api/events/${encodeURIComponent(String(eventId || ""))}/save`, {
+        method: "POST",
+        headers: { ...authHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ reminderHoursBefore })
+      });
+      if (!res.ok) {
+        let message = "Failed to save event.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        showToast(message, "error");
+        return;
+      }
+      showToast("Event saved.", "success");
+      await loadDashboard();
+    }
+
+    async function unsaveEvent(eventId) {
+      const res = await fetch(`/api/events/${encodeURIComponent(String(eventId || ""))}/save`, {
+        method: "DELETE",
+        headers: authHeaders()
+      });
+      if (!res.ok) {
+        let message = "Failed to remove saved event.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        showToast(message, "error");
+        return;
+      }
+      showToast("Removed from saved.", "success");
+      await loadDashboard();
+    }
+
+    async function loadDashboard() {
+      document.getElementById("bookings").innerHTML = uiSkeletonCards(2);
+      document.getElementById("recommended").innerHTML = uiSkeletonCards(2);
+      document.getElementById("followingFeed").innerHTML = uiSkeletonCards(2);
+      document.getElementById("savedEvents").innerHTML = uiSkeletonCards(2);
+      const [bookingsRes, eventsRes, recommendationsRes, followingRes, savedRes, meRes] = await Promise.all([
+        fetch("/api/bookings", { headers: authHeaders() }),
+        fetch("/api/events?status=published&limit=30"),
+        fetch("/api/events/recommendations?limit=3", { headers: authHeaders() }),
+        fetch("/api/events/feed/following?limit=4", { headers: authHeaders() }),
+        fetch("/api/events/saved", { headers: authHeaders() }),
+        fetch("/api/auth/me", { headers: authHeaders() })
+      ]);
+      if (bookingsRes.status === 401 || bookingsRes.status === 403) {
+        window.location.href = "/login.html";
+        return;
+      }
+      const bookings = await bookingsRes.json();
+      const events = await eventsRes.json();
+      const recommendedEvents = recommendationsRes.ok ? await recommendationsRes.json() : [];
+      const followingFeed = followingRes.ok ? await followingRes.json() : [];
+      const savedEvents = savedRes.ok ? await savedRes.json() : [];
+      const me = meRes.ok ? await meRes.json() : null;
+      const displayName = (me && me.name) ? me.name : "User";
+      document.getElementById("dashboardTitle").textContent = `${displayName}'s Dashboard`;
+
+      document.getElementById("totalBookings").textContent = bookings.length;
+      document.getElementById("recentActivity").textContent =
+        bookings[0] ? `Last booking on ${new Date(bookings[0].date).toLocaleDateString()}` : "-";
+
+      const next = events.find((e) => e.status !== "cancelled");
+      document.getElementById("nextEvent").textContent =
+        next ? `${next.title} (${new Date(next.date).toLocaleDateString()})` : "-";
+
+      if (!bookings.length) {
+        document.getElementById("bookings").innerHTML = uiEmptyState("No bookings yet", "Book an event to see it here.");
+      } else {
+        document.getElementById("bookings").innerHTML = bookings.map((b) => `
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <p class="text-sm text-slate-400">${escapeHtml(b.eventId?.title || "Unknown Event")}</p>
+          <p class="font-semibold">${escapeHtml(b.ticketType || "Standard")} x ${escapeHtml(b.quantity || 1)}</p>
+          <p class="mt-1 text-xs text-slate-400">Status: ${escapeHtml(b.status || "pending")} | Payment: ${escapeHtml(b.paymentStatus || "unpaid")}</p>
+          <p class="mt-1 text-xs text-slate-500">Cancel cutoff: ${escapeHtml(b.eventId?.cancelWindowHoursBefore ?? 24)}h | Transfer cutoff: ${escapeHtml(b.eventId?.transferWindowHoursBefore ?? 2)}h before event</p>
+          <p class="mt-1 text-xs text-slate-500">${escapeHtml(new Date(b.date).toLocaleDateString())}</p>
+          ${(b.status === "pending" || b.status === "confirmed") ? `
+            <button class="mt-2 rounded-md border border-rose-700 px-2 py-1 text-xs text-rose-300 hover:bg-rose-900/30"
+                    onclick="cancelBooking('${encodeURIComponent(String(b._id || ""))}')">
+              Cancel Booking
+            </button>
+            <button class="mt-2 ml-2 rounded-md border border-sky-700 px-2 py-1 text-xs text-sky-300 hover:bg-sky-900/30"
+                    onclick="transferBooking('${encodeURIComponent(String(b._id || ""))}')">
+              Transfer Ticket
+            </button>
+          ` : ""}
+        </div>
+      `).join("");
+      }
+
+      if (!Array.isArray(recommendedEvents) || !recommendedEvents.length) {
+        document.getElementById("recommended").innerHTML = uiEmptyState("No events available", "Ask admin to publish events.");
+      } else {
+        document.getElementById("recommended").innerHTML = recommendedEvents.map((e) => `
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+          <p class="font-semibold">${escapeHtml(e.title || "Untitled Event")}</p>
+          <p class="text-xs text-slate-500">${escapeHtml(e.location || "TBD")} | ${escapeHtml(e.category || "Other")}</p>
+          <div class="mt-2 flex flex-wrap gap-1">${renderRecommendationChips(e.recommendationReasons)}</div>
+          <a href="/event-details.html?id=${encodeURIComponent(String(e._id || ""))}" class="mt-2 inline-block rounded-md border border-slate-700 px-2 py-1 text-xs hover:bg-slate-800">View</a>
+          <button class="mt-2 ml-2 rounded-md border border-amber-700 px-2 py-1 text-xs text-amber-300 hover:bg-amber-900/30"
+                  onclick="saveEvent('${encodeURIComponent(String(e._id || ""))}', 24)">
+            Save
+          </button>
+        </div>
+      `).join("");
+      }
+
+      if (!Array.isArray(savedEvents) || !savedEvents.length) {
+        document.getElementById("savedEvents").innerHTML = uiEmptyState(
+          "No saved events yet",
+          "Use Save on recommended or creator-feed events."
+        );
+      } else {
+        document.getElementById("savedEvents").innerHTML = savedEvents.map((row) => {
+          const e = row?.event || {};
+          const reminder = Number(row?.reminderHoursBefore || 24);
+          return `
+          <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+            <p class="font-semibold">${escapeHtml(e.title || "Untitled Event")}</p>
+            <p class="text-xs text-slate-500">${escapeHtml(e.location || "TBD")} | ${escapeHtml(e.category || "Other")}</p>
+            <p class="mt-1 text-xs text-amber-300">Reminder: ${escapeHtml(reminder)}h before event</p>
+            <div class="mt-2 flex items-center gap-2">
+              <a href="/event-details.html?id=${encodeURIComponent(String(e._id || ""))}" class="inline-block rounded-md border border-slate-700 px-2 py-1 text-xs hover:bg-slate-800">View</a>
+              <button class="rounded-md border border-rose-700 px-2 py-1 text-xs text-rose-300 hover:bg-rose-900/30"
+                      onclick="unsaveEvent('${encodeURIComponent(String(e._id || ""))}')">
+                Remove
+              </button>
+              <button class="rounded-md border border-amber-700 px-2 py-1 text-xs text-amber-300 hover:bg-amber-900/30"
+                      onclick="saveEvent('${encodeURIComponent(String(e._id || ""))}', 2)">
+                2h Reminder
+              </button>
+              <button class="rounded-md border border-amber-700 px-2 py-1 text-xs text-amber-300 hover:bg-amber-900/30"
+                      onclick="saveEvent('${encodeURIComponent(String(e._id || ""))}', 24)">
+                24h Reminder
+              </button>
+            </div>
+          </div>
+        `;
+        }).join("");
+      }
+
+      if (!Array.isArray(followingFeed) || !followingFeed.length) {
+        document.getElementById("followingFeed").innerHTML = uiEmptyState(
+          "No followed creators yet",
+          "Follow creators from event details to build your feed."
+        );
+      } else {
+        document.getElementById("followingFeed").innerHTML = followingFeed.map((e) => {
+          const creatorName = e?.createdBy?.name || e?.organizer || "Creator";
+          const creatorImage = e?.createdBy?.profileImage || "https://ui-avatars.com/api/?name=" + encodeURIComponent(creatorName) + "&background=0f172a&color=f59e0b&size=96";
+          return `
+          <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+            <div class="mb-2 flex items-center gap-2">
+              <img src="${escapeHtml(creatorImage)}" alt="${escapeHtml(creatorName)}" class="h-7 w-7 rounded-full object-cover" />
+              <p class="text-xs text-slate-400">${escapeHtml(creatorName)}</p>
+            </div>
+            <p class="font-semibold">${escapeHtml(e.title || "Untitled Event")}</p>
+            <p class="text-xs text-slate-500">${escapeHtml(e.location || "TBD")} | ${escapeHtml(new Date(e.date).toLocaleDateString())}</p>
+            <a href="/event-details.html?id=${encodeURIComponent(String(e._id || ""))}" class="mt-2 inline-block rounded-md border border-slate-700 px-2 py-1 text-xs hover:bg-slate-800">View</a>
+            <button class="mt-2 ml-2 rounded-md border border-amber-700 px-2 py-1 text-xs text-amber-300 hover:bg-amber-900/30"
+                    onclick="saveEvent('${encodeURIComponent(String(e._id || ""))}', 24)">
+              Save
+            </button>
+          </div>
+        `;
+        }).join("");
+      }
+    }
+
+    document.getElementById("refreshBtn").addEventListener("click", loadDashboard);
+    window.transferBooking = transferBooking;
+    window.saveEvent = saveEvent;
+    window.unsaveEvent = unsaveEvent;
+    loadDashboard();
+  </script>
+  <script src="chat-widget.js"></script>
+  <script src="nav-auth.js?v=20260302a"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

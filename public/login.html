@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Smart Event System</title>
+  <link rel="icon" type="image/png" href="/assets/web-logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="mx-auto flex min-h-screen max-w-6xl items-center px-4 py-10">
+    <div class="grid w-full gap-8 lg:grid-cols-2">
+      <div class="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-950 p-8">
+        <h1 class="text-3xl font-semibold">Welcome back</h1>
+        <p class="mt-2 text-slate-400">Login to manage events and bookings.</p>
+
+        <form id="loginForm" class="mt-6 grid gap-4">
+          <input id="email" type="email" placeholder="Email" required
+                 class="w-full rounded-lg border border-slate-800 bg-slate-900 px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400">
+          <input id="password" type="password" placeholder="Password" required
+                 class="w-full rounded-lg border border-slate-800 bg-slate-900 px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400">
+          <button type="submit"
+                  class="rounded-lg bg-amber-400 px-4 py-3 font-semibold text-slate-900 hover:bg-amber-300">
+            Login
+          </button>
+          <a href="/forgot-password.html" class="text-right text-xs text-amber-300 hover:underline">Forgot password?</a>
+          <p id="loginMsg" class="text-sm text-rose-300"></p>
+        </form>
+
+        <div class="mt-4 flex items-center gap-3 text-sm text-slate-400">
+          <span class="h-px flex-1 bg-slate-800"></span>
+          or
+          <span class="h-px flex-1 bg-slate-800"></span>
+        </div>
+
+        <a href="/auth/google"
+           class="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-slate-800 bg-slate-900 px-4 py-3 font-semibold text-slate-100 hover:bg-slate-800">
+          Continue with Google
+        </a>
+
+        <p class="mt-6 text-sm text-slate-400">
+          No account?
+          <a class="text-amber-400 hover:underline" href="/signup.html">Sign up</a>
+        </p>
+      </div>
+
+      <div class="rounded-2xl border border-slate-800 bg-slate-900 p-8">
+        <h2 class="text-xl font-semibold">Admin tips</h2>
+        <ul class="mt-4 list-disc pl-5 text-slate-400">
+          <li>Use the admin dashboard to manage events.</li>
+          <li>Bookings and event stats are available in one view.</li>
+          <li>Keep your admin account secure.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <footer class="mx-auto w-full max-w-6xl px-4 pb-8 text-xs text-slate-300">
+      <div class="rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-4">
+        <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <p>Event Arc Management System</p>
+          <p>Need help? suneeltimani@gmail.com | Secure login for users and admins</p>
+        </div>
+      </div>
+  </footer>
+
+  <script>
+    const loginParams = new URLSearchParams(window.location.search);
+    if (loginParams.get("error") === "account_locked") {
+      const preMsg = document.getElementById("loginMsg");
+      preMsg.textContent = "Your account is locked. Contact admin support.";
+    }
+
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      const msg = document.getElementById("loginMsg");
+      msg.textContent = "";
+      if (!res.ok) {
+        let message = "Login failed.";
+        let code = "";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+          code = err.code || "";
+        } catch (_) {}
+        if (code === "EMAIL_NOT_VERIFIED") {
+          const emailParam = encodeURIComponent(email);
+          msg.textContent = `${message} `;
+          const link = document.createElement("a");
+          link.className = "underline text-amber-300";
+          link.href = `/verify-signup-otp.html?email=${emailParam}`;
+          link.textContent = "Verify now";
+          msg.appendChild(link);
+        } else {
+          msg.textContent = message;
+        }
+        return;
+      }
+
+      const data = await res.json();
+      localStorage.setItem("token", data.token);
+      window.location.href = "/";
+    });
+  </script>
+</body>
+</html>
+
+
+

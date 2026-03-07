@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog & Resources | Smart Event System</title>
+  <link rel="icon" type="image/png" href="/assets/web-logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="mx-auto max-w-6xl px-4 py-8">
+    <header class="flex flex-col gap-4">
+      <nav data-role-nav class="flex flex-col gap-4 rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-3 backdrop-blur md:flex-row md:items-center md:justify-between">
+        <div class="flex items-center gap-3">
+          <img src="/assets/web-logo.png" alt="Smart Event System" class="h-9 w-9 rounded-lg object-cover">
+          <div>
+            <p class="text-sm font-semibold">Smart Event System</p>
+            <p class="text-xs text-slate-400">Manage and discover events</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 text-sm">
+          <a href="/">Home</a>
+          <a data-nav="auth" class="hidden" href="/book.html">Book Event</a>
+          <a data-nav="admin" class="hidden" href="/create-event.html">Create Event</a>
+          <a data-nav="admin" class="hidden" href="/admin.html">Admin Dashboard</a>
+          <a data-nav="guest" href="/login.html">Login</a>
+          <a data-nav="guest" href="/signup.html">Sign Up</a>
+          
+            <a data-nav="auth-avatar" class="hidden inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ring-2 ring-amber-300/40" href="/profile.html"><img data-nav-avatar-img src="https://ui-avatars.com/api/?name=U&background=0f172a&color=f59e0b&size=96" alt="Profile" class="h-full w-full object-cover"></a>
+        </div>
+      </nav>
+      <div>
+        <h1 class="text-3xl font-semibold">Blog & Resources</h1>
+        <p class="text-slate-400">Useful content about events, planning tips, and updates.</p>
+      </div>
+    </header>
+
+    <section class="mt-8 grid gap-5 md:grid-cols-2">
+      <article class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <p class="text-xs uppercase tracking-wide text-amber-300">Resource</p>
+        <h2 class="mt-2 text-xl font-semibold">How to Organize a High-Attendance Event</h2>
+        <p class="mt-2 text-sm text-slate-300">Checklist for venue sizing, registration flow, reminders, and post-event follow-up.</p>
+      </article>
+      <article class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <p class="text-xs uppercase tracking-wide text-amber-300">Guide</p>
+        <h2 class="mt-2 text-xl font-semibold">Writing Better Event Descriptions</h2>
+        <p class="mt-2 text-sm text-slate-300">Simple format to improve conversion: outcome, audience, agenda, and CTA.</p>
+      </article>
+      <article class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <p class="text-xs uppercase tracking-wide text-amber-300">Update</p>
+        <h2 class="mt-2 text-xl font-semibold">Using Dashboard Metrics Properly</h2>
+        <p class="mt-2 text-sm text-slate-300">What bookings and event counts tell you and what they do not tell you.</p>
+      </article>
+      <article class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <p class="text-xs uppercase tracking-wide text-amber-300">Tip</p>
+        <h2 class="mt-2 text-xl font-semibold">Pre-Event Communication Templates</h2>
+        <p class="mt-2 text-sm text-slate-300">Reminder message templates for email and WhatsApp that improve attendance rates.</p>
+      </article>
+    </section>
+  </div>
+  <script src="nav-auth.js?v=20260302a"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

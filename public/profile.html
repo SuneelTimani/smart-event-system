@@ -1,0 +1,428 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile | Smart Event System</title>
+  <link rel="icon" type="image/png" href="/assets/web-logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="mx-auto max-w-4xl px-4 py-8">
+    <header class="flex flex-col gap-4">
+      <nav data-role-nav class="flex flex-col gap-4 border border-slate-800 bg-slate-900/70 px-4 py-3 backdrop-blur md:flex-row md:items-center md:justify-between rounded-xl">
+        <div class="flex items-center gap-3">
+          <img src="/assets/web-logo.png" alt="Smart Event System" class="h-9 w-9 rounded-lg object-cover">
+          <div>
+            <p class="text-sm font-semibold">Smart Event System</p>
+            <p class="text-xs text-slate-400">Manage and discover events</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 text-sm">
+          <a class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800" href="/">Home</a>
+          <a data-nav="auth" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/user.html">User Dashboard</a>
+          <a data-nav="auth" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/book.html">Book Event</a>
+          <a data-nav="admin" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/create-event.html">Create Event</a>
+          <a data-nav="admin" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/admin.html">Admin Dashboard</a>
+          <a data-nav="guest" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800" href="/login.html">Login</a>
+          
+            <a data-nav="auth-avatar" class="hidden inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ring-2 ring-amber-300/40" href="/profile.html"><img data-nav-avatar-img src="https://ui-avatars.com/api/?name=U&background=0f172a&color=f59e0b&size=96" alt="Profile" class="h-full w-full object-cover"></a>
+        </div>
+      </nav>
+      <div>
+        <h1 class="text-3xl font-semibold">My Profile</h1>
+        <p class="text-slate-400">View and update your account details.</p>
+      </div>
+    </header>
+
+    <section class="mt-8 rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-xl shadow-slate-950/50">
+      <div class="grid gap-6 md:grid-cols-[auto,1fr]">
+        <div class="flex flex-col items-center gap-3">
+          <label for="profileImageInput" class="group relative block h-28 w-28 cursor-pointer">
+            <img id="profilePreview" src="" alt="Profile" class="h-28 w-28 rounded-full object-cover ring-2 ring-amber-300/50 transition-all group-hover:brightness-90">
+            <span class="absolute inset-0 flex items-center justify-center rounded-full bg-black/45 text-xs font-semibold text-amber-200 opacity-0 transition-opacity group-hover:opacity-100">
+              Change Photo
+            </span>
+          </label>
+          <input id="profileImageInput" type="file" accept="image/*" class="hidden">
+          <button id="removePhotoBtn" type="button"
+                  class="hidden rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs text-slate-200 hover:bg-slate-800">
+            Remove Photo
+          </button>
+        </div>
+
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h2 id="profileTitle" class="text-xl font-semibold">Account Profile</h2>
+            <span id="verifiedBadge" class="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[11px] text-emerald-300">Unverified</span>
+            <span id="roleBadge" class="rounded-full border border-cyan-500/40 bg-cyan-500/10 px-2 py-0.5 text-[11px] text-cyan-300">user</span>
+          </div>
+          <p class="mt-1 text-sm text-slate-400">Update your profile information and security details.</p>
+
+          <div class="mt-4 grid gap-2 rounded-xl border border-slate-800 bg-slate-950/80 p-4 text-sm text-slate-300">
+            <p><span class="text-slate-500">Email:</span> <span id="emailText">-</span></p>
+            <p><span class="text-slate-500">WhatsApp:</span> <span id="whatsappText">-</span></p>
+            <p><span class="text-slate-500">Role:</span> <span id="roleText">-</span></p>
+            <p><span class="text-slate-500">Followers:</span> <span id="followersCount">0</span></p>
+            <p><span class="text-slate-500">Following:</span> <span id="followingCount">0</span></p>
+          </div>
+        </div>
+      </div>
+
+      <form id="profileForm" class="mt-6 grid gap-4">
+        <input id="name" type="text" placeholder="Full Name" required
+               class="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400">
+        <input id="whatsapp" type="text" placeholder="WhatsApp (+E164), e.g. +15551234567"
+               class="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400">
+        <input id="password" type="password" placeholder="New Password (optional)"
+               class="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400">
+        <input id="confirmPassword" type="password" placeholder="Confirm New Password"
+               class="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400">
+        <p class="text-xs text-slate-500">Password must include uppercase, lowercase, and number (8+ chars).</p>
+        <button id="saveBtn" type="submit"
+                class="rounded-lg bg-amber-400 px-4 py-3 font-semibold text-slate-900 hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60">
+          Save Profile
+        </button>
+      </form>
+      <div class="mt-4 flex flex-wrap gap-3">
+        <a href="/login.html"
+           class="rounded-lg border border-slate-700 bg-slate-950 px-4 py-2 text-sm text-slate-200 hover:bg-slate-800">
+          Sign In
+        </a>
+        <button id="profileLogoutBtn" type="button"
+                class="rounded-lg border border-red-500/40 bg-red-950/30 px-4 py-2 text-sm text-red-200 hover:bg-red-900/40">
+          Logout
+        </button>
+      </div>
+      <p id="status" class="mt-3 text-sm text-slate-300"></p>
+    </section>
+
+    <section class="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-xl shadow-slate-950/50">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-semibold">App Notifications</h2>
+          <p class="mt-1 text-sm text-slate-400">Install the app and enable browser notifications for saved event reminders.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button id="enablePushBtn" type="button" class="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-200 hover:bg-emerald-500/20">
+            Enable Notifications
+          </button>
+          <button id="disablePushBtn" type="button" class="rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-2 text-sm text-rose-200 hover:bg-rose-500/20">
+            Disable Notifications
+          </button>
+        </div>
+      </div>
+      <div class="mt-4 rounded-xl border border-slate-800 bg-slate-950/80 p-4 text-sm text-slate-300">
+        <p><span class="text-slate-500">PWA:</span> <span id="pwaSupportText">Checking...</span></p>
+        <p><span class="text-slate-500">Notification Permission:</span> <span id="pushPermissionText">Checking...</span></p>
+        <p><span class="text-slate-500">This Device:</span> <span id="pushSubscriptionText">Checking...</span></p>
+      </div>
+      <p id="pushStatus" class="mt-3 text-sm text-slate-300"></p>
+    </section>
+
+    <section class="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-xl shadow-slate-950/50">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold">Following Creators</h2>
+        <button id="refreshFollowingBtn" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs hover:bg-slate-800">Refresh</button>
+      </div>
+      <div id="followingList" class="mt-4 grid gap-3 sm:grid-cols-2"></div>
+    </section>
+  </div>
+
+  <script src="ui-feedback.js"></script>
+  <script src="pwa.js"></script>
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "/login.html";
+    let currentProfileImage = "";
+    const removePhotoBtn = document.getElementById("removePhotoBtn");
+    const saveBtn = document.getElementById("saveBtn");
+    const enablePushBtn = document.getElementById("enablePushBtn");
+    const disablePushBtn = document.getElementById("disablePushBtn");
+
+    function authHeaders(extra = {}) {
+      return { Authorization: token, ...extra };
+    }
+
+    function fallbackAvatar(name) {
+      const initials = encodeURIComponent((name || "User").split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase());
+      return `https://ui-avatars.com/api/?name=${initials}&background=0f172a&color=f59e0b&size=96`;
+    }
+
+    function esc(v) {
+      return String(v || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    async function refreshPushStatus() {
+      const supportEl = document.getElementById("pwaSupportText");
+      const permissionEl = document.getElementById("pushPermissionText");
+      const subEl = document.getElementById("pushSubscriptionText");
+      const statusEl = document.getElementById("pushStatus");
+
+      if (!window.PWAClient) {
+        supportEl.textContent = "Unavailable";
+        permissionEl.textContent = "Unavailable";
+        subEl.textContent = "Unavailable";
+        enablePushBtn.disabled = true;
+        disablePushBtn.disabled = true;
+        statusEl.textContent = "PWA client is not loaded.";
+        return;
+      }
+
+      try {
+        const state = await window.PWAClient.getStatus();
+        supportEl.textContent = state.supported ? "Supported" : "Not supported";
+        permissionEl.textContent = state.permission || "default";
+        subEl.textContent = state.subscribed ? "Subscribed on this device" : "Not subscribed";
+        enablePushBtn.disabled = !state.supported || state.subscribed;
+        disablePushBtn.disabled = !state.supported || !state.subscribed;
+        statusEl.textContent = state.supported
+          ? "Push reminders use this browser/device."
+          : "This browser does not support installable push notifications.";
+      } catch (err) {
+        supportEl.textContent = "Error";
+        permissionEl.textContent = "-";
+        subEl.textContent = "-";
+        statusEl.textContent = err.message || "Could not determine push notification status.";
+      }
+    }
+
+    async function loadProfile() {
+      const res = await fetch("/api/auth/me", { headers: authHeaders() });
+      if (res.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/login.html";
+        return;
+      }
+      if (res.status === 404) {
+        let message = "Profile not found for this token. Please login again.";
+        try {
+          const err = await res.json();
+          if (err && err.code === "USER_NOT_FOUND") {
+            message = "User account not found. Please login again.";
+          }
+        } catch (_) {}
+        document.getElementById("status").textContent = message;
+        return;
+      }
+      if (!res.ok) {
+        document.getElementById("status").textContent = "Could not load profile.";
+        showToast("Could not load profile.", "error");
+        return;
+      }
+      const user = await res.json();
+      document.getElementById("name").value = user.name || "";
+      document.getElementById("whatsapp").value = user.whatsapp || "";
+      document.getElementById("profileTitle").textContent = `${user.name || "User"}'s Profile`;
+      document.getElementById("emailText").textContent = user.email || "-";
+      document.getElementById("whatsappText").textContent = user.whatsapp || "-";
+      document.getElementById("roleText").textContent = user.role || "-";
+      document.getElementById("roleBadge").textContent = user.role || "user";
+      document.getElementById("followersCount").textContent = Array.isArray(user.followers) ? user.followers.length : 0;
+      document.getElementById("followingCount").textContent = Array.isArray(user.following) ? user.following.length : 0;
+      const verifiedBadge = document.getElementById("verifiedBadge");
+      const isVerified = user.isEmailVerified !== false;
+      verifiedBadge.textContent = isVerified ? "Verified" : "Unverified";
+      verifiedBadge.className = isVerified
+        ? "rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[11px] text-emerald-300"
+        : "rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[11px] text-amber-300";
+      currentProfileImage = user.profileImage || "";
+      document.getElementById("profilePreview").src = currentProfileImage || fallbackAvatar(user.name);
+      removePhotoBtn.classList.toggle("hidden", !currentProfileImage);
+    }
+
+    async function loadFollowing() {
+      const container = document.getElementById("followingList");
+      container.innerHTML = '<p class="text-sm text-slate-400">Loading...</p>';
+      const res = await fetch("/api/auth/me/following", { headers: authHeaders() });
+      if (!res.ok) {
+        container.innerHTML = '<p class="text-sm text-rose-300">Failed to load following list.</p>';
+        return;
+      }
+      const rows = await res.json();
+      if (!Array.isArray(rows) || !rows.length) {
+        container.innerHTML = '<p class="text-sm text-slate-400">You are not following any creator yet.</p>';
+        return;
+      }
+      container.innerHTML = rows.map((u) => {
+        const avatar = u.profileImage && String(u.profileImage).startsWith("data:image/")
+          ? u.profileImage
+          : fallbackAvatar(u.name || "Creator");
+        return `
+          <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+            <div class="flex items-center gap-2">
+              <img src="${esc(avatar)}" alt="creator" class="h-9 w-9 rounded-full object-cover">
+              <div>
+                <p class="text-sm font-semibold">${esc(u.name || "Creator")}</p>
+                <p class="text-xs text-slate-500">${esc(u.role || "user")}</p>
+              </div>
+            </div>
+            <button class="mt-2 rounded-md border border-rose-500/40 px-2 py-1 text-xs text-rose-300 hover:bg-slate-800" onclick="unfollowFromProfile('${u._id}')">Unfollow</button>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function unfollowFromProfile(id) {
+      const res = await fetch(`/api/auth/follow/${encodeURIComponent(String(id || ""))}`, {
+        method: "DELETE",
+        headers: authHeaders()
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.error || "Failed to unfollow.", "error");
+        return;
+      }
+      showToast("Unfollowed.", "success");
+      await loadProfile();
+      await loadFollowing();
+    }
+    window.unfollowFromProfile = unfollowFromProfile;
+
+    document.getElementById("profileImageInput").addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      if (file.size > 1_500_000) {
+        document.getElementById("status").textContent = "Image too large. Use a file under 1.5MB.";
+        e.target.value = "";
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        currentProfileImage = String(reader.result || "");
+        document.getElementById("profilePreview").src = currentProfileImage;
+        removePhotoBtn.classList.remove("hidden");
+      };
+      reader.readAsDataURL(file);
+    });
+
+    removePhotoBtn.addEventListener("click", () => {
+      const name = document.getElementById("name").value || "User";
+      currentProfileImage = "";
+      document.getElementById("profileImageInput").value = "";
+      document.getElementById("profilePreview").src = fallbackAvatar(name);
+      removePhotoBtn.classList.add("hidden");
+      document.getElementById("status").textContent = "Photo removed. Click Save Profile to apply.";
+    });
+
+    document.getElementById("profileForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name").value.trim();
+      const whatsapp = document.getElementById("whatsapp").value.trim();
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+      const status = document.getElementById("status");
+
+      if (password && password !== confirmPassword) {
+        status.textContent = "Password and confirm password do not match.";
+        showToast("Password mismatch.", "error");
+        return;
+      }
+      if (password && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,72}$/.test(password)) {
+        status.textContent = "Use a stronger password (8+ chars with uppercase, lowercase, and number).";
+        showToast("Weak password.", "error");
+        return;
+      }
+      if (whatsapp && !/^\+\d{7,15}$/.test(whatsapp)) {
+        status.textContent = "WhatsApp must be in +E164 format, e.g. +15551234567.";
+        showToast("Invalid WhatsApp format.", "error");
+        return;
+      }
+
+      const payload = { name, whatsapp, profileImage: currentProfileImage };
+      if (password) payload.password = password;
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving...";
+
+      const res = await fetch("/api/auth/me", {
+        method: "PUT",
+        headers: authHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        let message = "Update failed.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        status.textContent = message;
+        showToast(message, "error");
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save Profile";
+        return;
+      }
+
+      const data = await res.json().catch(() => ({}));
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+      document.getElementById("password").value = "";
+      document.getElementById("confirmPassword").value = "";
+      status.textContent = "Profile updated successfully.";
+      showToast("Profile updated successfully.", "success");
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Save Profile";
+      loadProfile();
+    });
+
+    document.getElementById("profileLogoutBtn").addEventListener("click", async () => {
+      try {
+        await fetch("/api/auth/logout", { method: "POST", headers: { "Content-Type": "application/json" } });
+      } catch (_) {}
+      localStorage.removeItem("token");
+      window.location.href = "/login.html";
+    });
+
+    document.getElementById("refreshFollowingBtn").addEventListener("click", loadFollowing);
+
+    enablePushBtn.addEventListener("click", async () => {
+      const statusEl = document.getElementById("pushStatus");
+      try {
+        await window.PWAClient.subscribe(token);
+        statusEl.textContent = "Push notifications enabled on this device.";
+        showToast("Push notifications enabled.", "success");
+      } catch (err) {
+        statusEl.textContent = err.message || "Could not enable push notifications.";
+        showToast(statusEl.textContent, "error");
+      }
+      refreshPushStatus();
+    });
+
+    disablePushBtn.addEventListener("click", async () => {
+      const statusEl = document.getElementById("pushStatus");
+      try {
+        await window.PWAClient.unsubscribe(token);
+        statusEl.textContent = "Push notifications disabled on this device.";
+        showToast("Push notifications disabled.", "success");
+      } catch (err) {
+        statusEl.textContent = err.message || "Could not disable push notifications.";
+        showToast(statusEl.textContent, "error");
+      }
+      refreshPushStatus();
+    });
+
+    loadProfile();
+    loadFollowing();
+    refreshPushStatus();
+  </script>
+  <script src="nav-auth.js?v=20260302a"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

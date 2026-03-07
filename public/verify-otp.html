@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify OTP | Smart Event System</title>
+  <link rel="icon" type="image/png" href="/assets/web-logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="mx-auto flex min-h-screen max-w-xl items-center px-4 py-10">
+    <div class="w-full rounded-2xl border border-slate-800 bg-slate-900 p-8">
+      <h1 class="text-2xl font-semibold">Verify OTP</h1>
+      <p class="mt-2 text-slate-400">Enter the 6-digit OTP sent to your email.</p>
+      <form id="otpForm" class="mt-6 grid gap-4">
+        <input id="email" type="email" required placeholder="Email"
+               class="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400">
+        <input id="otp" type="text" maxlength="6" required placeholder="6-digit OTP" inputmode="numeric"
+               class="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400">
+        <button type="submit"
+                class="rounded-lg bg-amber-400 px-4 py-3 font-semibold text-slate-900 hover:bg-amber-300">
+          Verify OTP
+        </button>
+        <button id="resendBtn" type="button"
+                class="rounded-lg border border-slate-700 px-4 py-3 font-semibold text-slate-100 hover:bg-slate-800">
+          Resend OTP
+        </button>
+      </form>
+      <p id="statusMsg" class="mt-3 text-sm text-slate-300"></p>
+    </div>
+  </div>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const prefillEmail = params.get("email");
+    if (prefillEmail) document.getElementById("email").value = prefillEmail;
+    const status = document.getElementById("statusMsg");
+    const otpInput = document.getElementById("otp");
+    const verifyBtn = document.querySelector('#otpForm button[type="submit"]');
+    const resendBtn = document.getElementById("resendBtn");
+    let lockTimer = null;
+    let resendTimer = null;
+
+    function extractSecondsFromMessage(text) {
+      const m = String(text || "").match(/(\d+)\s*(s|sec|secs|second|seconds|m|min|minute|minutes)/i);
+      if (!m) return 0;
+      const value = Number(m[1] || 0);
+      const unit = String(m[2] || "s").toLowerCase();
+      if (!value) return 0;
+      if (unit.startsWith("m")) return value * 60;
+      return value;
+    }
+
+    function startLockCountdown(seconds) {
+      clearInterval(lockTimer);
+      let left = Math.max(1, Number(seconds || 0));
+      otpInput.disabled = true;
+      verifyBtn.disabled = true;
+      lockTimer = setInterval(() => {
+        status.textContent = `Too many attempts. Try again in ${left}s.`;
+        if (left <= 0) {
+          clearInterval(lockTimer);
+          otpInput.disabled = false;
+          verifyBtn.disabled = false;
+          status.textContent = "";
+          return;
+        }
+        left -= 1;
+      }, 1000);
+    }
+
+    function startResendCountdown(seconds) {
+      clearInterval(resendTimer);
+      let left = Math.max(1, Number(seconds || 0));
+      resendBtn.disabled = true;
+      resendBtn.classList.add("opacity-60", "cursor-not-allowed");
+      resendTimer = setInterval(() => {
+        resendBtn.textContent = `Resend OTP (${left}s)`;
+        if (left <= 0) {
+          clearInterval(resendTimer);
+          resendBtn.disabled = false;
+          resendBtn.classList.remove("opacity-60", "cursor-not-allowed");
+          resendBtn.textContent = "Resend OTP";
+          return;
+        }
+        left -= 1;
+      }, 1000);
+    }
+
+    document.getElementById("otpForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value.trim();
+      const otp = document.getElementById("otp").value.trim();
+      status.textContent = "Verifying...";
+
+      const res = await fetch("/api/auth/verify-reset-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp })
+      });
+
+      if (!res.ok) {
+        let message = "OTP verification failed.";
+        let code = "";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+          code = err.code || "";
+        } catch (_) {}
+        status.textContent = message;
+        status.classList.remove("text-emerald-300");
+        status.classList.add("text-rose-300");
+        if (code === "OTP_LOCKED") {
+          startLockCountdown(extractSecondsFromMessage(message));
+        }
+        return;
+      }
+
+      const data = await res.json();
+      sessionStorage.setItem("resetEmail", email);
+      sessionStorage.setItem("resetSessionToken", data.resetToken || "");
+      status.textContent = "OTP verified. Redirecting...";
+      status.classList.remove("text-rose-300");
+      status.classList.add("text-emerald-300");
+      setTimeout(() => {
+        window.location.href = "/reset-password.html";
+      }, 600);
+    });
+
+    resendBtn.addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      status.textContent = "Sending OTP...";
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+      });
+      let message = "If that email exists, a password reset link has been sent.";
+      let code = "";
+      try {
+        const body = await res.json();
+        message = body.message || body.error || message;
+        code = body.code || "";
+      } catch (_) {}
+      if (!res.ok) {
+        status.textContent = message;
+        status.classList.remove("text-emerald-300");
+        status.classList.add("text-rose-300");
+        if (code === "OTP_RESEND_COOLDOWN") {
+          startResendCountdown(extractSecondsFromMessage(message));
+        }
+        return;
+      }
+      status.textContent = "OTP sent. Please check your email.";
+      status.classList.remove("text-rose-300");
+      status.classList.add("text-emerald-300");
+      startResendCountdown(60);
+    });
+  </script>
+</body>
+</html>

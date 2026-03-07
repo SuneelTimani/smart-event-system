@@ -1,0 +1,38 @@
+{
+  "name": "smart-event-system",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "engines": {
+    "node": ">=20 <21"
+  },
+  "scripts": {
+    "test": "node --test tests",
+    "backfill:event-owner": "node scripts/backfill-event-owner.js",
+    "migrate:once": "node scripts/migrate-once.js",
+    "dev": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongodb": "^7.1.0",
+    "mongoose": "^9.2.0",
+    "nodemailer": "^6.10.1",
+    "passport": "^0.7.0",
+    "passport-github2": "^0.1.12",
+    "passport-google-oauth20": "^2.0.0",
+    "qrcode": "^1.5.4",
+    "redis": "^4.7.0",
+    "stripe": "^17.5.0",
+    "twilio": "^5.12.1",
+    "web-push": "^3.6.7"
+  }
+}

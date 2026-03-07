@@ -1,0 +1,392 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket Confirmation | Smart Event System</title>
+  <link rel="icon" type="image/png" href="/assets/web-logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="mx-auto max-w-4xl px-4 py-8">
+    <header class="mb-6 flex flex-col gap-3">
+      <nav data-role-nav class="flex flex-col gap-4 border border-slate-800 bg-slate-900/70 px-4 py-3 backdrop-blur md:flex-row md:items-center md:justify-between rounded-xl">
+        <div class="flex items-center gap-3">
+          <img src="/assets/web-logo.png" alt="Smart Event System" class="h-9 w-9 rounded-lg object-cover">
+          <div>
+            <p class="text-sm font-semibold">Smart Event System</p>
+            <p class="text-xs text-slate-400">Manage and discover events</p>
+          </div>
+        </div>
+      </nav>
+      <div>
+        <h1 class="text-3xl font-semibold">Ticket Confirmed</h1>
+        <p class="text-slate-400">Your booking is complete. Save your pass and QR code.</p>
+      </div>
+    </header>
+
+    <section class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+      <div id="ticketCard" class="grid gap-6 md:grid-cols-2">
+        <div id="ticketDetails" class="rounded-lg border border-slate-800 bg-slate-950 p-4">
+          <div class="animate-pulse space-y-3">
+            <div class="h-5 w-2/3 rounded bg-slate-800"></div>
+            <div class="h-4 w-full rounded bg-slate-800"></div>
+            <div class="h-4 w-5/6 rounded bg-slate-800"></div>
+            <div class="h-4 w-4/6 rounded bg-slate-800"></div>
+          </div>
+        </div>
+        <div class="rounded-lg border border-slate-800 bg-slate-950 p-4">
+          <p class="text-sm text-slate-400">Scan at entry</p>
+          <canvas id="qrCanvas" class="mt-3 rounded bg-white p-2"></canvas>
+          <p id="qrNote" class="mt-2 text-xs text-slate-500">Generating QR...</p>
+        </div>
+      </div>
+
+      <div class="mt-5 flex flex-wrap gap-2">
+        <a href="/book.html" class="rounded-lg border border-slate-700 bg-slate-950 px-4 py-2 text-sm hover:bg-slate-800">Book Another</a>
+        <a href="/user.html" class="rounded-lg border border-slate-700 bg-slate-950 px-4 py-2 text-sm hover:bg-slate-800">Go to Dashboard</a>
+        <a id="addGoogleCalendarBtn" target="_blank" rel="noopener" class="rounded-lg border border-slate-700 bg-slate-950 px-4 py-2 text-sm hover:bg-slate-800">Google Calendar</a>
+        <a id="addOutlookCalendarBtn" target="_blank" rel="noopener" class="rounded-lg border border-slate-700 bg-slate-950 px-4 py-2 text-sm hover:bg-slate-800">Outlook</a>
+        <button id="addAppleCalendarBtn" class="rounded-lg border border-slate-700 bg-slate-950 px-4 py-2 text-sm hover:bg-slate-800">Apple Calendar</button>
+        <button id="downloadIcsBtn" class="rounded-lg border border-cyan-500/40 bg-cyan-500/10 px-4 py-2 text-sm text-cyan-200 hover:bg-cyan-500/20">Download ICS</button>
+        <button id="downloadPassBtn" class="rounded-lg bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-300">Download Special Pass</button>
+        <button id="printPassBtn" class="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm text-amber-200 hover:bg-amber-500/20">Print Pass</button>
+        <button id="downloadWalletBtn" class="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-200 hover:bg-emerald-500/20">Download Wallet Card</button>
+        <button id="downloadQrBtn" class="rounded-lg border border-cyan-500/40 bg-cyan-500/10 px-4 py-2 text-sm text-cyan-200 hover:bg-cyan-500/20">Download QR</button>
+      </div>
+      <p id="statusMsg" class="mt-3 text-sm text-slate-300"></p>
+    </section>
+  </div>
+
+  <script src="ui-feedback.js"></script>
+  <script src="i18n-time.js"></script>
+  <script src="calendar-utils.js"></script>
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "/login.html";
+
+    let currentBooking = null;
+    const params = new URLSearchParams(window.location.search);
+    const bookingId = String(params.get("bookingId") || "").trim();
+
+    function authHeaders() {
+      return { Authorization: token };
+    }
+
+    function formatDate(value) {
+      if (!value) return "-";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "-";
+      if (window.AppI18nTime && typeof window.AppI18nTime.formatDateTimeWithZone === "function") {
+        return window.AppI18nTime.formatDateTimeWithZone(d);
+      }
+      if (window.AppI18nTime) return window.AppI18nTime.formatDateTime(d);
+      return d.toLocaleString();
+    }
+    function readableBookingId(id) {
+      const raw = String(id || "").trim();
+      if (!raw) return "-";
+      return `BK-${raw.slice(-8).toUpperCase()}`;
+    }
+
+    function renderBooking(booking) {
+      const event = booking.eventId || {};
+      const bookingRef = readableBookingId(booking._id);
+      document.getElementById("ticketDetails").innerHTML = `
+        <h2 class="text-xl font-semibold">${escapeHtml(event.title || "Event")}</h2>
+        <p class="mt-2 text-sm text-slate-300">Booking Ref: <span class="font-mono text-xs">${escapeHtml(bookingRef)}</span></p>
+        <p class="mt-1 text-xs text-slate-500">System ID: <span class="font-mono">${escapeHtml(booking._id)}</span></p>
+        <p class="mt-1 text-sm text-slate-300">Attendee: ${escapeHtml(booking.attendeeName || "-")}</p>
+        <p class="mt-1 text-sm text-slate-300">Email: ${escapeHtml(booking.attendeeEmail || "-")}</p>
+        <p class="mt-1 text-sm text-slate-300">Ticket: ${escapeHtml(booking.ticketType || "Standard")} x ${escapeHtml(booking.quantity || 1)}</p>
+        <p class="mt-1 text-sm text-slate-300">Amount: $${Number(booking.totalAmount || 0).toFixed(2)}</p>
+        <p class="mt-1 text-sm text-slate-300">Status: ${escapeHtml(booking.status || "-")}</p>
+        <p class="mt-1 text-sm text-slate-300">Date: ${escapeHtml(formatDate(event.date))}</p>
+        <p class="mt-1 text-sm text-slate-300">Location: ${escapeHtml(event.location || "-")}</p>
+        <p class="mt-1 text-xs text-slate-500">Booked on: ${escapeHtml(formatDate(booking.date))}</p>
+      `;
+
+      if (window.CalendarUtils) {
+        const calendarEvent = {
+          title: event.title || "Event",
+          description: `Ticket ${booking.ticketType || "Standard"} x ${booking.quantity || 1}\nBooking Ref: ${bookingRef}`,
+          location: event.location || "",
+          start: event.date,
+          durationMin: 120
+        };
+        const google = document.getElementById("addGoogleCalendarBtn");
+        const outlook = document.getElementById("addOutlookCalendarBtn");
+        const apple = document.getElementById("addAppleCalendarBtn");
+        if (google) google.href = window.CalendarUtils.toGoogleCalendarUrl(calendarEvent);
+        if (outlook) outlook.href = window.CalendarUtils.toOutlookCalendarUrl(calendarEvent);
+        if (apple) {
+          apple.onclick = () => {
+            const ok = window.CalendarUtils.addToAppleCalendar(
+              calendarEvent,
+              `${String(event.title || "event").toLowerCase().replace(/[^a-z0-9]+/g, "-") || "event"}-${String(booking._id || "").slice(-6)}.ics`
+            );
+            if (!ok) showToast("Failed to generate Apple calendar file.", "error");
+          };
+        }
+        const icsBtn = document.getElementById("downloadIcsBtn");
+        if (icsBtn) {
+          icsBtn.onclick = () => {
+            const ok = window.CalendarUtils.downloadIcsFile(
+              calendarEvent,
+              `${String(event.title || "event").toLowerCase().replace(/[^a-z0-9]+/g, "-") || "event"}-${String(booking._id || "").slice(-6)}.ics`
+            );
+            if (!ok) showToast("Failed to generate ICS file.", "error");
+          };
+        }
+      }
+    }
+
+    async function renderQr(booking) {
+      const bookingRef = readableBookingId(booking._id);
+      const payload = JSON.stringify({
+        bookingId: booking._id,
+        bookingRef,
+        attendee: booking.attendeeName || "",
+        event: booking.eventId?.title || "",
+        ticketType: booking.ticketType || "",
+        quantity: booking.quantity || 1
+      });
+      const canvas = document.getElementById("qrCanvas");
+      await QRCode.toCanvas(canvas, payload, {
+        width: 200,
+        margin: 1,
+        color: { dark: "#0f172a", light: "#ffffff" }
+      });
+      document.getElementById("qrNote").textContent = "QR ready.";
+    }
+
+    function buildPassText(booking) {
+      const event = booking.eventId || {};
+      const bookingRef = readableBookingId(booking._id);
+      return [
+        "SMART EVENT SYSTEM - TICKET PASS",
+        "--------------------------------",
+        `Booking Ref: ${bookingRef}`,
+        `System ID: ${booking._id}`,
+        `Event: ${event.title || "-"}`,
+        `Date: ${formatDate(event.date)}`,
+        `Location: ${event.location || "-"}`,
+        `Attendee: ${booking.attendeeName || "-"}`,
+        `Email: ${booking.attendeeEmail || "-"}`,
+        `Ticket: ${booking.ticketType || "Standard"} x ${booking.quantity || 1}`,
+        `Amount: $${Number(booking.totalAmount || 0).toFixed(2)}`,
+        `Status: ${booking.status || "-"}`,
+        `Issued: ${formatDate(new Date())}`
+      ].join("\n");
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function buildSpecialPassHtml(booking) {
+      const event = booking.eventId || {};
+      const qrDataUrl = document.getElementById("qrCanvas").toDataURL("image/png");
+      const bookingRef = readableBookingId(booking._id);
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Special Event Pass</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #0b1220; color: #e5e7eb; }
+    .wrap { display: grid; place-items: center; min-height: 100vh; padding: 24px; }
+    .pass {
+      width: 820px; max-width: 100%;
+      border: 2px solid #22d3ee; border-radius: 18px; overflow: hidden;
+      background: linear-gradient(135deg, #0f172a 0%, #111827 45%, #0b1020 100%);
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+    .head { padding: 20px 24px; background: rgba(34,211,238,.08); border-bottom: 1px solid rgba(34,211,238,.3); }
+    .title { font-size: 28px; font-weight: 700; color: #67e8f9; margin: 0; letter-spacing: .6px; }
+    .sub { margin-top: 6px; color: #cbd5e1; font-size: 13px; }
+    .body { display: grid; grid-template-columns: 1.6fr .9fr; gap: 20px; padding: 24px; }
+    .meta p { margin: 8px 0; font-size: 14px; color: #e2e8f0; }
+    .meta b { color: #f8fafc; }
+    .code { font-family: Consolas, monospace; font-size: 12px; color: #93c5fd; }
+    .qr { text-align: center; }
+    .qr img { width: 180px; height: 180px; background: white; padding: 8px; border-radius: 10px; }
+    .foot { display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-top: 1px dashed rgba(148,163,184,.5); color: #94a3b8; font-size: 12px; }
+    @media print { body { background: white; } .pass { box-shadow: none; border-color: #0f172a; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="pass">
+      <div class="head">
+        <h1 class="title">EVENT ARC SPECIAL PASS</h1>
+        <div class="sub">Present this pass at entry for quick verification</div>
+      </div>
+      <div class="body">
+        <div class="meta">
+          <p><b>Event:</b> ${escapeHtml(event.title || "-")}</p>
+          <p><b>Date:</b> ${escapeHtml(formatDate(event.date))}</p>
+          <p><b>Location:</b> ${escapeHtml(event.location || "-")}</p>
+          <p><b>Attendee:</b> ${escapeHtml(booking.attendeeName || "-")}</p>
+          <p><b>Email:</b> ${escapeHtml(booking.attendeeEmail || "-")}</p>
+          <p><b>Ticket:</b> ${escapeHtml(booking.ticketType || "Standard")} x ${escapeHtml(booking.quantity || 1)}</p>
+          <p><b>Amount:</b> $${Number(booking.totalAmount || 0).toFixed(2)}</p>
+          <p><b>Status:</b> ${escapeHtml(booking.status || "-")}</p>
+          <p><b>Booking Ref:</b> <span class="code">${escapeHtml(bookingRef)}</span></p>
+        </div>
+        <div class="qr">
+          <img src="${qrDataUrl}" alt="QR Code" />
+          <p class="sub">Scan for verification</p>
+        </div>
+      </div>
+      <div class="foot">
+        <span>Issued: ${escapeHtml(formatDate(new Date()))}</span>
+        <span>Smart Event System</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+    }
+
+    function buildWalletCardSvg(booking) {
+      const event = booking.eventId || {};
+      const qrDataUrl = document.getElementById("qrCanvas").toDataURL("image/png");
+      const title = escapeHtml(event.title || "Event");
+      const attendee = escapeHtml(booking.attendeeName || "-");
+      const date = escapeHtml(formatDate(event.date));
+      const location = escapeHtml(event.location || "-");
+      const ticket = escapeHtml(`${booking.ticketType || "Standard"} x ${booking.quantity || 1}`);
+      const bookingId = escapeHtml(readableBookingId(booking._id));
+
+      return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="540" viewBox="0 0 1080 540">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="55%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1080" height="540" rx="36" fill="url(#bg)"/>
+  <rect x="22" y="22" width="1036" height="496" rx="28" fill="none" stroke="#22d3ee" stroke-opacity="0.5" stroke-width="2"/>
+
+  <text x="60" y="92" fill="#67e8f9" font-size="46" font-family="Arial, sans-serif" font-weight="700">EVENT ARC PASS</text>
+  <text x="60" y="125" fill="#94a3b8" font-size="20" font-family="Arial, sans-serif">Mobile Wallet Card</text>
+
+  <text x="60" y="185" fill="#e2e8f0" font-size="24" font-family="Arial, sans-serif"><tspan font-weight="700">Event:</tspan> ${title}</text>
+  <text x="60" y="228" fill="#e2e8f0" font-size="24" font-family="Arial, sans-serif"><tspan font-weight="700">Attendee:</tspan> ${attendee}</text>
+  <text x="60" y="271" fill="#e2e8f0" font-size="24" font-family="Arial, sans-serif"><tspan font-weight="700">Date:</tspan> ${date}</text>
+  <text x="60" y="314" fill="#e2e8f0" font-size="24" font-family="Arial, sans-serif"><tspan font-weight="700">Location:</tspan> ${location}</text>
+  <text x="60" y="357" fill="#e2e8f0" font-size="24" font-family="Arial, sans-serif"><tspan font-weight="700">Ticket:</tspan> ${ticket}</text>
+  <text x="60" y="412" fill="#93c5fd" font-size="19" font-family="Consolas, monospace">Booking Ref: ${bookingId}</text>
+
+  <rect x="812" y="150" width="208" height="208" rx="14" fill="#ffffff"/>
+  <image href="${qrDataUrl}" x="826" y="164" width="180" height="180"/>
+  <text x="916" y="388" text-anchor="middle" fill="#94a3b8" font-size="16" font-family="Arial, sans-serif">Scan at entry</text>
+
+  <text x="60" y="486" fill="#64748b" font-size="16" font-family="Arial, sans-serif">Issued by Smart Event System</text>
+</svg>`;
+    }
+
+    function downloadFile(name, content, type = "text/plain;charset=utf-8") {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    document.getElementById("downloadPassBtn").addEventListener("click", () => {
+      if (!currentBooking) return;
+      const name = `special-pass-${currentBooking._id}.html`;
+      downloadFile(name, buildSpecialPassHtml(currentBooking), "text/html;charset=utf-8");
+      showToast("Special pass downloaded.", "success");
+    });
+
+    document.getElementById("printPassBtn").addEventListener("click", () => {
+      if (!currentBooking) return;
+      const html = buildSpecialPassHtml(currentBooking);
+      const win = window.open("", "_blank");
+      if (!win) {
+        showToast("Pop-up blocked. Allow pop-ups to print.", "error");
+        return;
+      }
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+      win.focus();
+      setTimeout(() => win.print(), 250);
+    });
+
+    document.getElementById("downloadWalletBtn").addEventListener("click", () => {
+      if (!currentBooking) return;
+      const svg = buildWalletCardSvg(currentBooking);
+      downloadFile(`wallet-card-${currentBooking._id}.svg`, svg, "image/svg+xml;charset=utf-8");
+      showToast("Wallet card downloaded.", "success");
+    });
+
+    document.getElementById("downloadQrBtn").addEventListener("click", () => {
+      const canvas = document.getElementById("qrCanvas");
+      if (!canvas) return;
+      const dataUrl = canvas.toDataURL("image/png");
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = `ticket-qr-${currentBooking?._id || "booking"}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast("QR downloaded.", "success");
+    });
+
+    async function init() {
+      if (!bookingId) {
+        document.getElementById("ticketDetails").innerHTML = uiEmptyState("Booking not found", "Missing bookingId in URL.");
+        document.getElementById("statusMsg").textContent = "Open this page from booking flow.";
+        return;
+      }
+
+      const res = await fetch(`/api/bookings/${encodeURIComponent(bookingId)}`, { headers: authHeaders() });
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem("token");
+        window.location.href = "/login.html";
+        return;
+      }
+      if (!res.ok) {
+        let message = "Failed to load booking.";
+        try {
+          const err = await res.json();
+          message = err.error || message;
+        } catch (_) {}
+        document.getElementById("ticketDetails").innerHTML = uiEmptyState("Unable to load ticket", message);
+        document.getElementById("statusMsg").textContent = message;
+        showToast(message, "error");
+        return;
+      }
+
+      const booking = await res.json();
+      currentBooking = booking;
+      renderBooking(booking);
+      await renderQr(booking);
+      document.getElementById("statusMsg").textContent = "Ticket confirmation loaded successfully.";
+      showToast("Ticket confirmation ready.", "success");
+    }
+
+    init();
+  </script>
+  <script src="nav-auth.js?v=20260302a"></script>
+</body>
+</html>
+
+

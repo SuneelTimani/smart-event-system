@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Signup OTP | Smart Event System</title>
+  <link rel="icon" type="image/png" href="/assets/web-logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="mx-auto flex min-h-screen max-w-4xl items-center px-4 py-10">
+    <div class="w-full rounded-2xl border border-slate-800 bg-slate-900 p-8">
+      <h1 class="text-3xl font-semibold">Verify your email</h1>
+      <p class="mt-2 text-slate-400">Enter the 6-digit OTP sent to your email.</p>
+
+      <form id="verifyForm" class="mt-6 grid gap-4">
+        <input id="email" type="email" placeholder="Email" required
+               class="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400">
+        <input id="otp" type="text" inputmode="numeric" maxlength="6" placeholder="6-digit OTP" required
+               class="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400">
+        <button type="submit"
+                class="rounded-lg bg-amber-400 px-4 py-3 font-semibold text-slate-900 hover:bg-amber-300">
+          Verify OTP
+        </button>
+        <button id="resendBtn" type="button"
+                class="rounded-lg border border-slate-700 px-4 py-3 font-semibold text-slate-100 hover:bg-slate-800">
+          Resend OTP
+        </button>
+        <p id="verifyMsg" class="text-sm text-rose-300"></p>
+      </form>
+
+      <p class="mt-6 text-sm text-slate-400">
+        Already verified?
+        <a class="text-amber-400 hover:underline" href="/login.html">Go to login</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const emailInput = document.getElementById("email");
+    const otpInput = document.getElementById("otp");
+    const msg = document.getElementById("verifyMsg");
+    const resendBtn = document.getElementById("resendBtn");
+    let lockTimer = null;
+    let resendTimer = null;
+
+    function extractSecondsFromMessage(text) {
+      const m = String(text || "").match(/(\d+)\s*(s|sec|secs|second|seconds|m|min|minute|minutes)/i);
+      if (!m) return 0;
+      const value = Number(m[1] || 0);
+      const unit = String(m[2] || "s").toLowerCase();
+      if (!value) return 0;
+      if (unit.startsWith("m")) return value * 60;
+      return value;
+    }
+
+    function startLockCountdown(seconds) {
+      clearInterval(lockTimer);
+      let left = Math.max(1, Number(seconds || 0));
+      otpInput.disabled = true;
+      const verifyBtn = document.querySelector('#verifyForm button[type="submit"]');
+      verifyBtn.disabled = true;
+      lockTimer = setInterval(() => {
+        msg.textContent = `Too many attempts. Try again in ${left}s.`;
+        if (left <= 0) {
+          clearInterval(lockTimer);
+          otpInput.disabled = false;
+          verifyBtn.disabled = false;
+          msg.textContent = "";
+          return;
+        }
+        left -= 1;
+      }, 1000);
+    }
+
+    function startResendCountdown(seconds) {
+      clearInterval(resendTimer);
+      let left = Math.max(1, Number(seconds || 0));
+      resendBtn.disabled = true;
+      resendBtn.classList.add("opacity-60", "cursor-not-allowed");
+      resendTimer = setInterval(() => {
+        resendBtn.textContent = `Resend OTP (${left}s)`;
+        if (left <= 0) {
+          clearInterval(resendTimer);
+          resendBtn.disabled = false;
+          resendBtn.classList.remove("opacity-60", "cursor-not-allowed");
+          resendBtn.textContent = "Resend OTP";
+          return;
+        }
+        left -= 1;
+      }, 1000);
+    }
+    const params = new URLSearchParams(window.location.search);
+    const qEmail = params.get("email");
+    if (qEmail) emailInput.value = qEmail;
+
+    document.getElementById("verifyForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg.classList.remove("text-emerald-300");
+      msg.classList.add("text-rose-300");
+      msg.textContent = "";
+
+      const res = await fetch("/api/auth/verify-signup-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: emailInput.value.trim(),
+          otp: otpInput.value.trim()
+        })
+      });
+
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        msg.textContent = body.error || "OTP verification failed.";
+        if (body.code === "OTP_LOCKED") {
+          startLockCountdown(extractSecondsFromMessage(body.error));
+        }
+        return;
+      }
+
+      msg.classList.remove("text-rose-300");
+      msg.classList.add("text-emerald-300");
+      msg.textContent = "Email verified. Redirecting to login...";
+      setTimeout(() => {
+        window.location.href = "/login.html";
+      }, 700);
+    });
+
+    resendBtn.addEventListener("click", async () => {
+      msg.classList.remove("text-emerald-300");
+      msg.classList.add("text-rose-300");
+      msg.textContent = "";
+      const res = await fetch("/api/auth/resend-signup-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: emailInput.value.trim() })
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        msg.textContent = body.error || "Failed to resend OTP.";
+        if (body.code === "OTP_RESEND_COOLDOWN") {
+          startResendCountdown(extractSecondsFromMessage(body.error));
+        }
+        return;
+      }
+      msg.classList.remove("text-rose-300");
+      msg.classList.add("text-emerald-300");
+      msg.textContent = "OTP resent. Please check your email.";
+      startResendCountdown(60);
+    });
+  </script>
+</body>
+</html>

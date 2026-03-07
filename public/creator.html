@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Creator Profile | Smart Event System</title>
+  <link rel="icon" type="image/png" href="/assets/web-logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="mx-auto max-w-6xl px-4 py-8">
+    <header>
+      <a href="/" class="inline-block rounded-lg border border-slate-700 px-3 py-1.5 text-sm hover:bg-slate-800">Back Home</a>
+    </header>
+
+    <section id="creatorCard" class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-5">
+      <p class="text-slate-400">Loading creator...</p>
+    </section>
+
+    <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-5">
+      <h2 class="text-lg font-semibold">Events by Creator</h2>
+      <div id="creatorEvents" class="mt-4 grid gap-3 md:grid-cols-2"></div>
+    </section>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const creatorId = String(params.get("id") || "").trim();
+    const token = localStorage.getItem("token") || "";
+
+    function esc(v) {
+      return String(v || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+    function avatarUrl(profileImage, name) {
+      if (profileImage && String(profileImage).startsWith("data:image/")) return profileImage;
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "Creator")}&background=0f172a&color=f59e0b&size=96`;
+    }
+    function formatDate(value) {
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "-";
+      return d.toLocaleString();
+    }
+    function eventImageUrl(event) {
+      const src = String(event?.coverImage || "").trim();
+      if (/^data:image\//i.test(src)) return src;
+      if (/^https?:\/\//i.test(src)) return src;
+      return "";
+    }
+
+    async function loadCreator() {
+      if (!creatorId) {
+        document.getElementById("creatorCard").innerHTML = '<p class="text-rose-300">Missing creator id.</p>';
+        return;
+      }
+
+      const [creatorRes, eventsRes, meRes] = await Promise.all([
+        fetch(`/api/auth/users/${encodeURIComponent(creatorId)}/public`),
+        fetch(`/api/events?creatorId=${encodeURIComponent(creatorId)}&status=published&limit=50`),
+        token ? fetch("/api/auth/me", { headers: { Authorization: token } }) : Promise.resolve(null)
+      ]);
+
+      if (!creatorRes.ok) {
+        document.getElementById("creatorCard").innerHTML = '<p class="text-rose-300">Creator not found.</p>';
+        return;
+      }
+
+      const creator = await creatorRes.json();
+      const events = eventsRes.ok ? await eventsRes.json() : [];
+      const me = meRes && meRes.ok ? await meRes.json() : null;
+      const isSelf = me && String(me._id || me.id || "") === creatorId;
+      const following = me && Array.isArray(me.following)
+        ? me.following.map((x) => String(x))
+        : [];
+      const isFollowing = following.includes(creatorId);
+
+      document.getElementById("creatorCard").innerHTML = `
+        <div class="flex items-center gap-4">
+          <img src="${esc(avatarUrl(creator.profileImage, creator.name))}" alt="creator" class="h-16 w-16 rounded-full object-cover">
+          <div class="min-w-0 flex-1">
+            <h1 class="text-xl font-semibold">${esc(creator.name || "Creator")}</h1>
+            <p class="text-sm text-slate-400">${esc(creator.role || "user")} • ${Number(creator.followerCount || 0)} followers • ${Number(creator.followingCount || 0)} following</p>
+          </div>
+          ${token && !isSelf ? `<button id="followBtn" class="rounded-lg border border-cyan-500/40 px-3 py-1.5 text-sm text-cyan-200 hover:bg-slate-800">${isFollowing ? "Unfollow" : "Follow"}</button>` : ""}
+        </div>
+      `;
+
+      const list = document.getElementById("creatorEvents");
+      if (!Array.isArray(events) || !events.length) {
+        list.innerHTML = '<p class="text-slate-400">No published events by this creator yet.</p>';
+      } else {
+        list.innerHTML = events.map((e) => `
+          <article class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+            ${eventImageUrl(e) ? `<img src="${esc(eventImageUrl(e))}" alt="${esc(e.title || "Event")}" class="mb-3 h-36 w-full rounded-lg object-cover">` : ""}
+            <p class="text-xs text-slate-500">${esc(formatDate(e.date))}</p>
+            <h3 class="mt-1 text-base font-semibold">${esc(e.title || "Untitled Event")}</h3>
+            <p class="mt-1 text-sm text-slate-300">${esc(e.location || "TBD")} • ${esc(e.category || "Other")}</p>
+            <a href="/event-details.html?id=${encodeURIComponent(String(e._id || ""))}" class="mt-2 inline-block rounded-md border border-slate-700 px-2 py-1 text-xs hover:bg-slate-800">Open Event</a>
+          </article>
+        `).join("");
+      }
+
+      const followBtn = document.getElementById("followBtn");
+      if (followBtn) {
+        followBtn.addEventListener("click", async () => {
+          const shouldUnfollow = followBtn.textContent.trim().toLowerCase() === "unfollow";
+          const res = await fetch(`/api/auth/follow/${encodeURIComponent(creatorId)}`, {
+            method: shouldUnfollow ? "DELETE" : "POST",
+            headers: { Authorization: token }
+          });
+          if (!res.ok) return;
+          followBtn.textContent = shouldUnfollow ? "Follow" : "Unfollow";
+        });
+      }
+    }
+
+    loadCreator();
+  </script>
+  <script src="nav-auth.js?v=20260302a"></script>
+</body>
+</html>
