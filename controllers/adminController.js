@@ -458,7 +458,7 @@ exports.sendTestWhatsApp = async (req, res) => {
     const msg = await twilioBreaker.execute(() =>
       withRetry(
         () => twilioClient.messages.create({
-          body: "Test WhatsApp message from Smart Event System.",
+          body: "Test WhatsApp message from Evenix.",
           from: process.env.TWILIO_WHATSAPP_FROM,
           to: `whatsapp:${to}`,
           ...(process.env.TWILIO_STATUS_CALLBACK_URL

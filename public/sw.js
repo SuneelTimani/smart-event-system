@@ -88,7 +88,7 @@ self.addEventListener("push", (event) => {
     }
   })();
 
-  const title = String(data.title || "Smart Event System");
+  const title = String(data.title || "Evenix");
   const options = {
     body: String(data.body || "You have a new event reminder."),
     icon: String(data.icon || "/assets/web-logo.png"),

@@ -1,229 +1,304 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Dashboard | Smart Event System</title>
+  <title>User Dashboard | Evenix</title>
   <link rel="icon" type="image/png" href="/assets/web-logo.png">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #080B14;
+      --bg-surface: #0D1117;
+      --bg-elevated: #161B27;
+      --bg-hover: #1E2536;
+      --brand-primary: #7C6AF7;
+      --brand-glow: rgba(124, 106, 247, 0.15);
+      --brand-accent: #F59E0B;
+      --text-primary: #F0F2F8;
+      --text-secondary: #8892A4;
+      --text-muted: #4A5568;
+      --border-default: rgba(255,255,255,0.06);
+      --border-strong: rgba(255,255,255,0.12);
+      --font-display: "Instrument Serif", serif;
+      --font-body: "DM Sans", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: var(--font-body);
+      color: var(--text-primary);
+      background:
+        radial-gradient(circle at top left, rgba(124,106,247,0.14), transparent 24%),
+        radial-gradient(circle at bottom right, rgba(245,158,11,0.08), transparent 18%),
+        var(--bg-base);
+    }
+    a { color: inherit; text-decoration: none; }
+    button, input, select { font: inherit; }
+    .page-shell { width: min(1200px, calc(100% - 32px)); margin: 0 auto; padding: 24px 0 40px; }
+    .hero { padding-top: 26px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.08); background: rgba(124,106,247,0.08); color: #c4b5fd; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
+    .hero-title { margin: 16px 0 10px; font-family: var(--font-display); font-size: clamp(2.6rem, 4vw, 4rem); font-weight: 400; line-height: 1.03; letter-spacing: -0.03em; }
+    .hero-copy { max-width: 44rem; color: var(--text-secondary); line-height: 1.7; }
+    .dashboard-layout { display: grid; grid-template-columns: 320px 1fr; gap: 24px; margin-top: 28px; }
+    .card { background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: 20px; padding: 24px; transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s; }
+    .card:hover { border-color: var(--border-strong); transform: translateY(-2px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+    .sidebar { display: grid; gap: 18px; align-self: start; position: sticky; top: 100px; }
+    .profile-card { background: linear-gradient(180deg, rgba(13,17,23,0.98), rgba(13,17,23,0.86)), radial-gradient(circle at top right, rgba(124,106,247,0.16), transparent 30%); }
+    .profile-top { display: flex; align-items: center; gap: 14px; }
+    .avatar-ring { width: 78px; height: 78px; padding: 3px; border-radius: 999px; background: linear-gradient(135deg, rgba(124,106,247,0.95), rgba(245,158,11,0.52)); box-shadow: 0 0 24px var(--brand-glow); flex: 0 0 auto; }
+    .avatar-ring img { width: 100%; height: 100%; border-radius: 999px; object-fit: cover; display: block; background: #111827; }
+    .profile-name { margin: 0; font-size: 1.25rem; font-weight: 600; }
+    .profile-meta { margin: 6px 0 0; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; }
+    .profile-bio { margin: 16px 0 0; color: var(--text-secondary); line-height: 1.6; }
+    .follow-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+    .mini-stat { padding: 14px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); }
+    .mini-stat strong { display: block; font-size: 1.15rem; }
+    .mini-stat span { color: var(--text-secondary); font-size: 0.82rem; }
+    .stat-list { display: grid; gap: 12px; }
+    .stat-row { display: flex; justify-content: space-between; gap: 10px; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .stat-row:last-child { border-bottom: 0; padding-bottom: 0; }
+    .stat-label { color: var(--text-secondary); font-size: 0.88rem; }
+    .stat-value { font-weight: 600; text-align: right; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 6px 12px; width: fit-content; background: rgba(124,106,247,0.16); color: #c4b5fd; font-size: 0.76rem; font-weight: 600; }
+    .main-column { display: grid; gap: 18px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .summary-card { position: relative; overflow: hidden; }
+    .summary-card::before { content: ""; position: absolute; inset: auto -20% -50% auto; width: 180px; height: 180px; border-radius: 999px; background: rgba(124,106,247,0.08); filter: blur(6px); }
+    .summary-label { color: var(--text-secondary); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.08em; }
+    .summary-value { margin: 14px 0 6px; font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 700; }
+    .summary-note { color: var(--text-secondary); font-size: 0.9rem; }
+    .tabs-card { padding: 18px 18px 20px; }
+    .tabs-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+    .tabs { display: flex; gap: 18px; flex-wrap: wrap; }
+    .tab-btn { position: relative; background: transparent; border: 0; color: var(--text-secondary); padding: 0 0 12px; cursor: pointer; font-size: 0.95rem; transition: color 0.15s ease; }
+    .tab-btn:hover, .tab-btn[aria-selected="true"] { color: var(--text-primary); }
+    .tab-btn[aria-selected="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; border-radius: 999px; background: var(--brand-primary); }
+    .refresh-btn { border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: var(--text-primary); min-height: 40px; padding: 0 14px; cursor: pointer; transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease; }
+    .refresh-btn:hover { transform: translateY(-1px); border-color: rgba(124,106,247,0.35); background: var(--bg-hover); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .panel-grid { display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .item-card { position: relative; border-radius: 18px; border: 1px solid rgba(255,255,255,0.06); background: linear-gradient(180deg, rgba(13,17,23,0.88), rgba(22,27,39,0.82)); padding: 18px; overflow: hidden; }
+    .item-card::before { content: ""; position: absolute; inset: auto -35% -55% auto; width: 180px; height: 180px; border-radius: 999px; background: rgba(124,106,247,0.06); }
+    .item-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .item-title { margin: 0; font-size: 1.1rem; font-weight: 600; }
+    .item-subtitle { margin: 8px 0 0; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; }
+    .pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 6px 10px; font-size: 0.75rem; font-weight: 600; background: rgba(124,106,247,0.14); color: #c4b5fd; white-space: nowrap; }
+    .pill.pending { background: rgba(56,189,248,0.14); color: #7dd3fc; }
+    .pill.confirmed { background: rgba(16,185,129,0.14); color: #6ee7b7; }
+    .pill.cancelled, .pill.refunded { background: rgba(239,68,68,0.14); color: #fca5a5; }
+    .pill.checked_in { background: rgba(245,158,11,0.14); color: #fcd34d; }
+    .pill.payment-unpaid { background: rgba(255,255,255,0.08); color: #cbd5e1; }
+    .pill.payment-paid { background: rgba(16,185,129,0.14); color: #6ee7b7; }
+    .meta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; color: var(--text-secondary); font-size: 0.84rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .action-btn { min-height: 40px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: var(--text-primary); cursor: pointer; transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease; }
+    .action-btn:hover { transform: translateY(-1px); border-color: rgba(124,106,247,0.35); background: var(--bg-hover); }
+    .action-btn.danger { border-color: rgba(239,68,68,0.24); color: #fca5a5; }
+    .action-btn.warning { border-color: rgba(245,158,11,0.24); color: #fcd34d; }
+    .action-btn.link { color: #ddd6fe; }
+    .creator-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+    .creator-avatar { width: 34px; height: 34px; border-radius: 999px; object-fit: cover; background: #111827; border: 1px solid rgba(255,255,255,0.08); }
+    .reason-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    .chip { border-radius: 999px; padding: 5px 10px; font-size: 0.74rem; }
+    .chip.violet { background: rgba(124,106,247,0.15); color: #c4b5fd; }
+    .chip.amber { background: rgba(245,158,11,0.15); color: #fcd34d; }
+    .chip.emerald { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+    .inline-reminder { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .inline-reminder button { min-height: 34px; border-radius: 999px; border: 1px solid rgba(245,158,11,0.25); background: rgba(245,158,11,0.08); color: #fcd34d; padding: 0 12px; cursor: pointer; }
+    .empty-state { display: grid; place-items: center; min-height: 260px; padding: 28px; border-radius: 22px; border: 1px dashed rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); text-align: center; }
+    .empty-icon { width: 58px; height: 58px; border-radius: 18px; display: grid; place-items: center; background: rgba(124,106,247,0.12); color: #c4b5fd; margin-bottom: 14px; }
+    .empty-title { font-size: 1.08rem; font-weight: 600; margin: 0; }
+    .empty-copy { color: var(--text-secondary); max-width: 30rem; margin: 8px auto 0; line-height: 1.6; }
+    .skeleton-card { height: 210px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.05); background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.07), rgba(255,255,255,0.03)); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+    @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+    dialog.transfer-dialog { width: min(560px, calc(100% - 24px)); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; background: rgba(13,17,23,0.98); color: var(--text-primary); padding: 0; box-shadow: 0 24px 60px rgba(0,0,0,0.4); }
+    dialog.transfer-dialog::backdrop { background: rgba(8,11,20,0.62); backdrop-filter: blur(8px); }
+    .dialog-card { padding: 24px; }
+    .dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+    .dialog-close { width: 38px; height: 38px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: var(--text-primary); cursor: pointer; }
+    .dialog-grid { display: grid; gap: 14px; }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+    @media (max-width: 1024px) { .dashboard-layout { grid-template-columns: 1fr; } .sidebar { position: static; } }
+    @media (max-width: 760px) { .page-shell { width: min(100%, calc(100% - 20px)); } .summary-grid, .panel-grid { grid-template-columns: 1fr; } .tabs-header { flex-direction: column; align-items: flex-start; } .tabs { gap: 14px; } }
+  </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100">
-  <div class="mx-auto max-w-6xl px-4 py-8">
-    <header class="flex flex-col gap-4">
-      <nav data-role-nav class="flex flex-col gap-4 border border-slate-800 bg-slate-900/70 px-4 py-3 backdrop-blur md:flex-row md:items-center md:justify-between rounded-xl">
-        <div class="flex items-center gap-3">
-          <img src="/assets/web-logo.png" alt="Smart Event System" class="h-9 w-9 rounded-lg object-cover">
-          <div>
-            <p class="text-sm font-semibold">Smart Event System</p>
-            <p class="text-xs text-slate-400">Manage and discover events</p>
+<body>
+  <div data-role-nav></div>
+
+  <main class="page-shell">
+    <section class="hero">
+      <span class="eyebrow">Personal dashboard</span>
+      <h1 id="dashboardTitle" class="hero-title">Your Evenix dashboard</h1>
+      <p class="hero-copy">Track bookings, review what you saved, follow creators worth watching, and understand why new events are being recommended to you.</p>
+    </section>
+
+    <section class="dashboard-layout">
+      <aside class="sidebar">
+        <section class="card profile-card">
+          <div class="profile-top">
+            <div class="avatar-ring"><img id="profileAvatar" src="/assets/web-logo.png" alt="Profile avatar"></div>
+            <div>
+              <p id="profileName" class="profile-name">User</p>
+              <p id="profileEmail" class="profile-meta">Loading account...</p>
+              <span id="profileBadge" class="badge">Verified account</span>
+            </div>
           </div>
-        </div>
-        <div class="flex flex-wrap gap-2 text-sm">
-          <a class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800" href="/">Home</a>
-          <a data-nav="auth" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/user.html">User Dashboard</a>
-          <a data-nav="auth" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/book.html">Book Event</a>
-          <a data-nav="admin" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/create-event.html">Create Event</a>
-          <a data-nav="admin" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/admin.html">Admin Dashboard</a>
-          <a data-nav="guest" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800" href="/login.html">Login</a>
-          
-            <a data-nav="auth-avatar" class="hidden inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ring-2 ring-amber-300/40" href="/profile.html"><img data-nav-avatar-img src="https://ui-avatars.com/api/?name=U&background=0f172a&color=f59e0b&size=96" alt="Profile" class="h-full w-full object-cover"></a>
-        </div>
-      </nav>
-      <div>
-        <h1 id="dashboardTitle" class="text-3xl font-semibold">Dashboard</h1>
-        <p class="text-slate-400">Your bookings and personalized insights.</p>
-      </div>
-    </header>
+          <p class="profile-bio">Your saved events, bookings, and followed creators all appear here once loaded.</p>
+          <div class="follow-stats">
+            <div class="mini-stat"><strong id="followingCount">0</strong><span>Following</span></div>
+            <div class="mini-stat"><strong id="followersCount">0</strong><span>Followers</span></div>
+          </div>
+        </section>
 
-    <section class="mt-8 grid gap-4 md:grid-cols-3">
-      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
-        <p class="text-sm text-slate-400">Total Bookings</p>
-        <p id="totalBookings" class="mt-2 text-2xl font-semibold">0</p>
-      </div>
-      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
-        <p class="text-sm text-slate-400">Upcoming Event</p>
-        <p id="nextEvent" class="mt-2 text-sm text-slate-300">-</p>
-      </div>
-      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
-        <p class="text-sm text-slate-400">Recent Activity</p>
-        <p id="recentActivity" class="mt-2 text-sm text-slate-300">-</p>
+        <section class="card">
+          <div class="stat-list">
+            <div class="stat-row"><span class="stat-label">Events attended</span><strong id="eventsAttended" class="stat-value">0</strong></div>
+            <div class="stat-row"><span class="stat-label">Upcoming bookings</span><strong id="upcomingCount" class="stat-value">0</strong></div>
+            <div class="stat-row"><span class="stat-label">Saved events</span><strong id="savedCount" class="stat-value">0</strong></div>
+            <div class="stat-row"><span class="stat-label">Recommendation fit</span><strong id="reputationBadge" class="stat-value">High</strong></div>
+          </div>
+        </section>
+      </aside>
+
+      <div class="main-column">
+        <section class="summary-grid">
+          <article class="card summary-card"><p class="summary-label">Total bookings</p><p id="totalBookings" class="summary-value">0</p><p id="recentActivity" class="summary-note">No recent activity yet.</p></article>
+          <article class="card summary-card"><p class="summary-label">Next event</p><p id="nextEvent" class="summary-value" style="font-size:1.35rem; line-height:1.25;">-</p><p class="summary-note">The next published event in your discovery feed.</p></article>
+          <article class="card summary-card"><p class="summary-label">Saved reminders</p><p id="savedSummary" class="summary-value">0</p><p class="summary-note">Reminder preferences you can adjust without leaving this page.</p></article>
+        </section>
+
+        <section class="card tabs-card">
+          <div class="tabs-header">
+            <div class="tabs" role="tablist" aria-label="Dashboard sections">
+              <button class="tab-btn" role="tab" aria-selected="true" data-tab="bookings">My Bookings</button>
+              <button class="tab-btn" role="tab" aria-selected="false" data-tab="recommended">Recommended</button>
+              <button class="tab-btn" role="tab" aria-selected="false" data-tab="following">Following Feed</button>
+              <button class="tab-btn" role="tab" aria-selected="false" data-tab="saved">Saved Events</button>
+            </div>
+            <button id="refreshBtn" class="refresh-btn" type="button">Refresh dashboard</button>
+          </div>
+          <div id="bookingsPanel" class="tab-panel active" data-panel="bookings"><div id="bookings" class="panel-grid"></div></div>
+          <div id="recommendedPanel" class="tab-panel" data-panel="recommended"><div id="recommended" class="panel-grid"></div></div>
+          <div id="followingPanel" class="tab-panel" data-panel="following"><div id="followingFeed" class="panel-grid"></div></div>
+          <div id="savedPanel" class="tab-panel" data-panel="saved"><div id="savedEvents" class="panel-grid"></div></div>
+        </section>
       </div>
     </section>
+  </main>
 
-    <section class="mt-8 grid gap-6 lg:grid-cols-3">
-      <div class="lg:col-span-2 rounded-xl border border-slate-800 bg-slate-900 p-4">
-        <div class="mb-3 flex items-center justify-between">
-          <h2 class="text-lg font-semibold">My Bookings</h2>
-          <button id="refreshBtn"
-                  class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 text-sm hover:bg-slate-800">
-            Refresh
-          </button>
-        </div>
-        <div id="bookings" class="grid gap-3 md:grid-cols-2"></div>
+  <dialog id="transferDialog" class="transfer-dialog">
+    <form method="dialog" class="dialog-card" id="transferForm">
+      <div class="dialog-head">
+        <div><p class="eyebrow" style="margin:0;">Transfer ticket</p><h2 style="margin:12px 0 0; font-size:1.35rem;">Reassign this booking</h2></div>
+        <button type="button" class="dialog-close" id="closeTransferDialog" aria-label="Close transfer dialog">×</button>
       </div>
-
-      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
-        <h2 class="text-lg font-semibold">Recommended Events</h2>
-        <div id="recommended" class="mt-3 grid gap-2 text-sm text-slate-400"></div>
+      <div class="dialog-grid">
+        <div><label class="label" for="transferName">Attendee name</label><input class="input" id="transferName" required></div>
+        <div><label class="label" for="transferEmail">Attendee email</label><input class="input" id="transferEmail" type="email" required></div>
+        <div><label class="label" for="transferWhatsApp">WhatsApp (optional)</label><input class="input" id="transferWhatsApp" placeholder="+15551234567"></div>
+        <input type="hidden" id="transferBookingId"><p id="transferStatus" class="status" aria-live="polite"></p>
       </div>
-    </section>
+      <div class="dialog-actions"><button type="button" class="action-btn" id="cancelTransferBtn">Cancel</button><button type="submit" class="action-btn link">Confirm transfer</button></div>
+    </form>
+  </dialog>
 
-    <section class="mt-6">
-      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
-        <h2 class="text-lg font-semibold">From Creators You Follow</h2>
-        <div id="followingFeed" class="mt-3 grid gap-3 md:grid-cols-2"></div>
-      </div>
-    </section>
-
-    <section class="mt-6">
-      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
-        <h2 class="text-lg font-semibold">Saved Events & Reminders</h2>
-        <div id="savedEvents" class="mt-3 grid gap-3 md:grid-cols-2"></div>
-      </div>
-    </section>
-  </div>
-
-  <script src="ui-feedback.js"></script>
+  <script src="/ui-feedback.js"></script>
   <script>
     const token = localStorage.getItem("token");
-    if (!token) {
-      window.location.href = "/login.html";
-    }
+    if (!token) window.location.href = "/login.html";
 
-    function authHeaders() {
-      return token ? { Authorization: token } : {};
-    }
-
+    const dashboardState = { me: null, bookings: [], events: [], recommended: [], following: [], saved: [], activeTab: "bookings" };
+    const authHeaders = () => (token ? { Authorization: token } : {});
+    const avatarUrl = (name, profileImage) => profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "User")}&background=7C6AF7&color=fff&size=96`;
     function escapeHtml(value) {
-      return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
+      return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;");
     }
-
     function recommendationLabel(reason) {
       const map = {
-        creator_you_follow: "Creator you follow",
-        similar_creators: "Similar to creators you book",
-        category_match: "Matches your categories",
-        near_you: "Near your preferred location",
-        happening_soon: "Happening soon",
-        upcoming: "Upcoming event",
-        trending: "Trending"
+        creator_you_follow: ["Creator you follow", "violet"],
+        similar_creators: ["Because you liked similar creators", "violet"],
+        category_match: ["Because you liked this category", "violet"],
+        near_you: ["Close to your preferred locations", "amber"],
+        happening_soon: ["Happening soon", "emerald"],
+        upcoming: ["Upcoming", "amber"],
+        trending: ["Trending now", "amber"]
       };
-      return map[String(reason || "")] || "Recommended";
+      return map[String(reason || "")] || ["Recommended", "violet"];
     }
-
-    function renderRecommendationChips(reasons) {
-      const rows = Array.isArray(reasons) ? reasons.slice(0, 3) : [];
-      if (!rows.length) {
-        return '<span class="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 text-[11px] text-cyan-200">Recommended</span>';
-      }
-      return rows.map((r) =>
-        `<span class="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 text-[11px] text-cyan-200">${escapeHtml(recommendationLabel(r))}</span>`
-      ).join(" ");
+    function formatDate(dateValue) {
+      const date = new Date(dateValue);
+      if (Number.isNaN(date.getTime())) return "TBD";
+      return date.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
     }
+    function formatDateTime(dateValue) {
+      const date = new Date(dateValue);
+      if (Number.isNaN(date.getTime())) return "TBD";
+      return date.toLocaleString([], { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+    }
+    const statusPill = (status) => `<span class="pill ${String(status || "pending").toLowerCase()}">${escapeHtml(String(status || "pending").replace(/_/g, " "))}</span>`;
+    const paymentPill = (status) => `<span class="pill payment-${String(status || "unpaid").toLowerCase()}">${escapeHtml(String(status || "unpaid").toLowerCase())}</span>`;
+    function renderEmptyState(title, subtitle) {
+      return `<div class="empty-state"><div><div class="empty-icon" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14"/><path d="M12 5v14"/></svg></div><p class="empty-title">${escapeHtml(title)}</p><p class="empty-copy">${escapeHtml(subtitle)}</p></div></div>`;
+    }
+    const renderSkeletonGrid = (count = 4) => Array.from({ length: count }).map(() => '<div class="skeleton-card"></div>').join("");
 
     async function cancelBooking(id) {
-      const res = await fetch(`/api/bookings/${id}/cancel`, {
-        method: "PATCH",
-        headers: authHeaders()
-      });
-
+      const res = await fetch(`/api/bookings/${id}/cancel`, { method: "PATCH", headers: authHeaders() });
       if (!res.ok) {
         let message = "Failed to cancel booking.";
-        try {
-          const err = await res.json();
-          message = err.error || message;
-        } catch (_) {}
+        try { const err = await res.json(); message = err.error || message; } catch (_) {}
         showToast(message, "error");
         return;
       }
-
       showToast("Booking cancelled.", "success");
       await loadDashboard();
     }
-
-    async function transferBooking(id) {
-      const attendeeName = prompt("New attendee name:");
-      if (!attendeeName) return;
-      const attendeeEmail = prompt("New attendee email:");
-      if (!attendeeEmail) return;
-      const attendeeWhatsApp = prompt("New attendee WhatsApp in +E164 (optional):", "") || "";
-
-      const res = await fetch(`/api/bookings/${id}/transfer`, {
-        method: "PATCH",
-        headers: { ...authHeaders(), "Content-Type": "application/json" },
-        body: JSON.stringify({
-          attendeeName: attendeeName.trim(),
-          attendeeEmail: attendeeEmail.trim(),
-          attendeeWhatsApp: attendeeWhatsApp.trim()
-        })
-      });
-
-      if (!res.ok) {
-        let message = "Failed to transfer booking.";
-        try {
-          const err = await res.json();
-          message = err.error || message;
-        } catch (_) {}
-        showToast(message, "error");
-        return;
-      }
-
-      showToast("Booking transferred.", "success");
-      await loadDashboard();
-    }
-
     async function saveEvent(eventId, reminderHoursBefore = 24) {
-      const res = await fetch(`/api/events/${encodeURIComponent(String(eventId || ""))}/save`, {
-        method: "POST",
-        headers: { ...authHeaders(), "Content-Type": "application/json" },
-        body: JSON.stringify({ reminderHoursBefore })
-      });
+      const res = await fetch(`/api/events/${encodeURIComponent(String(eventId || ""))}/save`, { method: "POST", headers: { ...authHeaders(), "Content-Type": "application/json" }, body: JSON.stringify({ reminderHoursBefore }) });
       if (!res.ok) {
         let message = "Failed to save event.";
-        try {
-          const err = await res.json();
-          message = err.error || message;
-        } catch (_) {}
+        try { const err = await res.json(); message = err.error || message; } catch (_) {}
         showToast(message, "error");
         return;
       }
       showToast("Event saved.", "success");
       await loadDashboard();
     }
-
     async function unsaveEvent(eventId) {
-      const res = await fetch(`/api/events/${encodeURIComponent(String(eventId || ""))}/save`, {
-        method: "DELETE",
-        headers: authHeaders()
-      });
+      const res = await fetch(`/api/events/${encodeURIComponent(String(eventId || ""))}/save`, { method: "DELETE", headers: authHeaders() });
       if (!res.ok) {
         let message = "Failed to remove saved event.";
-        try {
-          const err = await res.json();
-          message = err.error || message;
-        } catch (_) {}
+        try { const err = await res.json(); message = err.error || message; } catch (_) {}
         showToast(message, "error");
         return;
       }
       showToast("Removed from saved.", "success");
       await loadDashboard();
     }
+    function openTransferDialog(bookingId) {
+      document.getElementById("transferBookingId").value = bookingId;
+      document.getElementById("transferName").value = "";
+      document.getElementById("transferEmail").value = "";
+      document.getElementById("transferWhatsApp").value = "";
+      document.getElementById("transferStatus").textContent = "";
+      document.getElementById("transferDialog").showModal();
+    }
 
     async function loadDashboard() {
-      document.getElementById("bookings").innerHTML = uiSkeletonCards(2);
-      document.getElementById("recommended").innerHTML = uiSkeletonCards(2);
-      document.getElementById("followingFeed").innerHTML = uiSkeletonCards(2);
-      document.getElementById("savedEvents").innerHTML = uiSkeletonCards(2);
+      document.getElementById("bookings").innerHTML = renderSkeletonGrid(4);
+      document.getElementById("recommended").innerHTML = renderSkeletonGrid(4);
+      document.getElementById("followingFeed").innerHTML = renderSkeletonGrid(4);
+      document.getElementById("savedEvents").innerHTML = renderSkeletonGrid(4);
       const [bookingsRes, eventsRes, recommendationsRes, followingRes, savedRes, meRes] = await Promise.all([
         fetch("/api/bookings", { headers: authHeaders() }),
         fetch("/api/events?status=published&limit=30"),
-        fetch("/api/events/recommendations?limit=3", { headers: authHeaders() }),
-        fetch("/api/events/feed/following?limit=4", { headers: authHeaders() }),
+        fetch("/api/events/recommendations?limit=6", { headers: authHeaders() }),
+        fetch("/api/events/feed/following?limit=6", { headers: authHeaders() }),
         fetch("/api/events/saved", { headers: authHeaders() }),
         fetch("/api/auth/me", { headers: authHeaders() })
       ]);
@@ -231,142 +306,139 @@
         window.location.href = "/login.html";
         return;
       }
-      const bookings = await bookingsRes.json();
-      const events = await eventsRes.json();
-      const recommendedEvents = recommendationsRes.ok ? await recommendationsRes.json() : [];
-      const followingFeed = followingRes.ok ? await followingRes.json() : [];
-      const savedEvents = savedRes.ok ? await savedRes.json() : [];
-      const me = meRes.ok ? await meRes.json() : null;
-      const displayName = (me && me.name) ? me.name : "User";
-      document.getElementById("dashboardTitle").textContent = `${displayName}'s Dashboard`;
-
-      document.getElementById("totalBookings").textContent = bookings.length;
-      document.getElementById("recentActivity").textContent =
-        bookings[0] ? `Last booking on ${new Date(bookings[0].date).toLocaleDateString()}` : "-";
-
-      const next = events.find((e) => e.status !== "cancelled");
-      document.getElementById("nextEvent").textContent =
-        next ? `${next.title} (${new Date(next.date).toLocaleDateString()})` : "-";
-
-      if (!bookings.length) {
-        document.getElementById("bookings").innerHTML = uiEmptyState("No bookings yet", "Book an event to see it here.");
-      } else {
-        document.getElementById("bookings").innerHTML = bookings.map((b) => `
-        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
-          <p class="text-sm text-slate-400">${escapeHtml(b.eventId?.title || "Unknown Event")}</p>
-          <p class="font-semibold">${escapeHtml(b.ticketType || "Standard")} x ${escapeHtml(b.quantity || 1)}</p>
-          <p class="mt-1 text-xs text-slate-400">Status: ${escapeHtml(b.status || "pending")} | Payment: ${escapeHtml(b.paymentStatus || "unpaid")}</p>
-          <p class="mt-1 text-xs text-slate-500">Cancel cutoff: ${escapeHtml(b.eventId?.cancelWindowHoursBefore ?? 24)}h | Transfer cutoff: ${escapeHtml(b.eventId?.transferWindowHoursBefore ?? 2)}h before event</p>
-          <p class="mt-1 text-xs text-slate-500">${escapeHtml(new Date(b.date).toLocaleDateString())}</p>
-          ${(b.status === "pending" || b.status === "confirmed") ? `
-            <button class="mt-2 rounded-md border border-rose-700 px-2 py-1 text-xs text-rose-300 hover:bg-rose-900/30"
-                    onclick="cancelBooking('${encodeURIComponent(String(b._id || ""))}')">
-              Cancel Booking
-            </button>
-            <button class="mt-2 ml-2 rounded-md border border-sky-700 px-2 py-1 text-xs text-sky-300 hover:bg-sky-900/30"
-                    onclick="transferBooking('${encodeURIComponent(String(b._id || ""))}')">
-              Transfer Ticket
-            </button>
-          ` : ""}
-        </div>
-      `).join("");
-      }
-
-      if (!Array.isArray(recommendedEvents) || !recommendedEvents.length) {
-        document.getElementById("recommended").innerHTML = uiEmptyState("No events available", "Ask admin to publish events.");
-      } else {
-        document.getElementById("recommended").innerHTML = recommendedEvents.map((e) => `
-        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
-          <p class="font-semibold">${escapeHtml(e.title || "Untitled Event")}</p>
-          <p class="text-xs text-slate-500">${escapeHtml(e.location || "TBD")} | ${escapeHtml(e.category || "Other")}</p>
-          <div class="mt-2 flex flex-wrap gap-1">${renderRecommendationChips(e.recommendationReasons)}</div>
-          <a href="/event-details.html?id=${encodeURIComponent(String(e._id || ""))}" class="mt-2 inline-block rounded-md border border-slate-700 px-2 py-1 text-xs hover:bg-slate-800">View</a>
-          <button class="mt-2 ml-2 rounded-md border border-amber-700 px-2 py-1 text-xs text-amber-300 hover:bg-amber-900/30"
-                  onclick="saveEvent('${encodeURIComponent(String(e._id || ""))}', 24)">
-            Save
-          </button>
-        </div>
-      `).join("");
-      }
-
-      if (!Array.isArray(savedEvents) || !savedEvents.length) {
-        document.getElementById("savedEvents").innerHTML = uiEmptyState(
-          "No saved events yet",
-          "Use Save on recommended or creator-feed events."
-        );
-      } else {
-        document.getElementById("savedEvents").innerHTML = savedEvents.map((row) => {
-          const e = row?.event || {};
-          const reminder = Number(row?.reminderHoursBefore || 24);
-          return `
-          <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
-            <p class="font-semibold">${escapeHtml(e.title || "Untitled Event")}</p>
-            <p class="text-xs text-slate-500">${escapeHtml(e.location || "TBD")} | ${escapeHtml(e.category || "Other")}</p>
-            <p class="mt-1 text-xs text-amber-300">Reminder: ${escapeHtml(reminder)}h before event</p>
-            <div class="mt-2 flex items-center gap-2">
-              <a href="/event-details.html?id=${encodeURIComponent(String(e._id || ""))}" class="inline-block rounded-md border border-slate-700 px-2 py-1 text-xs hover:bg-slate-800">View</a>
-              <button class="rounded-md border border-rose-700 px-2 py-1 text-xs text-rose-300 hover:bg-rose-900/30"
-                      onclick="unsaveEvent('${encodeURIComponent(String(e._id || ""))}')">
-                Remove
-              </button>
-              <button class="rounded-md border border-amber-700 px-2 py-1 text-xs text-amber-300 hover:bg-amber-900/30"
-                      onclick="saveEvent('${encodeURIComponent(String(e._id || ""))}', 2)">
-                2h Reminder
-              </button>
-              <button class="rounded-md border border-amber-700 px-2 py-1 text-xs text-amber-300 hover:bg-amber-900/30"
-                      onclick="saveEvent('${encodeURIComponent(String(e._id || ""))}', 24)">
-                24h Reminder
-              </button>
-            </div>
-          </div>
-        `;
-        }).join("");
-      }
-
-      if (!Array.isArray(followingFeed) || !followingFeed.length) {
-        document.getElementById("followingFeed").innerHTML = uiEmptyState(
-          "No followed creators yet",
-          "Follow creators from event details to build your feed."
-        );
-      } else {
-        document.getElementById("followingFeed").innerHTML = followingFeed.map((e) => {
-          const creatorName = e?.createdBy?.name || e?.organizer || "Creator";
-          const creatorImage = e?.createdBy?.profileImage || "https://ui-avatars.com/api/?name=" + encodeURIComponent(creatorName) + "&background=0f172a&color=f59e0b&size=96";
-          return `
-          <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
-            <div class="mb-2 flex items-center gap-2">
-              <img src="${escapeHtml(creatorImage)}" alt="${escapeHtml(creatorName)}" class="h-7 w-7 rounded-full object-cover" />
-              <p class="text-xs text-slate-400">${escapeHtml(creatorName)}</p>
-            </div>
-            <p class="font-semibold">${escapeHtml(e.title || "Untitled Event")}</p>
-            <p class="text-xs text-slate-500">${escapeHtml(e.location || "TBD")} | ${escapeHtml(new Date(e.date).toLocaleDateString())}</p>
-            <a href="/event-details.html?id=${encodeURIComponent(String(e._id || ""))}" class="mt-2 inline-block rounded-md border border-slate-700 px-2 py-1 text-xs hover:bg-slate-800">View</a>
-            <button class="mt-2 ml-2 rounded-md border border-amber-700 px-2 py-1 text-xs text-amber-300 hover:bg-amber-900/30"
-                    onclick="saveEvent('${encodeURIComponent(String(e._id || ""))}', 24)">
-              Save
-            </button>
-          </div>
-        `;
-        }).join("");
-      }
+      dashboardState.bookings = await bookingsRes.json();
+      dashboardState.events = await eventsRes.json();
+      dashboardState.recommended = recommendationsRes.ok ? await recommendationsRes.json() : [];
+      dashboardState.following = followingRes.ok ? await followingRes.json() : [];
+      dashboardState.saved = savedRes.ok ? await savedRes.json() : [];
+      dashboardState.me = meRes.ok ? await meRes.json() : null;
+      renderProfile();
+      renderSummary();
+      renderBookings();
+      renderRecommended();
+      renderFollowing();
+      renderSaved();
     }
 
-    document.getElementById("refreshBtn").addEventListener("click", loadDashboard);
-    window.transferBooking = transferBooking;
-    window.saveEvent = saveEvent;
-    window.unsaveEvent = unsaveEvent;
+    function renderProfile() {
+      const me = dashboardState.me || {};
+      const displayName = me.name || "User";
+      document.getElementById("dashboardTitle").textContent = `${displayName}'s dashboard`;
+      document.getElementById("profileName").textContent = displayName;
+      document.getElementById("profileEmail").textContent = me.email || "No email available";
+      document.getElementById("profileAvatar").src = avatarUrl(displayName, me.profileImage);
+      document.getElementById("followingCount").textContent = Number(me.followingCount || 0);
+      document.getElementById("followersCount").textContent = Number(me.followersCount || 0);
+      document.getElementById("eventsAttended").textContent = dashboardState.bookings.filter((b) => String(b.status || "").toLowerCase() === "checked_in").length;
+      document.getElementById("upcomingCount").textContent = dashboardState.bookings.filter((b) => ["pending", "confirmed"].includes(String(b.status || "").toLowerCase())).length;
+      document.getElementById("savedCount").textContent = dashboardState.saved.length;
+      document.getElementById("reputationBadge").textContent = dashboardState.recommended.length >= 3 ? "Strong" : "Growing";
+    }
+    function renderSummary() {
+      const bookings = dashboardState.bookings;
+      document.getElementById("totalBookings").textContent = bookings.length;
+      document.getElementById("recentActivity").textContent = bookings[0] ? `Last booking on ${formatDate(bookings[0].date)}` : "No recent booking activity yet.";
+      const next = dashboardState.events.find((e) => String(e.status || "published") !== "cancelled");
+      document.getElementById("nextEvent").textContent = next ? `${next.title} · ${formatDate(next.date)}` : "No upcoming event found";
+      document.getElementById("savedSummary").textContent = String(dashboardState.saved.length);
+    }
+    function renderBookings() {
+      const root = document.getElementById("bookings");
+      if (!dashboardState.bookings.length) {
+        root.innerHTML = renderEmptyState("No bookings yet", "Book an event to see confirmations, ticket status, and transfer actions here.");
+        return;
+      }
+      root.innerHTML = dashboardState.bookings.map((b) => {
+        const canManage = ["pending", "confirmed"].includes(String(b.status || "").toLowerCase());
+        return `<article class="item-card"><div class="item-head"><div><h3 class="item-title">${escapeHtml(b.eventId?.title || "Unknown event")}</h3><p class="item-subtitle">${escapeHtml(b.ticketType || "Standard")} x ${escapeHtml(b.quantity || 1)} · ${formatDateTime(b.date)}</p></div><div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end;">${statusPill(b.status)}${paymentPill(b.paymentStatus)}</div></div><div class="meta-row"><span>Cancel cutoff: ${escapeHtml(b.eventId?.cancelWindowHoursBefore ?? 24)}h before event</span><span>Transfer cutoff: ${escapeHtml(b.eventId?.transferWindowHoursBefore ?? 2)}h before event</span></div><div class="actions"><a class="action-btn link" href="/ticket-confirmation.html?id=${encodeURIComponent(String(b._id || ""))}">Open pass</a>${canManage ? `<button class="action-btn danger" type="button" data-cancel-booking="${encodeURIComponent(String(b._id || ""))}">Cancel</button><button class="action-btn" type="button" data-transfer-booking="${encodeURIComponent(String(b._id || ""))}">Transfer</button>` : `<span class="pill">Management window closed</span>`}</div></article>`;
+      }).join("");
+    }
+    function renderRecommended() {
+      const root = document.getElementById("recommended");
+      if (!Array.isArray(dashboardState.recommended) || !dashboardState.recommended.length) {
+        root.innerHTML = renderEmptyState("No recommendations yet", "As you book, save, and follow creators, recommendations will become more useful.");
+        return;
+      }
+      root.innerHTML = dashboardState.recommended.map((e) => {
+        const chips = (Array.isArray(e.recommendationReasons) ? e.recommendationReasons.slice(0, 3) : []).map((reason) => {
+          const [label, tone] = recommendationLabel(reason);
+          return `<span class="chip ${tone}">${escapeHtml(label)}</span>`;
+        }).join("") || '<span class="chip violet">Recommended</span>';
+        return `<article class="item-card"><div class="item-head"><div><h3 class="item-title">${escapeHtml(e.title || "Untitled event")}</h3><p class="item-subtitle">${escapeHtml(e.location || "TBD")} · ${escapeHtml(e.category || "Other")}</p></div><span class="pill">${formatDate(e.date)}</span></div><div class="reason-chips">${chips}</div><div class="actions"><a class="action-btn link" href="/event-details.html?id=${encodeURIComponent(String(e._id || ""))}">View event</a><button class="action-btn warning" type="button" data-save-event="${encodeURIComponent(String(e._id || ""))}" data-reminder="24">Save</button></div></article>`;
+      }).join("");
+    }
+    function renderFollowing() {
+      const root = document.getElementById("followingFeed");
+      if (!Array.isArray(dashboardState.following) || !dashboardState.following.length) {
+        root.innerHTML = renderEmptyState("No followed creators yet", "Follow creators from event details pages to build a more personal feed.");
+        return;
+      }
+      root.innerHTML = dashboardState.following.map((e) => {
+        const creatorName = e?.createdBy?.name || e?.organizer || "Creator";
+        const creatorImage = avatarUrl(creatorName, e?.createdBy?.profileImage || "");
+        return `<article class="item-card"><div class="item-head"><div><h3 class="item-title">${escapeHtml(e.title || "Untitled event")}</h3><p class="item-subtitle">${escapeHtml(e.location || "TBD")} · ${formatDate(e.date)}</p></div><span class="pill">Following</span></div><div class="creator-row"><img class="creator-avatar" src="${escapeHtml(creatorImage)}" alt="${escapeHtml(creatorName)}"><div><div style="font-weight:600;">${escapeHtml(creatorName)}</div><div style="color:var(--text-secondary); font-size:0.85rem;">Creator in your feed</div></div></div><div class="actions"><a class="action-btn link" href="/event-details.html?id=${encodeURIComponent(String(e._id || ""))}">View event</a><button class="action-btn warning" type="button" data-save-event="${encodeURIComponent(String(e._id || ""))}" data-reminder="24">Save</button></div></article>`;
+      }).join("");
+    }
+    function renderSaved() {
+      const root = document.getElementById("savedEvents");
+      if (!Array.isArray(dashboardState.saved) || !dashboardState.saved.length) {
+        root.innerHTML = renderEmptyState("No saved events yet", "Save events from recommendations or creator feeds and manage reminders here.");
+        return;
+      }
+      root.innerHTML = dashboardState.saved.map((row) => {
+        const e = row?.event || {};
+        const reminder = Number(row?.reminderHoursBefore || 24);
+        return `<article class="item-card"><div class="item-head"><div><h3 class="item-title">${escapeHtml(e.title || "Untitled event")}</h3><p class="item-subtitle">${escapeHtml(e.location || "TBD")} · ${escapeHtml(e.category || "Other")}</p></div><span class="pill">${formatDate(e.date)}</span></div><div class="meta-row"><span>Current reminder: ${escapeHtml(reminder)}h before event</span></div><div class="inline-reminder"><button type="button" data-save-event="${encodeURIComponent(String(e._id || ""))}" data-reminder="2">2h reminder</button><button type="button" data-save-event="${encodeURIComponent(String(e._id || ""))}" data-reminder="24">24h reminder</button><button type="button" data-save-event="${encodeURIComponent(String(e._id || ""))}" data-reminder="72">72h reminder</button></div><div class="actions"><a class="action-btn link" href="/event-details.html?id=${encodeURIComponent(String(e._id || ""))}">View event</a><button class="action-btn danger" type="button" data-unsave-event="${encodeURIComponent(String(e._id || ""))}">Remove</button></div></article>`;
+      }).join("");
+    }
+
+    document.querySelectorAll('.tab-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        dashboardState.activeTab = btn.dataset.tab;
+        document.querySelectorAll('.tab-btn').forEach((b) => b.setAttribute('aria-selected', String(b === btn)));
+        document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.toggle('active', panel.dataset.panel === dashboardState.activeTab));
+      });
+    });
+    document.getElementById('refreshBtn').addEventListener('click', loadDashboard);
+    document.body.addEventListener('click', async (event) => {
+      const cancelBtn = event.target.closest('[data-cancel-booking]');
+      if (cancelBtn) return cancelBooking(cancelBtn.dataset.cancelBooking);
+      const transferBtn = event.target.closest('[data-transfer-booking]');
+      if (transferBtn) return openTransferDialog(transferBtn.dataset.transferBooking);
+      const saveBtn = event.target.closest('[data-save-event]');
+      if (saveBtn) return saveEvent(saveBtn.dataset.saveEvent, Number(saveBtn.dataset.reminder || 24));
+      const unsaveBtn = event.target.closest('[data-unsave-event]');
+      if (unsaveBtn) return unsaveEvent(unsaveBtn.dataset.unsaveEvent);
+    });
+
+    const transferDialog = document.getElementById('transferDialog');
+    document.getElementById('closeTransferDialog').addEventListener('click', () => transferDialog.close());
+    document.getElementById('cancelTransferBtn').addEventListener('click', () => transferDialog.close());
+    document.getElementById('transferForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const bookingId = document.getElementById('transferBookingId').value;
+      const attendeeName = document.getElementById('transferName').value.trim();
+      const attendeeEmail = document.getElementById('transferEmail').value.trim();
+      const attendeeWhatsApp = document.getElementById('transferWhatsApp').value.trim();
+      const status = document.getElementById('transferStatus');
+      status.textContent = 'Submitting transfer...';
+      const res = await fetch(`/api/bookings/${bookingId}/transfer`, { method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ attendeeName, attendeeEmail, attendeeWhatsApp }) });
+      if (!res.ok) {
+        let message = 'Failed to transfer booking.';
+        try { const err = await res.json(); message = err.error || message; } catch (_) {}
+        status.textContent = message;
+        showToast(message, 'error');
+        return;
+      }
+      showToast('Booking transferred.', 'success');
+      transferDialog.close();
+      await loadDashboard();
+    });
+
     loadDashboard();
   </script>
-  <script src="chat-widget.js"></script>
-  <script src="nav-auth.js?v=20260302a"></script>
+  <script src="/chat-widget.js"></script>
+  <script src="/nav-auth.js?v=1"></script>
+  <script src="footer.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-

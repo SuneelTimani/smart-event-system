@@ -204,7 +204,7 @@ exports.chatbot = async (req, res) => {
     };
 
     const systemPrompt = [
-      "You are the Smart Event System assistant.",
+      "You are the Evenix assistant.",
       "Be concise, practical, and user-friendly.",
       "Use only provided context; do not invent events.",
       "Return strict JSON with shape:",

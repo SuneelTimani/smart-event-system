@@ -1,135 +1,356 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Profile | Smart Event System</title>
+  <title>Profile | Evenix</title>
   <link rel="icon" type="image/png" href="/assets/web-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --bg-base: #080b14;
+      --bg-surface: #0d1117;
+      --bg-elevated: #161b27;
+      --bg-hover: #1e2536;
+      --brand-primary: #7c6af7;
+      --brand-accent: #f59e0b;
+      --brand-glow: rgba(124, 106, 247, 0.16);
+      --text-primary: #f0f2f8;
+      --text-secondary: #8892a4;
+      --border-default: rgba(255,255,255,0.07);
+      --border-strong: rgba(255,255,255,0.12);
+      --font-display: "Instrument Serif", serif;
+      --font-body: "DM Sans", sans-serif;
+    }
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      color: var(--text-primary);
+      background:
+        radial-gradient(900px 420px at 8% -8%, rgba(124, 106, 247, 0.18), transparent 58%),
+        radial-gradient(720px 340px at 95% 10%, rgba(245, 158, 11, 0.1), transparent 52%),
+        linear-gradient(180deg, #060912 0%, #0a0f19 48%, #080b14 100%);
+    }
+    .page-shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 48px;
+    }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      margin-top: 24px;
+      padding: 28px;
+      border-radius: 28px;
+      border: 1px solid var(--border-default);
+      background:
+        linear-gradient(135deg, rgba(124, 106, 247, 0.14), rgba(8, 11, 20, 0.02) 38%),
+        linear-gradient(180deg, rgba(13, 17, 23, 0.96), rgba(13, 17, 23, 0.88));
+      box-shadow: 0 28px 60px rgba(0, 0, 0, 0.35);
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #c4b5fd;
+      background: rgba(124,106,247,0.08);
+      border: 1px solid rgba(124,106,247,0.32);
+    }
+    .title {
+      margin: 16px 0 8px;
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      font-weight: 400;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+    }
+    .subtitle {
+      margin: 0;
+      max-width: 56rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      font-size: 0.98rem;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      gap: 24px;
+      margin-top: 24px;
+      align-items: start;
+    }
+    .card {
+      border: 1px solid var(--border-default);
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(13,17,23,0.96), rgba(13,17,23,0.9));
+      box-shadow: 0 22px 48px rgba(0,0,0,0.22);
+    }
+    .sidebar-card {
+      position: sticky;
+      top: 112px;
+      padding: 24px;
+    }
+    .main-stack {
+      display: grid;
+      gap: 24px;
+    }
+    .avatar-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .avatar-label {
+      position: relative;
+      display: block;
+      width: 132px;
+      height: 132px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .avatar-image {
+      width: 132px;
+      height: 132px;
+      border-radius: 999px;
+      object-fit: cover;
+      border: 3px solid rgba(124,106,247,0.42);
+      box-shadow: 0 0 0 8px rgba(124,106,247,0.08);
+    }
+    .avatar-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.42);
+      color: #ddd6fe;
+      font-size: 0.78rem;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity .18s ease;
+    }
+    .avatar-label:hover .avatar-overlay { opacity: 1; }
+    .meta-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.93rem;
+      color: #d5dbea;
+    }
+    .meta-list strong { color: var(--text-secondary); font-weight: 500; }
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .section-card { padding: 24px; }
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .section-meta {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin-top: 4px;
+    }
+    .form-grid {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .control {
+      width: 100%;
+      min-height: 52px;
+      border-radius: 14px;
+      border: 1px solid var(--border-default);
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      padding: 0 15px;
+      font: inherit;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    .control:focus {
+      outline: none;
+      border-color: var(--brand-primary);
+      box-shadow: 0 0 0 3px rgba(124,106,247,0.15);
+    }
+    .helper {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .btn {
+      min-height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border-default);
+      background: rgba(255,255,255,0.03);
+      color: var(--text-primary);
+      padding: 0 16px;
+      font-size: 0.92rem;
+      font-weight: 500;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--border-strong);
+      background: var(--bg-hover);
+    }
+    .btn-primary {
+      background: var(--brand-primary);
+      color: #fff;
+      border-color: rgba(124,106,247,0.55);
+      box-shadow: 0 0 24px var(--brand-glow);
+    }
+    .btn-danger {
+      border-color: rgba(248,113,113,0.28);
+      background: rgba(127,29,29,0.18);
+      color: #fecaca;
+    }
+    .btn-accent {
+      border-color: rgba(245,158,11,0.34);
+      background: rgba(245,158,11,0.08);
+      color: #fcd34d;
+    }
+    #status, #pushStatus { margin-top: 14px; color: #d5dbea; }
+    #followingList > div {
+      border-radius: 18px !important;
+      border-color: rgba(255,255,255,0.06) !important;
+      background: rgba(255,255,255,0.03) !important;
+    }
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar-card { position: static; }
+    }
+    @media (max-width: 640px) {
+      .page-shell { width: min(100%, calc(100% - 20px)); padding-top: 16px; }
+      .hero { padding: 20px; border-radius: 22px; }
+      .title { font-size: 2.2rem; }
+      .section-card, .sidebar-card { padding: 20px; }
+    }
+  </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100">
-  <div class="mx-auto max-w-4xl px-4 py-8">
-    <header class="flex flex-col gap-4">
-      <nav data-role-nav class="flex flex-col gap-4 border border-slate-800 bg-slate-900/70 px-4 py-3 backdrop-blur md:flex-row md:items-center md:justify-between rounded-xl">
-        <div class="flex items-center gap-3">
-          <img src="/assets/web-logo.png" alt="Smart Event System" class="h-9 w-9 rounded-lg object-cover">
-          <div>
-            <p class="text-sm font-semibold">Smart Event System</p>
-            <p class="text-xs text-slate-400">Manage and discover events</p>
-          </div>
-        </div>
-        <div class="flex flex-wrap gap-2 text-sm">
-          <a class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800" href="/">Home</a>
-          <a data-nav="auth" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/user.html">User Dashboard</a>
-          <a data-nav="auth" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/book.html">Book Event</a>
-          <a data-nav="admin" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/create-event.html">Create Event</a>
-          <a data-nav="admin" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/admin.html">Admin Dashboard</a>
-          <a data-nav="guest" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800" href="/login.html">Login</a>
-          
-            <a data-nav="auth-avatar" class="hidden inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ring-2 ring-amber-300/40" href="/profile.html"><img data-nav-avatar-img src="https://ui-avatars.com/api/?name=U&background=0f172a&color=f59e0b&size=96" alt="Profile" class="h-full w-full object-cover"></a>
-        </div>
-      </nav>
-      <div>
-        <h1 class="text-3xl font-semibold">My Profile</h1>
-        <p class="text-slate-400">View and update your account details.</p>
-      </div>
+<body>
+  <div class="page-shell">
+    <div data-role-nav></div>
+
+    <header class="hero">
+      <span class="eyebrow">Account settings</span>
+      <h1 class="title">Manage your Evenix identity, security, and device reminders.</h1>
+      <p class="subtitle">Update your profile, refresh your password, control browser notifications, and review the creators you follow from one unified settings page.</p>
     </header>
 
-    <section class="mt-8 rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-xl shadow-slate-950/50">
-      <div class="grid gap-6 md:grid-cols-[auto,1fr]">
-        <div class="flex flex-col items-center gap-3">
-          <label for="profileImageInput" class="group relative block h-28 w-28 cursor-pointer">
-            <img id="profilePreview" src="" alt="Profile" class="h-28 w-28 rounded-full object-cover ring-2 ring-amber-300/50 transition-all group-hover:brightness-90">
-            <span class="absolute inset-0 flex items-center justify-center rounded-full bg-black/45 text-xs font-semibold text-amber-200 opacity-0 transition-opacity group-hover:opacity-100">
-              Change Photo
-            </span>
+    <div class="layout">
+      <aside class="card sidebar-card">
+        <div class="avatar-stage">
+          <label for="profileImageInput" class="avatar-label">
+            <img id="profilePreview" src="" alt="Profile" class="avatar-image">
+            <span class="avatar-overlay">Change Photo</span>
           </label>
           <input id="profileImageInput" type="file" accept="image/*" class="hidden">
-          <button id="removePhotoBtn" type="button"
-                  class="hidden rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs text-slate-200 hover:bg-slate-800">
-            Remove Photo
-          </button>
+          <button id="removePhotoBtn" type="button" class="btn hidden">Remove Photo</button>
         </div>
 
-        <div>
-          <div class="flex flex-wrap items-center gap-2">
-            <h2 id="profileTitle" class="text-xl font-semibold">Account Profile</h2>
-            <span id="verifiedBadge" class="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[11px] text-emerald-300">Unverified</span>
-            <span id="roleBadge" class="rounded-full border border-cyan-500/40 bg-cyan-500/10 px-2 py-0.5 text-[11px] text-cyan-300">user</span>
+        <div class="mt-5 text-center">
+          <h2 id="profileTitle" class="text-2xl font-semibold tracking-tight">Account Profile</h2>
+          <p class="mt-2 text-sm text-slate-400">Your public identity and account summary.</p>
+        </div>
+
+        <div class="pill-row justify-center">
+          <span id="verifiedBadge" class="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[11px] text-emerald-300">Unverified</span>
+          <span id="roleBadge" class="rounded-full border border-cyan-500/40 bg-cyan-500/10 px-2 py-0.5 text-[11px] text-cyan-300">user</span>
+        </div>
+
+        <div class="meta-list">
+          <p><strong>Email:</strong> <span id="emailText">-</span></p>
+          <p><strong>WhatsApp:</strong> <span id="whatsappText">-</span></p>
+          <p><strong>Role:</strong> <span id="roleText">-</span></p>
+          <p><strong>Followers:</strong> <span id="followersCount">0</span></p>
+          <p><strong>Following:</strong> <span id="followingCount">0</span></p>
+        </div>
+
+        <div class="button-row">
+          <a href="/login.html" class="btn">Sign In</a>
+          <button id="profileLogoutBtn" type="button" class="btn btn-danger">Logout</button>
+        </div>
+      </aside>
+
+      <main class="main-stack">
+        <section class="card section-card">
+          <div class="section-head">
+            <div>
+              <h2 class="text-xl font-semibold tracking-tight">Profile Details</h2>
+              <p class="section-meta">Update your name, contact details, and password from a single secure form.</p>
+            </div>
           </div>
-          <p class="mt-1 text-sm text-slate-400">Update your profile information and security details.</p>
 
-          <div class="mt-4 grid gap-2 rounded-xl border border-slate-800 bg-slate-950/80 p-4 text-sm text-slate-300">
-            <p><span class="text-slate-500">Email:</span> <span id="emailText">-</span></p>
-            <p><span class="text-slate-500">WhatsApp:</span> <span id="whatsappText">-</span></p>
-            <p><span class="text-slate-500">Role:</span> <span id="roleText">-</span></p>
-            <p><span class="text-slate-500">Followers:</span> <span id="followersCount">0</span></p>
-            <p><span class="text-slate-500">Following:</span> <span id="followingCount">0</span></p>
+          <form id="profileForm" class="form-grid">
+            <input id="name" type="text" placeholder="Full Name" required class="control">
+            <input id="whatsapp" type="text" placeholder="WhatsApp (+E164), e.g. +15551234567" class="control">
+            <input id="password" type="password" placeholder="New Password (optional)" class="control">
+            <input id="confirmPassword" type="password" placeholder="Confirm New Password" class="control">
+            <p class="helper">Password must include uppercase, lowercase, and number (8+ chars).</p>
+            <div class="button-row">
+              <button id="saveBtn" type="submit" class="btn btn-primary">Save Profile</button>
+            </div>
+          </form>
+          <p id="status" class="text-sm text-slate-300"></p>
+        </section>
+
+        <section class="card section-card">
+          <div class="section-head">
+            <div>
+              <h2 class="text-xl font-semibold tracking-tight">App Notifications</h2>
+              <p class="section-meta">Install the app and enable browser notifications for saved event reminders on this device.</p>
+            </div>
+            <div class="button-row">
+              <button id="enablePushBtn" type="button" class="btn btn-primary">Enable Notifications</button>
+              <button id="disablePushBtn" type="button" class="btn btn-danger">Disable Notifications</button>
+            </div>
           </div>
-        </div>
-      </div>
+          <div class="mt-4 rounded-2xl border border-slate-800 bg-slate-950/80 p-4 text-sm text-slate-300">
+            <p><span class="text-slate-500">PWA:</span> <span id="pwaSupportText">Checking...</span></p>
+            <p><span class="text-slate-500">Notification Permission:</span> <span id="pushPermissionText">Checking...</span></p>
+            <p><span class="text-slate-500">This Device:</span> <span id="pushSubscriptionText">Checking...</span></p>
+          </div>
+          <p id="pushStatus" class="text-sm text-slate-300"></p>
+        </section>
 
-      <form id="profileForm" class="mt-6 grid gap-4">
-        <input id="name" type="text" placeholder="Full Name" required
-               class="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400">
-        <input id="whatsapp" type="text" placeholder="WhatsApp (+E164), e.g. +15551234567"
-               class="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400">
-        <input id="password" type="password" placeholder="New Password (optional)"
-               class="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400">
-        <input id="confirmPassword" type="password" placeholder="Confirm New Password"
-               class="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400">
-        <p class="text-xs text-slate-500">Password must include uppercase, lowercase, and number (8+ chars).</p>
-        <button id="saveBtn" type="submit"
-                class="rounded-lg bg-amber-400 px-4 py-3 font-semibold text-slate-900 hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60">
-          Save Profile
-        </button>
-      </form>
-      <div class="mt-4 flex flex-wrap gap-3">
-        <a href="/login.html"
-           class="rounded-lg border border-slate-700 bg-slate-950 px-4 py-2 text-sm text-slate-200 hover:bg-slate-800">
-          Sign In
-        </a>
-        <button id="profileLogoutBtn" type="button"
-                class="rounded-lg border border-red-500/40 bg-red-950/30 px-4 py-2 text-sm text-red-200 hover:bg-red-900/40">
-          Logout
-        </button>
-      </div>
-      <p id="status" class="mt-3 text-sm text-slate-300"></p>
-    </section>
+        <section class="card section-card">
+          <div class="section-head">
+            <div>
+              <h2 class="text-xl font-semibold tracking-tight">Following Creators</h2>
+              <p class="section-meta">Review the creators you currently follow and remove any relationship from here.</p>
+            </div>
+            <button id="refreshFollowingBtn" class="btn btn-accent">Refresh</button>
+          </div>
+          <div id="followingList" class="mt-4 grid gap-3 sm:grid-cols-2"></div>
+        </section>
+      </main>
+    </div>
 
-    <section class="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-xl shadow-slate-950/50">
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 class="text-lg font-semibold">App Notifications</h2>
-          <p class="mt-1 text-sm text-slate-400">Install the app and enable browser notifications for saved event reminders.</p>
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <button id="enablePushBtn" type="button" class="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-200 hover:bg-emerald-500/20">
-            Enable Notifications
-          </button>
-          <button id="disablePushBtn" type="button" class="rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-2 text-sm text-rose-200 hover:bg-rose-500/20">
-            Disable Notifications
-          </button>
-        </div>
-      </div>
-      <div class="mt-4 rounded-xl border border-slate-800 bg-slate-950/80 p-4 text-sm text-slate-300">
-        <p><span class="text-slate-500">PWA:</span> <span id="pwaSupportText">Checking...</span></p>
-        <p><span class="text-slate-500">Notification Permission:</span> <span id="pushPermissionText">Checking...</span></p>
-        <p><span class="text-slate-500">This Device:</span> <span id="pushSubscriptionText">Checking...</span></p>
-      </div>
-      <p id="pushStatus" class="mt-3 text-sm text-slate-300"></p>
-    </section>
-
-    <section class="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-xl shadow-slate-950/50">
-      <div class="flex items-center justify-between">
-        <h2 class="text-lg font-semibold">Following Creators</h2>
-        <button id="refreshFollowingBtn" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs hover:bg-slate-800">Refresh</button>
-      </div>
-      <div id="followingList" class="mt-4 grid gap-3 sm:grid-cols-2"></div>
-    </section>
-  </div>
-
-  <script src="ui-feedback.js"></script>
+<script src="ui-feedback.js"></script>
   <script src="pwa.js"></script>
   <script>
     const token = localStorage.getItem("token");
@@ -411,6 +632,7 @@
     loadFollowing();
     refreshPushStatus();
   </script>
+  <script src="footer.js"></script>
   <script src="nav-auth.js?v=20260302a"></script>
 </body>
 </html>

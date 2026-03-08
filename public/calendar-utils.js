@@ -47,7 +47,7 @@
     return [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
-      "PRODID:-//Smart Event System//Event Calendar//EN",
+      "PRODID:-//Evenix//Event Calendar//EN",
       "CALSCALE:GREGORIAN",
       "METHOD:PUBLISH",
       "BEGIN:VEVENT",

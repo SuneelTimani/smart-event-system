@@ -73,7 +73,7 @@ function templateMeta(templateId) {
   };
 }
 
-function buildEmailHtml({ title, intro, bullets = [], ctaLabel = "", ctaUrl = "", footer = "Smart Event System", extraHtml = "" }) {
+function buildEmailHtml({ title, intro, bullets = [], ctaLabel = "", ctaUrl = "", footer = "Evenix", extraHtml = "" }) {
   const bulletHtml = bullets.map((b) => `<li style="margin:6px 0;">${escapeHtml(b)}</li>`).join("");
   const ctaHtml = ctaLabel && ctaUrl
     ? `<a href="${escapeHtml(ctaUrl)}" style="display:inline-block;margin-top:14px;background:#f59e0b;color:#111827;text-decoration:none;padding:10px 14px;border-radius:8px;font-weight:700;">${escapeHtml(ctaLabel)}</a>`
@@ -85,7 +85,7 @@ function buildEmailHtml({ title, intro, bullets = [], ctaLabel = "", ctaUrl = ""
         <tr><td align="center">
           <table role="presentation" width="640" cellpadding="0" cellspacing="0" style="max-width:640px;background:#111827;border:1px solid #1f2937;border-radius:12px;overflow:hidden;">
             <tr><td style="padding:18px 22px;background:#0f172a;border-bottom:1px solid #1f2937;">
-              <div style="font-size:20px;font-weight:700;color:#67e8f9;">Smart Event System</div>
+              <div style="font-size:20px;font-weight:700;color:#67e8f9;">Evenix</div>
               <div style="font-size:12px;color:#94a3b8;margin-top:4px;">Notification</div>
             </td></tr>
             <tr><td style="padding:22px;color:#e5e7eb;">
@@ -622,12 +622,12 @@ async function notifyUserWelcome({ toUserEmail, userName }) {
   const text = `Hi ${userName || "User"}, your account has been created successfully. You can now browse and book events.`;
   await sendEmail(
     toUserEmail,
-    "Welcome to Smart Event System",
+    "Welcome to Evenix",
     text,
     {
       templateId: "user_welcome",
       html: buildEmailHtml({
-        title: "Welcome to Smart Event System",
+        title: "Welcome to Evenix",
         intro: `Hi ${userName || "User"}, your account has been created successfully. You can now browse and book events.`
       })
     }
@@ -693,7 +693,7 @@ async function notifyTestEmail(to) {
   const text = "This is a test email. SMTP notification pipeline is working.";
   await sendEmail(
     to || WEB_EMAIL,
-    "Test notification from Smart Event System",
+    "Test notification from Evenix",
     text,
     {
       templateId: "smtp_test",
@@ -705,23 +705,34 @@ async function notifyTestEmail(to) {
   );
 }
 
-async function notifyPasswordReset({ toUserEmail, resetUrl }) {
-  const firstLine = String(resetUrl || "").split("\n")[0] || "";
-  const text = `We received a password reset request.\n\nReset your password here:\n${resetUrl}\n\nIf you did not request this, you can ignore this email.`;
+async function notifyPasswordReset({ toUserEmail, otp, verifyUrl }) {
+  const safeOtp = String(otp || "").trim();
+  const safeVerifyUrl = String(verifyUrl || "").trim();
+  const text = [
+    "We received a password reset request.",
+    "",
+    safeOtp ? `Your OTP: ${safeOtp}` : "",
+    safeVerifyUrl ? `Verification page: ${safeVerifyUrl}` : "",
+    "",
+    "If you did not request this, you can ignore this email."
+  ].filter(Boolean).join("\n");
   await sendEmail(
     toUserEmail,
-    "Password reset request",
+    "Your password reset OTP",
     text,
     {
       throwOnError: true,
       immediate: true,
       templateId: "password_reset",
       html: buildEmailHtml({
-        title: "Password Reset Request",
-        intro: "We received a request to reset your password.",
-        bullets: ["Use the OTP sent in this email and continue reset flow."],
-        ctaLabel: firstLine ? "Open Verification Page" : "",
-        ctaUrl: firstLine,
+        title: "Password Reset OTP",
+        intro: "Use this 6-digit OTP to continue resetting your password.",
+        bullets: [
+          safeOtp ? `OTP: ${safeOtp}` : "OTP generated",
+          "Valid for 10 minutes"
+        ],
+        ctaLabel: safeVerifyUrl ? "Open Verification Page" : "",
+        ctaUrl: safeVerifyUrl,
         footer: "If you did not request this, you can ignore this email."
       })
     }
@@ -876,7 +887,7 @@ async function notifyOrganizerWeeklyDigest({
         bullets,
         ctaLabel: dashboardUrl ? "Open Dashboard" : "",
         ctaUrl: dashboardUrl || "",
-        footer: "Smart Event System weekly organizer summary"
+        footer: "Evenix weekly organizer summary"
       })
     }
   );

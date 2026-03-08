@@ -1,89 +1,408 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign Up | Smart Event System</title>
+  <title>Sign Up | Evenix</title>
   <link rel="icon" type="image/png" href="/assets/web-logo.png">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #080B14;
+      --bg-surface: #0D1117;
+      --bg-elevated: #161B27;
+      --bg-hover: #1E2536;
+      --brand-primary: #7C6AF7;
+      --brand-glow: rgba(124, 106, 247, 0.15);
+      --brand-accent: #F59E0B;
+      --text-primary: #F0F2F8;
+      --text-secondary: #8892A4;
+      --border-default: rgba(255,255,255,0.06);
+      --success: #10B981;
+      --font-display: "Instrument Serif", serif;
+      --font-body: "DM Sans", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: var(--font-body);
+      background:
+        radial-gradient(circle at top right, rgba(124,106,247,0.16), transparent 24%),
+        radial-gradient(circle at bottom left, rgba(245,158,11,0.1), transparent 22%),
+        var(--bg-base);
+      color: var(--text-primary);
+    }
+    a { color: inherit; text-decoration: none; }
+    button, input { font: inherit; }
+    .page-shell { width: min(1200px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 40px; }
+    .auth-layout {
+      min-height: calc(100vh - 132px);
+      display: grid;
+      grid-template-columns: 1fr 1.08fr;
+      gap: 24px;
+      align-items: stretch;
+      padding-top: 28px;
+    }
+    .brand-panel, .form-panel {
+      border-radius: 28px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: var(--bg-surface);
+      box-shadow: 0 28px 60px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+    }
+    .brand-panel {
+      position: relative;
+      padding: 36px;
+      background:
+        radial-gradient(circle at 18% 18%, rgba(124,106,247,0.18), transparent 25%),
+        radial-gradient(circle at 78% 72%, rgba(245,158,11,0.14), transparent 24%),
+        linear-gradient(160deg, rgba(13,17,23,0.98), rgba(22,27,39,0.95));
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .brand-badge {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(124,106,247,0.08);
+      color: #c4b5fd;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      width: fit-content;
+    }
+    .brand-title {
+      margin: 18px 0 10px;
+      font-family: var(--font-display);
+      font-size: clamp(2.75rem, 5vw, 4.2rem);
+      font-weight: 400;
+      line-height: 1.02;
+      letter-spacing: -0.03em;
+    }
+    .brand-copy { max-width: 34rem; color: var(--text-secondary); line-height: 1.7; }
+    .stats-grid { display: grid; gap: 14px; margin-top: 28px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .stat-card { padding: 18px 16px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); }
+    .stat-value { font-size: 1.5rem; font-weight: 600; margin: 0 0 5px; }
+    .stat-label { margin: 0; font-size: 0.83rem; line-height: 1.5; color: var(--text-secondary); }
+    .check-list { display: grid; gap: 12px; margin-top: 30px; }
+    .check-item { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 18px; background: rgba(8,11,20,0.42); border: 1px solid rgba(255,255,255,0.06); }
+    .check-icon { width: 28px; height: 28px; border-radius: 999px; display: grid; place-items: center; background: rgba(124,106,247,0.18); color: #ddd6fe; flex: 0 0 auto; }
+    .quote-card { margin-top: 28px; padding: 20px 22px; border-radius: 20px; background: rgba(8,11,20,0.5); border: 1px solid rgba(255,255,255,0.08); }
+    .quote-text { margin: 0 0 10px; font-family: var(--font-display); font-style: italic; font-size: 1.25rem; line-height: 1.4; }
+    .quote-meta { color: var(--text-secondary); font-size: 0.88rem; }
+    .form-panel {
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      background:
+        linear-gradient(180deg, rgba(13,17,23,0.96), rgba(13,17,23,0.88)),
+        radial-gradient(circle at top right, rgba(124,106,247,0.12), transparent 30%);
+    }
+    .form-card {
+      width: min(100%, 540px);
+      padding: 34px;
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(13,17,23,0.88);
+      backdrop-filter: blur(18px);
+    }
+    .label {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .heading {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(2.1rem, 4vw, 3rem);
+      font-weight: 400;
+      line-height: 1.05;
+    }
+    .subtext { margin: 10px 0 0; color: var(--text-secondary); line-height: 1.6; }
+    .field { margin-top: 16px; }
+    .input {
+      width: 100%;
+      min-height: 52px;
+      padding: 0 15px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+    }
+    .input::placeholder { color: #64748b; }
+    .input:focus { outline: none; border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(124,106,247,0.15); }
+    .field-error .input { border-color: rgba(239,68,68,0.65); box-shadow: 0 0 0 3px rgba(239,68,68,0.12); animation: shake 0.24s linear 1; }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-3px); }
+      75% { transform: translateX(3px); }
+    }
+    .password-meter { margin-top: 10px; display: grid; gap: 8px; }
+    .password-track { height: 8px; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,0.06); }
+    .password-fill { width: 0; height: 100%; border-radius: inherit; transition: width 0.18s ease, background 0.18s ease; background: rgba(239,68,68,0.9); }
+    .password-copy { color: var(--text-secondary); font-size: 0.82rem; }
+    .password-copy strong { color: var(--text-primary); }
+    .submit-btn {
+      width: 100%;
+      min-height: 50px;
+      margin-top: 22px;
+      border-radius: 14px;
+      border: 1px solid rgba(124,106,247,0.55);
+      background: var(--brand-primary);
+      color: white;
+      box-shadow: 0 0 20px var(--brand-glow);
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    .submit-btn:hover { transform: translateY(-1px); background: #6e5af2; }
+    .submit-btn[disabled] { opacity: 0.78; cursor: wait; transform: none; }
+    .status { min-height: 24px; margin-top: 14px; font-size: 0.9rem; line-height: 1.5; }
+    .status-error { color: #fca5a5; }
+    .status-success { color: #6ee7b7; }
+    .login-copy { margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.06); color: var(--text-secondary); font-size: 0.9rem; }
+    .login-copy a { color: #ddd6fe; }
+    .support-strip {
+      width: min(1200px, calc(100% - 32px));
+      margin: 0 auto 28px;
+      padding: 16px 20px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(13,17,23,0.78);
+      color: var(--text-secondary);
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 980px) {
+      .auth-layout { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .page-shell { width: min(100%, calc(100% - 20px)); padding-top: 18px; }
+      .auth-layout { min-height: auto; gap: 18px; padding-top: 18px; }
+      .brand-panel, .form-panel { border-radius: 22px; }
+      .brand-panel, .form-card { padding: 22px; }
+      .support-strip { width: min(100%, calc(100% - 20px)); font-size: 0.85rem; }
+    }
+  </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100">
-  <div class="mx-auto flex min-h-screen max-w-4xl items-center px-4 py-10">
-    <div class="w-full rounded-2xl border border-slate-800 bg-slate-900 p-8">
-      <h1 class="text-3xl font-semibold">Create your account</h1>
-      <p class="mt-2 text-slate-400">Sign up to manage events and bookings.</p>
+<body>
+  <div data-role-nav></div>
 
-      <form id="signupForm" class="mt-6 grid gap-4">
-        <input placeholder="Name" id="name" required
-               class="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400">
-        <input type="email" placeholder="Email" id="email" required
-               class="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400">
-        <input type="password" placeholder="Password" id="password" required
-               class="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400">
-        <button type="submit"
-                class="rounded-lg bg-amber-400 px-4 py-3 font-semibold text-slate-900 hover:bg-amber-300">
-          Sign Up
-        </button>
-        <p id="signupMsg" class="text-sm text-rose-300"></p>
-      </form>
+  <main class="page-shell">
+    <section class="auth-layout">
+      <aside class="brand-panel">
+        <div>
+          <span class="brand-badge">Create your event identity</span>
+          <h1 class="brand-title">Turn discovery into registrations that actually convert.</h1>
+          <p class="brand-copy">Set up one account to save events, follow creators, manage bookings, receive reminders, and publish events if you become an organizer.</p>
 
-      <p class="mt-6 text-sm text-slate-400">
-        Already have an account?
-        <a class="text-amber-400 hover:underline" href="/login.html">Login</a>
-      </p>
-    </div>
-  </div>
-  <footer class="mx-auto w-full max-w-4xl px-4 pb-8 text-xs text-slate-300">
-      <div class="rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-4">
-        <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <p>Event Arc Management System</p>
-          <p>Strong passwords required | Contact suneeltimani@gmail.com for account issues</p>
+          <div class="stats-grid">
+            <article class="stat-card">
+              <p class="stat-value">3x faster</p>
+              <p class="stat-label">Event setup with reusable ticketing, reminders, and booking controls.</p>
+            </article>
+            <article class="stat-card">
+              <p class="stat-value">One login</p>
+              <p class="stat-label">Use the same account for user flows, organizer tools, and admin access.</p>
+            </article>
+            <article class="stat-card">
+              <p class="stat-value">Live reminders</p>
+              <p class="stat-label">Email, push, and saved-event reminders stay linked to the same profile.</p>
+            </article>
+          </div>
+
+          <div class="check-list">
+            <div class="check-item"><div class="check-icon" aria-hidden="true">?</div><div>Save events now and attach reminder timing before you ever book.</div></div>
+            <div class="check-item"><div class="check-icon" aria-hidden="true">?</div><div>Verify your email with OTP so booking confirmations and reset codes always reach you.</div></div>
+            <div class="check-item"><div class="check-icon" aria-hidden="true">?</div><div>Upgrade into creator or admin workflows later without rebuilding your profile.</div></div>
+          </div>
         </div>
-      </div>
-  </footer>
+
+        <div class="quote-card">
+          <p class="quote-text">Attendees started sharing our booking pages because the flow felt polished, fast, and trustworthy from the first click.ðŸ¥¹</p>
+          <div class="quote-meta">Ali Raza âœ¨ Community Lead, Karachi Startup Week</div>
+        </div>
+      </aside>
+
+      <section class="form-panel" aria-labelledby="signupTitle">
+        <div class="form-card">
+          <span class="label">Start free</span>
+          <h2 id="signupTitle" class="heading">Create your Evenix account</h2>
+          <p class="subtext">A verification OTP will be sent to your email immediately after signup.</p>
+
+          <form id="signupForm" novalidate>
+            <div id="nameField" class="field">
+              <label class="label" for="name">Full name</label>
+              <input id="name" class="input" placeholder="Suneel Timani" required autocomplete="name">
+            </div>
+
+            <div id="emailField" class="field">
+              <label class="label" for="email">Email</label>
+              <input id="email" class="input" type="email" placeholder="name@company.com" required autocomplete="email">
+            </div>
+
+            <div id="passwordField" class="field">
+              <label class="label" for="password">Password</label>
+              <input id="password" class="input" type="password" placeholder="Use 8+ chars, upper/lowercase, number" required autocomplete="new-password">
+              <div class="password-meter" aria-live="polite">
+                <div class="password-track"><div id="passwordFill" class="password-fill"></div></div>
+                <div id="passwordCopy" class="password-copy">Password strength: <strong>Waiting for input</strong></div>
+              </div>
+            </div>
+
+            <button id="signupBtn" class="submit-btn" type="submit">Create account</button>
+            <div id="signupMsg" class="status status-error" aria-live="polite"></div>
+          </form>
+
+          <div class="login-copy">
+            Already registered? <a href="/login.html">Login here</a>.<br>
+            Account support: <a href="mailto:suneeltimani@gmail.com">suneeltimani@gmail.com</a>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div class="support-strip">
+    <span>OTP verification is required before first login.</span>
+    <span>Keep your email accurate so reminders, reset codes, and booking notices work correctly.</span>
+  </div>
 
   <script>
-    document.getElementById("signupForm").onsubmit = async (e) => {
+    const signupForm = document.getElementById("signupForm");
+    const signupBtn = document.getElementById("signupBtn");
+    const signupMsg = document.getElementById("signupMsg");
+    const passwordInput = document.getElementById("password");
+    const passwordFill = document.getElementById("passwordFill");
+    const passwordCopy = document.getElementById("passwordCopy");
+    const fields = {
+      name: document.getElementById("nameField"),
+      email: document.getElementById("emailField"),
+      password: document.getElementById("passwordField")
+    };
+
+    function clearErrors() {
+      Object.values(fields).forEach((field) => field.classList.remove("field-error"));
+    }
+
+    function passwordStrength(value) {
+      let score = 0;
+      if (value.length >= 8) score += 1;
+      if (/[A-Z]/.test(value)) score += 1;
+      if (/[a-z]/.test(value)) score += 1;
+      if (/\d/.test(value)) score += 1;
+      if (/[^A-Za-z0-9]/.test(value)) score += 1;
+      return score;
+    }
+
+    function updatePasswordMeter() {
+      const value = passwordInput.value;
+      const score = passwordStrength(value);
+      const width = Math.min(100, score * 20);
+      passwordFill.style.width = `${width}%`;
+
+      let label = "Waiting for input";
+      let color = "rgba(239,68,68,0.9)";
+      if (!value) {
+        label = "Waiting for input";
+      } else if (score <= 2) {
+        label = "Weak";
+      } else if (score === 3) {
+        label = "Fair";
+        color = "rgba(245,158,11,0.9)";
+      } else if (score === 4) {
+        label = "Strong";
+        color = "rgba(16,185,129,0.9)";
+      } else {
+        label = "Very strong";
+        color = "rgba(52,211,153,0.95)";
+      }
+      passwordFill.style.background = color;
+      passwordCopy.innerHTML = `Password strength: <strong>${label}</strong>`;
+    }
+
+    passwordInput.addEventListener("input", updatePasswordMeter);
+    updatePasswordMeter();
+
+    function setLoading(isLoading) {
+      signupBtn.disabled = isLoading;
+      signupBtn.textContent = isLoading ? "Loading..." : "Create account";
+    }
+
+    signupForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const nameEl = document.getElementById("name");
-      const emailEl = document.getElementById("email");
-      const passwordEl = document.getElementById("password");
+      clearErrors();
+      signupMsg.className = "status status-error";
+      signupMsg.textContent = "";
+
       const data = {
-        name: nameEl.value.trim(),
-        email: emailEl.value.trim(),
-        password: passwordEl.value
+        name: document.getElementById("name").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        password: passwordInput.value
       };
 
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify(data)
-      });
-
-      const msg = document.getElementById("signupMsg");
-      msg.textContent = "";
-      if (!res.ok) {
-        let message = "Signup failed.";
-        try {
-          const errorData = await res.json();
-          message = errorData.error || message;
-        } catch (_) {}
-        msg.textContent = message;
+      if (!data.name) fields.name.classList.add("field-error");
+      if (!data.email) fields.email.classList.add("field-error");
+      if (!data.password) fields.password.classList.add("field-error");
+      if (!data.name || !data.email || !data.password) {
+        signupMsg.textContent = "Name, email, and password are required.";
+        if (typeof showToast === "function") showToast("Name, email, and password are required.", "warning");
         return;
       }
 
-      msg.classList.remove("text-rose-300");
-      msg.classList.add("text-emerald-300");
-      msg.textContent = "OTP sent to email. Redirecting to verification...";
-      const payload = await res.json();
-      const targetEmail = encodeURIComponent(payload.email || data.email);
-      window.location.href = `/verify-signup-otp.html?email=${targetEmail}`;
-    };
+      setLoading(true);
+      try {
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        if (!res.ok) {
+          let message = "Signup failed.";
+          try {
+            const errorData = await res.json();
+            message = errorData.error || message;
+          } catch (_) {}
+          fields.email.classList.add("field-error");
+          fields.password.classList.add("field-error");
+          signupMsg.textContent = message;
+          if (typeof showToast === "function") showToast(message, "error", 3200);
+          return;
+        }
+
+        signupMsg.className = "status status-success";
+        signupMsg.textContent = "OTP sent to your email. Redirecting to verification...";
+        if (typeof showToast === "function") showToast("OTP sent to your email.", "success");
+        const payload = await res.json();
+        const targetEmail = encodeURIComponent(payload.email || data.email);
+        setTimeout(() => {
+          window.location.href = `/verify-signup-otp.html?email=${targetEmail}`;
+        }, 600);
+      } catch (err) {
+        signupMsg.textContent = "Network error while signing up. Try again.";
+        if (typeof showToast === "function") showToast("Network error while signing up. Try again.", "error");
+      } finally {
+        setLoading(false);
+      }
+    });
   </script>
+  <script src="/ui-feedback.js"></script>
+  <script src="/nav-auth.js?v=1"></script>
+  <script src="footer.js"></script>
 </body>
 </html>
-
-
-
-
 

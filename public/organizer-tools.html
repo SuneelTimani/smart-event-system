@@ -3,127 +3,289 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Organizer Tools | Smart Event System</title>
+  <title>Organizer Tools | Evenix</title>
   <link rel="icon" type="image/png" href="/assets/web-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-base: #080b14;
+      --bg-surface: #0d1117;
+      --bg-elevated: #161b27;
+      --bg-hover: #1e2536;
+      --brand-primary: #7c6af7;
+      --brand-accent: #f59e0b;
+      --brand-glow: rgba(124, 106, 247, 0.16);
+      --text-primary: #f0f2f8;
+      --text-secondary: #8892a4;
+      --border-default: rgba(255,255,255,0.07);
+      --border-strong: rgba(255,255,255,0.12);
+      --font-display: "Instrument Serif", serif;
+      --font-body: "DM Sans", sans-serif;
+    }
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      color: var(--text-primary);
+      background:
+        radial-gradient(900px 420px at 8% -8%, rgba(124, 106, 247, 0.18), transparent 58%),
+        radial-gradient(720px 340px at 95% 10%, rgba(245, 158, 11, 0.1), transparent 52%),
+        linear-gradient(180deg, #060912 0%, #0a0f19 48%, #080b14 100%);
+    }
+    .page-shell {
+      width: min(1240px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 48px;
+    }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      margin-top: 24px;
+      padding: 28px;
+      border-radius: 28px;
+      border: 1px solid var(--border-default);
+      background:
+        linear-gradient(135deg, rgba(124, 106, 247, 0.14), rgba(8, 11, 20, 0.02) 38%),
+        linear-gradient(180deg, rgba(13, 17, 23, 0.96), rgba(13, 17, 23, 0.88));
+      box-shadow: 0 28px 60px rgba(0, 0, 0, 0.35);
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #c4b5fd;
+      background: rgba(124,106,247,0.08);
+      border: 1px solid rgba(124,106,247,0.32);
+    }
+    .title {
+      margin: 16px 0 8px;
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      font-weight: 400;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+    }
+    .subtitle {
+      margin: 0;
+      max-width: 58rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      font-size: 0.98rem;
+    }
+    .surface-card,
+    .metric-tile {
+      border: 1px solid var(--border-default) !important;
+      border-radius: 22px !important;
+      background: linear-gradient(180deg, rgba(13,17,23,0.96), rgba(13,17,23,0.9)) !important;
+      box-shadow: 0 22px 48px rgba(0,0,0,0.22);
+    }
+    .surface-card { padding: 24px !important; }
+    .metric-grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-top: 16px;
+    }
+    .metric-tile { padding: 20px !important; }
+    .page-grid {
+      display: grid;
+      gap: 24px;
+      margin-top: 24px;
+    }
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .section-meta {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    input, select, button, video {
+      border-radius: 14px !important;
+    }
+    .cta-btn {
+      min-height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border-default);
+      background: rgba(255,255,255,0.03);
+      color: var(--text-primary);
+      padding: 0 16px;
+      font-size: 0.92rem;
+      font-weight: 500;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+    }
+    .cta-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--border-strong);
+      background: var(--bg-hover);
+    }
+    .cta-btn--primary {
+      background: var(--brand-primary);
+      color: #fff;
+      border-color: rgba(124,106,247,0.55);
+      box-shadow: 0 0 24px var(--brand-glow);
+    }
+    .cta-btn--accent {
+      border-color: rgba(245,158,11,0.34);
+      background: rgba(245,158,11,0.08);
+      color: #fcd34d;
+    }
+    .analytics-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+    @media (max-width: 900px) {
+      .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 640px) {
+      .page-shell { width: min(100%, calc(100% - 20px)); padding-top: 16px; }
+      .hero { padding: 20px; border-radius: 22px; }
+      .metric-grid { grid-template-columns: 1fr; }
+      .title { font-size: 2.2rem; }
+    }
+  </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100">
-  <div class="mx-auto max-w-6xl px-4 py-8">
-    <nav data-role-nav class="flex flex-col gap-4 border border-slate-800 bg-slate-900/70 px-4 py-3 backdrop-blur md:flex-row md:items-center md:justify-between rounded-xl">
-      <div class="flex items-center gap-3">
-        <img src="/assets/web-logo.png" alt="Smart Event System" class="h-9 w-9 rounded-lg object-cover">
-        <div>
-          <p class="text-sm font-semibold">Smart Event System</p>
-          <p class="text-xs text-slate-400">Manage and discover events</p>
-        </div>
-      </div>
-    </nav>
-    <h1 class="text-3xl font-semibold">Organizer Tools</h1>
-    <p class="mt-1 text-slate-400">Organizer analytics, promo codes, attendee check-in, and pass export.</p>
+<body>
+  <div class="page-shell">
+    <div data-role-nav></div>
 
-    <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 class="text-lg font-semibold">Organizer Analytics</h2>
-          <p class="text-xs text-slate-400">Scoped to your own events only.</p>
+    <header class="hero">
+      <span class="eyebrow">Organizer command center</span>
+      <h1 class="title">Operate your events with analytics, access, and revenue in one place.</h1>
+      <p class="subtitle">Use Evenix organizer tools to monitor trend lines, create promo codes, scan attendees at the door, and export pass data without switching views.</p>
+    </header>
+
+    <div class="page-grid">
+      <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4 surface-card">
+        <div class="section-head">
+          <div>
+            <h2 class="text-lg font-semibold">Organizer Analytics</h2>
+            <p class="section-meta">Scoped to your own events only.</p>
+          </div>
+          <div class="analytics-actions">
+            <select id="analyticsEventSelect" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+              <option value="">Select event for ML details</option>
+            </select>
+            <button id="refreshAnalyticsBtn" class="cta-btn cta-btn--primary">Refresh Analytics</button>
+          </div>
         </div>
-        <div class="flex items-center gap-2">
-          <select id="analyticsEventSelect" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
-            <option value="">Select event for ML details</option>
+
+        <div class="metric-grid">
+          <div class="rounded-lg border border-slate-800 bg-slate-950 p-3 metric-tile">
+            <p class="text-xs uppercase tracking-wide text-slate-400">My Events</p>
+            <p id="orgTotalEvents" class="mt-2 text-2xl font-semibold text-slate-100">-</p>
+          </div>
+          <div class="rounded-lg border border-slate-800 bg-slate-950 p-3 metric-tile">
+            <p class="text-xs uppercase tracking-wide text-slate-400">My Bookings</p>
+            <p id="orgTotalBookings" class="mt-2 text-2xl font-semibold text-slate-100">-</p>
+          </div>
+          <div class="rounded-lg border border-slate-800 bg-slate-950 p-3 metric-tile">
+            <p class="text-xs uppercase tracking-wide text-slate-400">Revenue</p>
+            <p id="orgRevenue" class="mt-2 text-2xl font-semibold text-slate-100">-</p>
+          </div>
+          <div class="rounded-lg border border-slate-800 bg-slate-950 p-3 metric-tile">
+            <p class="text-xs uppercase tracking-wide text-slate-400">Upcoming Events</p>
+            <p id="orgUpcoming" class="mt-2 text-2xl font-semibold text-slate-100">-</p>
+          </div>
+        </div>
+
+        <div class="mt-4 grid gap-4 lg:grid-cols-2">
+          <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+            <p class="text-xs uppercase tracking-wide text-slate-400">Bookings Trend</p>
+            <canvas id="orgTrendChart" class="mt-2"></canvas>
+          </div>
+          <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+            <p class="text-xs uppercase tracking-wide text-slate-400">Revenue by Event</p>
+            <canvas id="orgRevenueChart" class="mt-2"></canvas>
+          </div>
+        </div>
+
+        <div class="mt-4 grid gap-3 md:grid-cols-2">
+          <div class="rounded-lg border border-slate-800 bg-slate-950 p-4">
+            <p class="text-xs uppercase tracking-wide text-slate-400">Attendance Prediction</p>
+            <div id="orgAttendancePrediction" class="mt-3 text-sm text-slate-300">Select an event to view attendance prediction.</div>
+          </div>
+          <div class="rounded-lg border border-slate-800 bg-slate-950 p-4">
+            <p class="text-xs uppercase tracking-wide text-slate-400">At-Risk Attendees</p>
+            <div id="orgChurnPrediction" class="mt-3 text-sm text-slate-300">Select an event to view churn signals.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4 surface-card">
+        <div class="section-head">
+          <div>
+            <h2 class="text-lg font-semibold">Promo Codes</h2>
+            <p class="section-meta">Create and toggle event-specific discounts without leaving the organizer workspace.</p>
+          </div>
+        </div>
+        <form id="promoForm" class="mt-4 grid gap-2 md:grid-cols-6">
+          <select id="promoEvent" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm"></select>
+          <input id="promoCode" placeholder="Code (e.g. HOLI20)" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <select id="promoType" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+            <option value="percent">percent</option>
+            <option value="fixed">fixed</option>
           </select>
-          <button id="refreshAnalyticsBtn" class="rounded border border-cyan-500/40 bg-cyan-500/10 px-3 py-2 text-sm text-cyan-200 hover:bg-cyan-500/20">Refresh Analytics</button>
-        </div>
-      </div>
+          <input id="promoValue" type="number" min="0.01" step="0.01" placeholder="Discount value" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <input id="promoMaxUses" type="number" min="0" value="0" placeholder="Max uses (0 unlimited)" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <button class="cta-btn cta-btn--accent">Create</button>
+        </form>
+        <p id="promoMsg" class="mt-2 text-xs text-slate-400"></p>
+        <div id="promoList" class="mt-3 grid gap-2"></div>
+      </section>
 
-      <div class="mt-4 grid gap-3 md:grid-cols-4">
-        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
-          <p class="text-xs uppercase tracking-wide text-slate-400">My Events</p>
-          <p id="orgTotalEvents" class="mt-2 text-2xl font-semibold text-slate-100">-</p>
+      <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4 surface-card">
+        <div class="section-head">
+          <div>
+            <h2 class="text-lg font-semibold">Attendee Check-in</h2>
+            <p class="section-meta">Scan QR or enter a booking ref like BK-1234ABCD, then verify entry at the door.</p>
+          </div>
         </div>
-        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
-          <p class="text-xs uppercase tracking-wide text-slate-400">My Bookings</p>
-          <p id="orgTotalBookings" class="mt-2 text-2xl font-semibold text-slate-100">-</p>
+        <div class="mt-3 rounded border border-slate-800 bg-slate-950 p-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="startScanBtn" class="cta-btn">Start QR Scan</button>
+            <button id="stopScanBtn" class="cta-btn">Stop</button>
+            <p id="scanMsg" class="text-xs text-slate-400">Camera scanner idle.</p>
+          </div>
+          <video id="scanVideo" class="mt-3 hidden w-full max-w-md rounded border border-slate-800" playsinline muted></video>
         </div>
-        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
-          <p class="text-xs uppercase tracking-wide text-slate-400">Revenue</p>
-          <p id="orgRevenue" class="mt-2 text-2xl font-semibold text-slate-100">-</p>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <input id="checkinBookingId" placeholder="Booking ID or Ref (BK-XXXXXXXX)" class="w-full max-w-lg rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+          <button id="checkinBtn" class="cta-btn cta-btn--primary">Check In</button>
         </div>
-        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
-          <p class="text-xs uppercase tracking-wide text-slate-400">Upcoming Events</p>
-          <p id="orgUpcoming" class="mt-2 text-2xl font-semibold text-slate-100">-</p>
-        </div>
-      </div>
+        <p id="checkinMsg" class="mt-2 text-xs text-slate-400"></p>
+      </section>
 
-      <div class="mt-4 grid gap-4 lg:grid-cols-2">
-        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
-          <p class="text-xs uppercase tracking-wide text-slate-400">Bookings Trend</p>
-          <canvas id="orgTrendChart" class="mt-2"></canvas>
+      <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4 surface-card">
+        <div class="section-head">
+          <div>
+            <h2 class="text-lg font-semibold">Export Passes</h2>
+            <p class="section-meta">Generate a CSV of passes for the selected event.</p>
+          </div>
         </div>
-        <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
-          <p class="text-xs uppercase tracking-wide text-slate-400">Revenue by Event</p>
-          <canvas id="orgRevenueChart" class="mt-2"></canvas>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <select id="exportEvent" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm"></select>
+          <button id="exportBtn" class="cta-btn">Download CSV</button>
         </div>
-      </div>
+        <p id="exportMsg" class="mt-2 text-xs text-slate-400"></p>
+      </section>
+    </div>
 
-      <div class="mt-4 grid gap-3 md:grid-cols-2">
-        <div class="rounded-lg border border-slate-800 bg-slate-950 p-4">
-          <p class="text-xs uppercase tracking-wide text-slate-400">Attendance Prediction</p>
-          <div id="orgAttendancePrediction" class="mt-3 text-sm text-slate-300">Select an event to view attendance prediction.</div>
-        </div>
-        <div class="rounded-lg border border-slate-800 bg-slate-950 p-4">
-          <p class="text-xs uppercase tracking-wide text-slate-400">At-Risk Attendees</p>
-          <div id="orgChurnPrediction" class="mt-3 text-sm text-slate-300">Select an event to view churn signals.</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
-      <h2 class="text-lg font-semibold">Promo Codes</h2>
-      <form id="promoForm" class="mt-3 grid gap-2 md:grid-cols-6">
-        <select id="promoEvent" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm"></select>
-        <input id="promoCode" placeholder="Code (e.g. HOLI20)" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
-        <select id="promoType" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
-          <option value="percent">percent</option>
-          <option value="fixed">fixed</option>
-        </select>
-        <input id="promoValue" type="number" min="0.01" step="0.01" placeholder="Discount value" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
-        <input id="promoMaxUses" type="number" min="0" value="0" placeholder="Max uses (0 unlimited)" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
-        <button class="rounded bg-amber-400 px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-300">Create</button>
-      </form>
-      <p id="promoMsg" class="mt-2 text-xs text-slate-400"></p>
-      <div id="promoList" class="mt-3 grid gap-2"></div>
-    </section>
-
-    <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
-      <h2 class="text-lg font-semibold">Attendee Check-in</h2>
-      <p class="text-xs text-slate-400">Scan QR or enter booking ref like BK-1234ABCD, then check in.</p>
-      <div class="mt-3 rounded border border-slate-800 bg-slate-950 p-3">
-        <div class="flex flex-wrap items-center gap-2">
-          <button id="startScanBtn" class="rounded border border-slate-700 px-3 py-1.5 text-xs hover:bg-slate-800">Start QR Scan</button>
-          <button id="stopScanBtn" class="rounded border border-slate-700 px-3 py-1.5 text-xs hover:bg-slate-800">Stop</button>
-          <p id="scanMsg" class="text-xs text-slate-400">Camera scanner idle.</p>
-        </div>
-        <video id="scanVideo" class="mt-3 hidden w-full max-w-md rounded border border-slate-800" playsinline muted></video>
-      </div>
-      <div class="mt-3 flex flex-wrap gap-2">
-        <input id="checkinBookingId" placeholder="Booking ID or Ref (BK-XXXXXXXX)" class="w-full max-w-lg rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
-        <button id="checkinBtn" class="rounded bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-400">Check In</button>
-      </div>
-      <p id="checkinMsg" class="mt-2 text-xs text-slate-400"></p>
-    </section>
-
-    <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
-      <h2 class="text-lg font-semibold">Export Passes</h2>
-      <div class="mt-3 flex flex-wrap gap-2">
-        <select id="exportEvent" class="rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm"></select>
-        <button id="exportBtn" class="rounded border border-cyan-500/40 bg-cyan-500/10 px-3 py-2 text-sm text-cyan-200 hover:bg-cyan-500/20">Download CSV</button>
-      </div>
-      <p id="exportMsg" class="mt-2 text-xs text-slate-400"></p>
-    </section>
-  </div>
-
-  <script>
+<script>
     const token = localStorage.getItem("token");
     if (!token) window.location.href = "/login.html";
     const headers = (extra = {}) => ({ Authorization: token, ...extra });
@@ -487,6 +649,7 @@
     })();
     window.addEventListener("beforeunload", stopScanner);
   </script>
+  <script src="footer.js"></script>
   <script src="nav-auth.js?v=20260302a"></script>
 </body>
 </html>

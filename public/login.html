@@ -1,117 +1,505 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login | Smart Event System</title>
+  <title>Login | Evenix</title>
   <link rel="icon" type="image/png" href="/assets/web-logo.png">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #080B14;
+      --bg-surface: #0D1117;
+      --bg-elevated: #161B27;
+      --bg-hover: #1E2536;
+      --brand-primary: #7C6AF7;
+      --brand-glow: rgba(124, 106, 247, 0.15);
+      --brand-accent: #F59E0B;
+      --text-primary: #F0F2F8;
+      --text-secondary: #8892A4;
+      --border-default: rgba(255,255,255,0.06);
+      --border-brand: rgba(124,106,247,0.4);
+      --success: #10B981;
+      --font-display: "Instrument Serif", serif;
+      --font-body: "DM Sans", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: var(--font-body);
+      background:
+        radial-gradient(circle at top left, rgba(124,106,247,0.14), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(245,158,11,0.12), transparent 24%),
+        var(--bg-base);
+      color: var(--text-primary);
+    }
+    a { color: inherit; text-decoration: none; }
+    button, input { font: inherit; }
+    .page-shell { width: min(1200px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 40px; }
+    .auth-layout {
+      min-height: calc(100vh - 132px);
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 24px;
+      align-items: stretch;
+      padding-top: 28px;
+    }
+    .brand-panel, .form-panel {
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      border: 1px solid var(--border-default);
+      background: var(--bg-surface);
+      box-shadow: 0 28px 60px rgba(0, 0, 0, 0.35);
+    }
+    .brand-panel {
+      padding: 36px;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(124,106,247,0.18), transparent 25%),
+        radial-gradient(circle at 80% 70%, rgba(245,158,11,0.12), transparent 26%),
+        linear-gradient(160deg, rgba(13,17,23,0.98), rgba(22,27,39,0.94));
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      isolation: isolate;
+    }
+    .brand-panel::before {
+      content: "";
+      position: absolute;
+      inset: -20%;
+      background:
+        radial-gradient(circle, rgba(124,106,247,0.18), transparent 40%),
+        radial-gradient(circle, rgba(245,158,11,0.08), transparent 35%);
+      animation: ambient 14s linear infinite alternate;
+      z-index: -1;
+    }
+    @keyframes ambient {
+      from { transform: translate3d(-3%, -2%, 0) scale(1); }
+      to { transform: translate3d(4%, 3%, 0) scale(1.08); }
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 999px;
+      width: fit-content;
+      color: #c4b5fd;
+      background: rgba(124,106,247,0.08);
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .brand-title {
+      margin: 18px 0 10px;
+      font-family: var(--font-display);
+      font-size: clamp(2.75rem, 5vw, 4.3rem);
+      font-weight: 400;
+      line-height: 1.02;
+      letter-spacing: -0.03em;
+    }
+    .brand-copy { max-width: 34rem; color: var(--text-secondary); font-size: 1rem; line-height: 1.7; }
+    .feature-list { display: grid; gap: 14px; margin-top: 32px; }
+    .feature-item {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 14px;
+      padding: 16px 18px;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(10px);
+    }
+    .feature-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: linear-gradient(135deg, rgba(124,106,247,0.9), rgba(124,106,247,0.45));
+      box-shadow: 0 0 24px var(--brand-glow);
+    }
+    .feature-title { font-size: 0.96rem; font-weight: 600; margin: 0 0 4px; }
+    .feature-text { margin: 0; color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5; }
+    .quote-card {
+      margin-top: 30px;
+      padding: 20px 22px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(8,11,20,0.46);
+    }
+    .quote-text {
+      margin: 0 0 12px;
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 1.3rem;
+      line-height: 1.35;
+      color: #f8fafc;
+    }
+    .quote-meta { color: var(--text-secondary); font-size: 0.88rem; }
+    .form-panel {
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      background:
+        linear-gradient(180deg, rgba(13,17,23,0.96), rgba(13,17,23,0.88)),
+        radial-gradient(circle at top right, rgba(124,106,247,0.12), transparent 30%);
+    }
+    .form-card {
+      width: min(100%, 520px);
+      padding: 34px;
+      border-radius: 24px;
+      border: 1px solid var(--border-default);
+      background: rgba(13,17,23,0.88);
+      backdrop-filter: blur(18px);
+    }
+    .form-head { margin-bottom: 26px; }
+    .form-label {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .form-heading {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(2.2rem, 4vw, 3rem);
+      font-weight: 400;
+      line-height: 1.05;
+    }
+    .form-subtext { margin: 10px 0 0; color: var(--text-secondary); line-height: 1.6; }
+    .social-btn, .submit-btn, .ghost-link {
+      width: 100%;
+      min-height: 50px;
+      border-radius: 14px;
+      border: 1px solid var(--border-default);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
+    .social-btn { background: rgba(255,255,255,0.03); color: var(--text-primary); }
+    .social-btn:hover, .ghost-link:hover { transform: translateY(-1px); background: var(--bg-hover); border-color: var(--border-brand); }
+    .divider {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 14px;
+      align-items: center;
+      margin: 22px 0;
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+    }
+    .divider::before, .divider::after {
+      content: "";
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+    }
+    .field { margin-bottom: 16px; }
+    .input {
+      width: 100%;
+      min-height: 52px;
+      padding: 0 15px;
+      border-radius: 14px;
+      border: 1px solid var(--border-default);
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+    }
+    .input::placeholder { color: #64748b; }
+    .input:focus { outline: none; border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(124,106,247,0.15); }
+    .field-error .input { border-color: rgba(239,68,68,0.65); box-shadow: 0 0 0 3px rgba(239,68,68,0.12); animation: shake 0.24s linear 1; }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-3px); }
+      75% { transform: translateX(3px); }
+    }
+    .form-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 10px 0 18px;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    .checkbox { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; }
+    .checkbox input { width: 16px; height: 16px; accent-color: var(--brand-primary); }
+    .ghost-link { width: auto; min-height: auto; padding: 0; border: 0; background: transparent; color: #c4b5fd; justify-content: flex-end; }
+    .submit-btn {
+      border: 1px solid rgba(124,106,247,0.55);
+      background: var(--brand-primary);
+      color: white;
+      box-shadow: 0 0 20px var(--brand-glow);
+      font-weight: 600;
+    }
+    .submit-btn:hover { transform: translateY(-1px); background: #6e5af2; }
+    .submit-btn[disabled] { opacity: 0.75; cursor: wait; transform: none; }
+    .status { min-height: 24px; margin-top: 14px; font-size: 0.9rem; line-height: 1.5; }
+    .status-error { color: #fca5a5; }
+    .status-success { color: #6ee7b7; }
+    .success-state {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(16,185,129,0.24);
+      background: rgba(16,185,129,0.1);
+      color: #d1fae5;
+    }
+    .success-state.visible { display: flex; }
+    .success-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: rgba(16,185,129,0.18);
+      color: var(--success);
+      animation: pop-in 0.3s ease;
+    }
+    @keyframes pop-in {
+      from { transform: scale(0.7); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .footer-note {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    .footer-note a { color: #ddd6fe; }
+    .support-strip {
+      width: min(1200px, calc(100% - 32px));
+      margin: 0 auto 28px;
+      padding: 16px 20px;
+      border-radius: 18px;
+      border: 1px solid var(--border-default);
+      background: rgba(13,17,23,0.78);
+      color: var(--text-secondary);
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 980px) {
+      .auth-layout { grid-template-columns: 1fr; }
+      .brand-panel { min-height: 540px; }
+    }
+    @media (max-width: 640px) {
+      .page-shell { width: min(100%, calc(100% - 20px)); padding-top: 18px; }
+      .auth-layout { min-height: auto; gap: 18px; padding-top: 18px; }
+      .brand-panel, .form-panel { border-radius: 22px; }
+      .brand-panel, .form-card { padding: 22px; }
+      .support-strip { width: min(100%, calc(100% - 20px)); font-size: 0.85rem; }
+      .form-row { flex-direction: column; align-items: flex-start; }
+      .ghost-link { justify-content: flex-start; }
+    }
+  </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100">
-  <div class="mx-auto flex min-h-screen max-w-6xl items-center px-4 py-10">
-    <div class="grid w-full gap-8 lg:grid-cols-2">
-      <div class="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-950 p-8">
-        <h1 class="text-3xl font-semibold">Welcome back</h1>
-        <p class="mt-2 text-slate-400">Login to manage events and bookings.</p>
+<body>
+  <div data-role-nav></div>
 
-        <form id="loginForm" class="mt-6 grid gap-4">
-          <input id="email" type="email" placeholder="Email" required
-                 class="w-full rounded-lg border border-slate-800 bg-slate-900 px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400">
-          <input id="password" type="password" placeholder="Password" required
-                 class="w-full rounded-lg border border-slate-800 bg-slate-900 px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400">
-          <button type="submit"
-                  class="rounded-lg bg-amber-400 px-4 py-3 font-semibold text-slate-900 hover:bg-amber-300">
-            Login
-          </button>
-          <a href="/forgot-password.html" class="text-right text-xs text-amber-300 hover:underline">Forgot password?</a>
-          <p id="loginMsg" class="text-sm text-rose-300"></p>
-        </form>
-
-        <div class="mt-4 flex items-center gap-3 text-sm text-slate-400">
-          <span class="h-px flex-1 bg-slate-800"></span>
-          or
-          <span class="h-px flex-1 bg-slate-800"></span>
+  <main class="page-shell">
+    <section class="auth-layout">
+      <aside class="brand-panel" aria-label="Platform highlights">
+        <div>
+          <span class="eyebrow">Premium Event Ops</span>
+          <h1 class="brand-title">Run events that feel impossible to miss.</h1>
+          <p class="brand-copy">Evenix gives organizers one place to publish, sell, remind, verify, and analyze events without stitching together five separate tools.</p>
+          <div class="feature-list">
+            <article class="feature-item">
+              <div class="feature-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M3 12h18"/></svg></div>
+              <div>
+                <p class="feature-title">Launch events quickly</p>
+                <p class="feature-text">Create multi-ticket events, dynamic pricing, reminders, and organizer pages in one workflow.</p>
+              </div>
+            </article>
+            <article class="feature-item">
+              <div class="feature-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h18"/><path d="M12 3v18"/><circle cx="12" cy="12" r="9"/></svg></div>
+              <div>
+                <p class="feature-title">See booking signals early</p>
+                <p class="feature-text">Track trends, risk, and attendance predictions before the event day becomes operationally expensive.</p>
+              </div>
+            </article>
+            <article class="feature-item">
+              <div class="feature-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 11 3 3 7-7"/><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/></svg></div>
+              <div>
+                <p class="feature-title">Keep check-in smooth</p>
+                <p class="feature-text">Readable booking refs, QR passes, and organizer tools reduce desk chaos when attendees start arriving.</p>
+              </div>
+            </article>
+          </div>
         </div>
 
-        <a href="/auth/google"
-           class="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-slate-800 bg-slate-900 px-4 py-3 font-semibold text-slate-100 hover:bg-slate-800">
-          Continue with Google
-        </a>
+        <div class="quote-card">
+          <p class="quote-text">“We replaced spreadsheets, manual reminder lists, and three broken admin panels with one system the team actually trusts.”</p>
+          <div class="quote-meta">Areeba Khan — Events Lead, Lahore Design Summit</div>
+        </div>
+      </aside>
 
-        <p class="mt-6 text-sm text-slate-400">
-          No account?
-          <a class="text-amber-400 hover:underline" href="/signup.html">Sign up</a>
-        </p>
-      </div>
+      <section class="form-panel" aria-labelledby="loginTitle">
+        <div class="form-card">
+          <div class="form-head">
+            <span class="form-label">Welcome back</span>
+            <h2 id="loginTitle" class="form-heading">Sign in to Evenix</h2>
+            <p class="form-subtext">Access bookings, saved events, creator tools, and event operations from the same account.</p>
+          </div>
 
-      <div class="rounded-2xl border border-slate-800 bg-slate-900 p-8">
-        <h2 class="text-xl font-semibold">Admin tips</h2>
-        <ul class="mt-4 list-disc pl-5 text-slate-400">
-          <li>Use the admin dashboard to manage events.</li>
-          <li>Bookings and event stats are available in one view.</li>
-          <li>Keep your admin account secure.</li>
-        </ul>
-      </div>
-    </div>
+          <a href="/auth/google" class="social-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#EA4335" d="M12 10.2v3.9h5.4c-.2 1.3-1.5 3.8-5.4 3.8-3.2 0-5.9-2.7-5.9-6s2.7-6 5.9-6c1.8 0 3 0.8 3.7 1.4l2.5-2.5C16.6 3.4 14.5 2.5 12 2.5 6.8 2.5 2.5 6.8 2.5 12S6.8 21.5 12 21.5c6.1 0 10.1-4.3 10.1-10.4 0-.7-.1-1.2-.2-1.7Z"/></svg>
+            <span>Continue with Google</span>
+          </a>
+
+          <div class="divider">or use email and password</div>
+
+          <form id="loginForm" novalidate>
+            <div class="field" id="emailField">
+              <label class="form-label" for="email">Email</label>
+              <input id="email" class="input" type="email" placeholder="name@company.com" required autocomplete="email">
+            </div>
+
+            <div class="field" id="passwordField">
+              <label class="form-label" for="password">Password</label>
+              <input id="password" class="input" type="password" placeholder="Enter your password" required autocomplete="current-password">
+            </div>
+
+            <div class="form-row">
+              <label class="checkbox">
+                <input id="rememberMe" type="checkbox">
+                <span>Remember me on this device</span>
+              </label>
+              <a href="/forgot-password.html" class="ghost-link">Forgot password?</a>
+            </div>
+
+            <button id="loginBtn" class="submit-btn" type="submit">Login</button>
+            <div id="successState" class="success-state" aria-live="polite">
+              <div class="success-icon" aria-hidden="true">?</div>
+              <div>Login successful. Redirecting to home.</div>
+            </div>
+            <div id="loginMsg" class="status status-error" aria-live="polite"></div>
+          </form>
+
+          <div class="footer-note">
+            No account yet? <a href="/signup.html">Create one now</a>.<br>
+            Need account help: <a href="mailto:suneeltimani@gmail.com">suneeltimani@gmail.com</a>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div class="support-strip">
+    <span>Secure access for users, creators, and administrators.</span>
+    <span>Google login, OTP verification, and booking history stay connected to the same account.</span>
   </div>
-  <footer class="mx-auto w-full max-w-6xl px-4 pb-8 text-xs text-slate-300">
-      <div class="rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-4">
-        <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <p>Event Arc Management System</p>
-          <p>Need help? suneeltimani@gmail.com | Secure login for users and admins</p>
-        </div>
-      </div>
-  </footer>
 
   <script>
-    const loginParams = new URLSearchParams(window.location.search);
-    if (loginParams.get("error") === "account_locked") {
-      const preMsg = document.getElementById("loginMsg");
-      preMsg.textContent = "Your account is locked. Contact admin support.";
+    const loginForm = document.getElementById("loginForm");
+    const loginBtn = document.getElementById("loginBtn");
+    const loginMsg = document.getElementById("loginMsg");
+    const successState = document.getElementById("successState");
+    const emailField = document.getElementById("emailField");
+    const passwordField = document.getElementById("passwordField");
+
+    function clearFieldErrors() {
+      [emailField, passwordField].forEach((field) => field.classList.remove("field-error"));
     }
 
-    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    function setLoading(isLoading) {
+      loginBtn.disabled = isLoading;
+      loginBtn.textContent = isLoading ? "Loading..." : "Login";
+    }
+
+    const loginParams = new URLSearchParams(window.location.search);
+    if (loginParams.get("error") === "account_locked") {
+      loginMsg.textContent = "Your account is locked. Contact admin support.";
+      if (typeof showToast === "function") showToast("Your account is locked. Contact admin support.", "error", 3600);
+    }
+
+    loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
+      clearFieldErrors();
+      successState.classList.remove("visible");
+      loginMsg.className = "status status-error";
+      loginMsg.textContent = "";
+
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
-
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-      });
-
-      const msg = document.getElementById("loginMsg");
-      msg.textContent = "";
-      if (!res.ok) {
-        let message = "Login failed.";
-        let code = "";
-        try {
-          const err = await res.json();
-          message = err.error || message;
-          code = err.code || "";
-        } catch (_) {}
-        if (code === "EMAIL_NOT_VERIFIED") {
-          const emailParam = encodeURIComponent(email);
-          msg.textContent = `${message} `;
-          const link = document.createElement("a");
-          link.className = "underline text-amber-300";
-          link.href = `/verify-signup-otp.html?email=${emailParam}`;
-          link.textContent = "Verify now";
-          msg.appendChild(link);
-        } else {
-          msg.textContent = message;
-        }
+      if (!email) emailField.classList.add("field-error");
+      if (!password) passwordField.classList.add("field-error");
+      if (!email || !password) {
+        loginMsg.textContent = "Email and password are required.";
+        if (typeof showToast === "function") showToast("Email and password are required.", "warning");
         return;
       }
 
-      const data = await res.json();
-      localStorage.setItem("token", data.token);
-      window.location.href = "/";
+      setLoading(true);
+      try {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+
+        if (!res.ok) {
+          let message = "Login failed.";
+          let code = "";
+          try {
+            const err = await res.json();
+            message = err.error || message;
+            code = err.code || "";
+          } catch (_) {}
+
+          emailField.classList.add("field-error");
+          passwordField.classList.add("field-error");
+          if (code === "EMAIL_NOT_VERIFIED") {
+            loginMsg.textContent = `${message} `;
+            const link = document.createElement("a");
+            link.href = `/verify-signup-otp.html?email=${encodeURIComponent(email)}`;
+            link.style.color = "#ddd6fe";
+            link.textContent = "Verify now";
+            loginMsg.appendChild(link);
+          } else {
+            loginMsg.textContent = message;
+          }
+          if (typeof showToast === "function") showToast(message, "error", 3200);
+          return;
+        }
+
+        const data = await res.json();
+        localStorage.setItem("token", data.token);
+        document.dispatchEvent(new CustomEvent("auth:changed", { detail: { loggedIn: true, user: data } }));
+        successState.classList.add("visible");
+        loginMsg.className = "status status-success";
+        loginMsg.textContent = "Session created successfully.";
+        if (typeof showToast === "function") showToast("Login successful.", "success");
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 700);
+      } catch (err) {
+        emailField.classList.add("field-error");
+        passwordField.classList.add("field-error");
+        loginMsg.textContent = "Network error while logging in. Try again.";
+        if (typeof showToast === "function") showToast("Network error while logging in. Try again.", "error");
+      } finally {
+        setLoading(false);
+      }
     });
   </script>
+  <script src="/ui-feedback.js"></script>
+  <script src="/nav-auth.js?v=1"></script>
+  <script src="footer.js"></script>
 </body>
 </html>
-
-
 

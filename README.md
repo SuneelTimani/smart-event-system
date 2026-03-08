@@ -1,6 +1,6 @@
-# Smart Event System
+# Evenix
 
-Smart Event System is a full-stack event platform with:
+Evenix is a full-stack event platform with:
 - user/admin authentication
 - event creation and booking
 - Stripe checkout + webhook confirmation

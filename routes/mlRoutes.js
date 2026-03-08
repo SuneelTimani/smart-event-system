@@ -22,6 +22,7 @@ const { protect }   = require("../middleware/authMiddleware");
 const { adminOnly } = require("../middleware/adminMiddleware");
 const Event         = require("../models/Event");
 const Booking       = require("../models/Booking");
+const { decorateEventDynamicPricing } = require("../utils/dynamicPricing");
 
 const { predictAttendance, predictAttendanceBulk } = require("../utils/ml/attendancePrediction");
 const { detectChurn, churnSummary }                = require("../utils/ml/churnDetection");
@@ -41,10 +42,10 @@ router.get("/ml/search", async (req, res) => {
     }
 
     const events = await Event.find({ status: "published", isDeleted: { $ne: true } })
-      .select("_id title description category location organizer date capacity seatsBooked status tags")
+      .select("_id title description category location organizer date capacity seatsBooked status tags coverImage ticketTypes")
       .lean();
 
-    const results = smartSearch(query, events, { limit });
+    const results = smartSearch(query, events.map(decorateEventDynamicPricing), { limit });
 
     res.json({ query, count: results.length, results });
   } catch (err) {

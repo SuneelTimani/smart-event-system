@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ticket Confirmation | Smart Event System</title>
+  <title>Ticket Confirmation | Evenix</title>
   <link rel="icon" type="image/png" href="/assets/web-logo.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
@@ -13,9 +13,9 @@
     <header class="mb-6 flex flex-col gap-3">
       <nav data-role-nav class="flex flex-col gap-4 border border-slate-800 bg-slate-900/70 px-4 py-3 backdrop-blur md:flex-row md:items-center md:justify-between rounded-xl">
         <div class="flex items-center gap-3">
-          <img src="/assets/web-logo.png" alt="Smart Event System" class="h-9 w-9 rounded-lg object-cover">
+          <img src="/assets/web-logo.png" alt="Evenix" class="h-9 w-9 rounded-lg object-cover">
           <div>
-            <p class="text-sm font-semibold">Smart Event System</p>
+            <p class="text-sm font-semibold">Evenix</p>
             <p class="text-xs text-slate-400">Manage and discover events</p>
           </div>
         </div>
@@ -226,7 +226,7 @@
   <div class="wrap">
     <div class="pass">
       <div class="head">
-        <h1 class="title">EVENT ARC SPECIAL PASS</h1>
+        <h1 class="title">EVENIX SPECIAL PASS</h1>
         <div class="sub">Present this pass at entry for quick verification</div>
       </div>
       <div class="body">
@@ -248,7 +248,7 @@
       </div>
       <div class="foot">
         <span>Issued: ${escapeHtml(formatDate(new Date()))}</span>
-        <span>Smart Event System</span>
+        <span>Evenix</span>
       </div>
     </div>
   </div>
@@ -278,7 +278,7 @@
   <rect x="0" y="0" width="1080" height="540" rx="36" fill="url(#bg)"/>
   <rect x="22" y="22" width="1036" height="496" rx="28" fill="none" stroke="#22d3ee" stroke-opacity="0.5" stroke-width="2"/>
 
-  <text x="60" y="92" fill="#67e8f9" font-size="46" font-family="Arial, sans-serif" font-weight="700">EVENT ARC PASS</text>
+  <text x="60" y="92" fill="#67e8f9" font-size="46" font-family="Arial, sans-serif" font-weight="700">EVENIX PASS</text>
   <text x="60" y="125" fill="#94a3b8" font-size="20" font-family="Arial, sans-serif">Mobile Wallet Card</text>
 
   <text x="60" y="185" fill="#e2e8f0" font-size="24" font-family="Arial, sans-serif"><tspan font-weight="700">Event:</tspan> ${title}</text>
@@ -292,7 +292,7 @@
   <image href="${qrDataUrl}" x="826" y="164" width="180" height="180"/>
   <text x="916" y="388" text-anchor="middle" fill="#94a3b8" font-size="16" font-family="Arial, sans-serif">Scan at entry</text>
 
-  <text x="60" y="486" fill="#64748b" font-size="16" font-family="Arial, sans-serif">Issued by Smart Event System</text>
+  <text x="60" y="486" fill="#64748b" font-size="16" font-family="Arial, sans-serif">Issued by Evenix</text>
 </svg>`;
     }
 
@@ -385,6 +385,7 @@
 
     init();
   </script>
+  <script src="footer.js"></script>
   <script src="nav-auth.js?v=20260302a"></script>
 </body>
 </html>

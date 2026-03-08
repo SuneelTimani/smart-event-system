@@ -3,67 +3,382 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard | Smart Event System</title>
+  <title>Admin Dashboard | Evenix</title>
   <link rel="icon" type="image/png" href="/assets/web-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-base: #080b14;
+      --bg-surface: #0d1117;
+      --bg-elevated: #161b27;
+      --bg-hover: #1e2536;
+      --brand-primary: #7c6af7;
+      --brand-accent: #f59e0b;
+      --brand-glow: rgba(124, 106, 247, 0.16);
+      --text-primary: #f0f2f8;
+      --text-secondary: #8892a4;
+      --border-default: rgba(255, 255, 255, 0.07);
+      --border-strong: rgba(255, 255, 255, 0.12);
+      --font-body: "DM Sans", sans-serif;
+      --font-display: "Instrument Serif", serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      color: var(--text-primary);
+      background:
+        radial-gradient(900px 420px at 8% -8%, rgba(124, 106, 247, 0.18), transparent 58%),
+        radial-gradient(720px 340px at 95% 10%, rgba(245, 158, 11, 0.1), transparent 52%),
+        linear-gradient(180deg, #060912 0%, #0a0f19 48%, #080b14 100%);
+    }
+
+    .admin-shell {
+      width: min(1240px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 48px;
+    }
+
+    .admin-hero {
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      border: 1px solid var(--border-default);
+      background:
+        linear-gradient(135deg, rgba(124, 106, 247, 0.14), rgba(8, 11, 20, 0.02) 38%),
+        linear-gradient(180deg, rgba(13, 17, 23, 0.96), rgba(13, 17, 23, 0.88));
+      box-shadow: 0 28px 60px rgba(0, 0, 0, 0.35);
+      padding: 28px;
+    }
+
+    .admin-hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -60px -70px auto;
+      width: 240px;
+      height: 240px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.16), transparent 62%);
+      pointer-events: none;
+    }
+
+    .admin-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid rgba(124, 106, 247, 0.32);
+      background: rgba(124, 106, 247, 0.08);
+      color: #c4b5fd;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .admin-title {
+      margin: 16px 0 8px;
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 400;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+    }
+
+    .admin-subtitle {
+      max-width: 58rem;
+      margin: 0;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      font-size: 0.98rem;
+    }
+
+    .admin-actions {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .admin-btn {
+      min-height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border-default);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-primary);
+      padding: 0 16px;
+      font-size: 0.92rem;
+      font-weight: 500;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .admin-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--border-strong);
+      background: var(--bg-hover);
+    }
+
+    .admin-btn--primary {
+      background: var(--brand-primary);
+      color: #fff;
+      border-color: rgba(124, 106, 247, 0.55);
+      box-shadow: 0 0 24px var(--brand-glow);
+    }
+
+    .admin-btn--accent {
+      border-color: rgba(245, 158, 11, 0.34);
+      background: rgba(245, 158, 11, 0.08);
+      color: #fcd34d;
+    }
+
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr);
+      gap: 24px;
+      margin-top: 24px;
+      align-items: start;
+    }
+
+    .admin-rail {
+      position: sticky;
+      top: 112px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .admin-card,
+    #admin-subnav,
+    #overview > div,
+    #events-section > div,
+    #archived-section > div,
+    #analytics-section,
+    #audit-section,
+    #users-section,
+    #comments-section,
+    #monitoring-section,
+    #push-section,
+    #ml-section,
+    #tools-section,
+    .admin-shell > section:not(#overview):not(#admin-subnav) {
+      border-radius: 22px !important;
+      border-color: var(--border-default) !important;
+      background: linear-gradient(180deg, rgba(13, 17, 23, 0.96), rgba(13, 17, 23, 0.9)) !important;
+      box-shadow: 0 22px 48px rgba(0, 0, 0, 0.22);
+    }
+
+    #admin-subnav {
+      padding: 16px !important;
+      backdrop-filter: blur(18px);
+    }
+
+    .admin-subnav-title {
+      margin: 0 0 12px;
+      font-size: 0.74rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    .admin-subnav-groups {
+      display: grid;
+      gap: 14px;
+    }
+
+    .admin-subnav-group {
+      display: grid;
+      gap: 8px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .admin-subnav-group:first-of-type {
+      padding-top: 0;
+      border-top: 0;
+    }
+
+    .admin-subnav-label {
+      margin: 0;
+      padding: 0 10px;
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #7f8aa3;
+    }
+
+    #admin-subnav a {
+      display: flex;
+      align-items: center;
+      min-height: 44px;
+      border-radius: 14px !important;
+      border-color: transparent !important;
+      background: rgba(255, 255, 255, 0.02) !important;
+      color: var(--text-secondary);
+      transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+    }
+
+    #admin-subnav a:hover,
+    #admin-subnav a:focus-visible {
+      color: var(--text-primary);
+      background: rgba(124, 106, 247, 0.12) !important;
+      outline: none;
+      transform: translateX(2px);
+    }
+
+    .admin-main {
+      display: grid;
+      gap: 24px;
+    }
+
+    #overview {
+      margin-top: 0 !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px !important;
+    }
+
+    #overview > div {
+      position: relative;
+      overflow: hidden;
+      padding: 22px !important;
+    }
+
+    #overview > div::after {
+      content: "";
+      position: absolute;
+      inset: auto -22px -24px auto;
+      width: 84px;
+      height: 84px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(124, 106, 247, 0.16), transparent 64%);
+    }
+
+    h1, h2, h3 { letter-spacing: -0.02em; }
+    h2 { font-size: 1.1rem; }
+
+    table thead th {
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-secondary) !important;
+    }
+
+    table tbody tr:nth-child(odd) {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    input, select, textarea {
+      border-radius: 14px !important;
+    }
+
+    dialog {
+      border-radius: 24px !important;
+      border-color: var(--border-default) !important;
+      background: linear-gradient(180deg, rgba(13, 17, 23, 0.98), rgba(13, 17, 23, 0.94)) !important;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+    }
+
+    @media (max-width: 980px) {
+      .admin-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-rail {
+        position: static;
+      }
+
+      .admin-subnav-groups {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .admin-subnav-group {
+        padding-top: 0;
+        border-top: 0;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .admin-shell {
+        width: min(100%, calc(100% - 20px));
+        padding-top: 16px;
+      }
+
+      .admin-hero {
+        padding: 20px;
+        border-radius: 22px;
+      }
+
+      .admin-title {
+        font-size: 2.35rem;
+      }
+
+      #overview {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-subnav-groups {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100">
-  <div class="mx-auto max-w-6xl px-4 py-8">
-    <header class="flex flex-col gap-4">
-      <nav data-role-nav class="flex flex-col gap-4 border border-slate-800 bg-slate-900/70 px-4 py-3 backdrop-blur md:flex-row md:items-center md:justify-between rounded-xl">
-        <div class="flex items-center gap-3">
-          <img src="/assets/web-logo.png" alt="Smart Event System" class="h-9 w-9 rounded-lg object-cover">
-          <div>
-            <p class="text-sm font-semibold">Smart Event System</p>
-            <p class="text-xs text-slate-400">Manage and discover events</p>
-          </div>
-        </div>
-        <div class="flex flex-wrap gap-2 text-sm">
-          <a class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800" href="/">Home</a>
-          <a data-nav="auth" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/book.html">Book Event</a>
-          <a data-nav="admin" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/create-event.html">Create Event</a>
-          <a data-nav="admin" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/admin.html">Admin Dashboard</a>
-          <a data-nav="guest" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800" href="/login.html">Login</a>
-          
-            <a data-nav="auth-avatar" class="hidden inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ring-2 ring-amber-300/40" href="/profile.html"><img data-nav-avatar-img src="https://ui-avatars.com/api/?name=U&background=0f172a&color=f59e0b&size=96" alt="Profile" class="h-full w-full object-cover"></a>
-        </div>
-      </nav>
-      <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 class="text-3xl font-semibold">Admin Dashboard</h1>
-          <p class="text-slate-400">Manage events and bookings in one place.</p>
-          <p id="myEventsMeta" class="mt-1 text-xs text-slate-500">My Events: 0</p>
-        </div>
-        <div class="flex items-center gap-3">
-          <a href="/admin-bookings.html" class="rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-sm hover:bg-slate-800">Show All Bookings</a>
-          <a href="/user.html" class="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm text-amber-200 hover:bg-amber-500/20">User Dashboard</a>
-          <a href="/organizer-tools.html" class="rounded-lg border border-indigo-500/40 bg-indigo-500/10 px-4 py-2 text-sm text-indigo-200 hover:bg-indigo-500/20">Organizer Tools</a>
-          <button id="weeklyDigestBtn" class="rounded-lg border border-violet-500/40 bg-violet-500/10 px-4 py-2 text-sm text-violet-200 hover:bg-violet-500/20">Weekly Digest</button>
-          <button id="testEmailBtn" class="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 hover:bg-emerald-500/20">Test Email</button>
-          <button id="testWhatsAppBtn" class="rounded-lg border border-cyan-500/40 bg-cyan-500/10 px-4 py-2 text-sm text-cyan-300 hover:bg-cyan-500/20">Test WhatsApp</button>
-          <button id="refreshBtn" class="rounded-lg border border-slate-800 bg-slate-900 px-4 py-2 text-sm hover:bg-slate-800">Refresh</button>
-        </div>
+<body>
+  <div class="admin-shell">
+    <div data-role-nav></div>
+
+    <header class="admin-hero">
+      <span class="admin-eyebrow">Administrator workspace</span>
+      <h1 class="admin-title">Run Evenix like an operations console.</h1>
+      <p class="admin-subtitle">Track event performance, moderate community activity, monitor system health, and act on revenue and booking signals without leaving one view.</p>
+      <p id="myEventsMeta" class="mt-3 text-sm text-slate-400">My Events: 0</p>
+      <div class="admin-actions">
+        <a href="/admin-bookings.html" class="admin-btn">All Bookings</a>
+        <a href="/organizer-tools.html" class="admin-btn">Organizer Tools</a>
+        <button id="weeklyDigestBtn" class="admin-btn admin-btn--primary">Weekly Digest</button>
+        <button id="testEmailBtn" class="admin-btn">Test Email</button>
+        <button id="testWhatsAppBtn" class="admin-btn">Test WhatsApp</button>
+        <button id="refreshBtn" class="admin-btn admin-btn--accent">Refresh Dashboard</button>
       </div>
     </header>
 
-    <section id="admin-subnav" class="mt-4 rounded-xl border border-slate-800 bg-slate-900/70 p-3 backdrop-blur">
-      <div class="flex flex-wrap gap-2 text-xs md:text-sm">
-        <a href="#overview" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Overview</a>
-        <a href="#events-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Events</a>
-        <a href="#archived-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Archived</a>
-        <a href="#analytics-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Analytics</a>
-        <a href="#users-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Users</a>
-        <a href="#comments-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Comments</a>
-        <a href="#audit-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Audit</a>
-        <a href="#monitoring-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Monitoring</a>
-        <a href="#push-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Push</a>
-        <a href="#ml-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">ML</a>
-        <a href="#tools-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">API Tools</a>
-      </div>
-    </section>
+    <div class="admin-layout">
+      <aside class="admin-rail">
+        <section id="admin-subnav" class="rounded-xl border border-slate-800 bg-slate-900/70 p-3 backdrop-blur">
+          <p class="admin-subnav-title">Admin Sections</p>
+          <div class="admin-subnav-groups">
+            <div class="admin-subnav-group">
+              <p class="admin-subnav-label">Overview</p>
+              <a href="#overview" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Overview</a>
+              <a href="#events-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Events</a>
+              <a href="#archived-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Archived</a>
+              <a href="#analytics-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Analytics</a>
+            </div>
+            <div class="admin-subnav-group">
+              <p class="admin-subnav-label">People</p>
+              <a href="#users-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Users</a>
+              <a href="#comments-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Comments</a>
+              <a href="#audit-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Audit</a>
+            </div>
+            <div class="admin-subnav-group">
+              <p class="admin-subnav-label">System</p>
+              <a href="#monitoring-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Monitoring</a>
+              <a href="#push-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">Push</a>
+              <a href="#ml-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">ML</a>
+              <a href="#tools-section" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 hover:bg-slate-800">API Tools</a>
+            </div>
+          </div>
+        </section>
+      </aside>
 
-    <section id="overview" class="mt-8 grid gap-4 md:grid-cols-3">
+      <main class="admin-main">
+        <section id="overview" class="mt-8 grid gap-4 md:grid-cols-3">
       <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
         <p class="text-sm text-slate-400">Total Events</p>
         <p id="totalEvents" class="mt-2 text-2xl font-semibold">0</p>
@@ -435,6 +750,8 @@
         </table>
       </div>
     </section>
+      </main>
+    </div>
   </div>
 
   <dialog id="editEventModal" class="w-[92vw] max-w-2xl rounded-xl border border-slate-700 bg-slate-950 p-0 text-slate-100 backdrop:bg-black/70">
@@ -2049,6 +2366,7 @@
       loadWebhookEvents();
     })();
   </script>
+  <script src="footer.js"></script>
   <script src="nav-auth.js?v=20260302a"></script>
 </body>
 </html>

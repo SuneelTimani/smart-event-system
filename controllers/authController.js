@@ -420,7 +420,7 @@ exports.requestPasswordReset = async (req, res) => {
     const cleanEmail = normalizeEmail(req.body.email);
     // Return same response to avoid email enumeration.
     const successPayload = {
-      message: "If that email exists, a password reset link has been sent."
+      message: "If that email exists, a 6-digit password reset OTP has been sent."
     };
 
     if (!cleanEmail || !isValidEmail(cleanEmail)) {
@@ -458,7 +458,8 @@ exports.requestPasswordReset = async (req, res) => {
     const verifyUrl = `${baseUrl}/verify-otp.html?email=${encodeURIComponent(user.email)}`;
     await notifyPasswordReset({
       toUserEmail: user.email,
-      resetUrl: `${verifyUrl}\nOTP: ${otp}`
+      otp,
+      verifyUrl
     });
 
     res.json(successPayload);

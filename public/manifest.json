@@ -1,6 +1,6 @@
 {
-  "name": "Smart Event System",
-  "short_name": "Event Arc",
+  "name": "Evenix",
+  "short_name": "Evenix",
   "description": "Discover, book, and manage events with installable app access and browser reminders.",
   "start_url": "/?source=pwa",
   "scope": "/",

@@ -1,79 +1,227 @@
-﻿<!DOCTYPE html>
-<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>All Bookings | Admin</title>
+  <title>All Bookings | Evenix Admin</title>
   <link rel="icon" type="image/png" href="/assets/web-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --bg-base: #080b14;
+      --bg-surface: #0d1117;
+      --bg-elevated: #161b27;
+      --bg-hover: #1e2536;
+      --brand-primary: #7c6af7;
+      --brand-accent: #f59e0b;
+      --brand-glow: rgba(124, 106, 247, 0.16);
+      --text-primary: #f0f2f8;
+      --text-secondary: #8892a4;
+      --border-default: rgba(255,255,255,0.07);
+      --border-strong: rgba(255,255,255,0.12);
+      --font-display: "Instrument Serif", serif;
+      --font-body: "DM Sans", sans-serif;
+    }
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      color: var(--text-primary);
+      background:
+        radial-gradient(900px 420px at 8% -8%, rgba(124, 106, 247, 0.18), transparent 58%),
+        radial-gradient(720px 340px at 95% 10%, rgba(245, 158, 11, 0.1), transparent 52%),
+        linear-gradient(180deg, #060912 0%, #0a0f19 48%, #080b14 100%);
+    }
+    .page-shell {
+      width: min(1240px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 48px;
+    }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      margin-top: 24px;
+      padding: 28px;
+      border-radius: 28px;
+      border: 1px solid var(--border-default);
+      background:
+        linear-gradient(135deg, rgba(124, 106, 247, 0.14), rgba(8, 11, 20, 0.02) 38%),
+        linear-gradient(180deg, rgba(13, 17, 23, 0.96), rgba(13, 17, 23, 0.88));
+      box-shadow: 0 28px 60px rgba(0, 0, 0, 0.35);
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #c4b5fd;
+      background: rgba(124,106,247,0.08);
+      border: 1px solid rgba(124,106,247,0.32);
+    }
+    .title {
+      margin: 16px 0 8px;
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      font-weight: 400;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+    }
+    .subtitle {
+      margin: 0;
+      max-width: 56rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      font-size: 0.98rem;
+    }
+    .hero-actions {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .action-btn {
+      min-height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border-default);
+      background: rgba(255,255,255,0.03);
+      color: var(--text-primary);
+      padding: 0 16px;
+      font-size: 0.92rem;
+      font-weight: 500;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+    }
+    .action-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--border-strong);
+      background: var(--bg-hover);
+    }
+    .action-btn--primary {
+      background: var(--brand-primary);
+      color: #fff;
+      border-color: rgba(124,106,247,0.55);
+      box-shadow: 0 0 24px var(--brand-glow);
+    }
+    .action-btn--accent {
+      border-color: rgba(245,158,11,0.34);
+      background: rgba(245,158,11,0.08);
+      color: #fcd34d;
+    }
+    .content-grid {
+      display: grid;
+      gap: 24px;
+      margin-top: 24px;
+    }
+    .metric-grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+    }
+    .metric-card,
+    .surface-card {
+      border: 1px solid var(--border-default) !important;
+      border-radius: 22px !important;
+      background: linear-gradient(180deg, rgba(13,17,23,0.96), rgba(13,17,23,0.9)) !important;
+      box-shadow: 0 22px 48px rgba(0,0,0,0.22);
+    }
+    .metric-card { padding: 22px !important; }
+    .metric-card p:first-child { color: var(--text-secondary) !important; }
+    .filters-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+    }
+    input, select {
+      border-radius: 14px !important;
+    }
+    .surface-card h2 { font-size: 1.08rem; letter-spacing: -0.02em; }
+    .surface-card .section-meta {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    @media (max-width: 900px) {
+      .metric-grid, .filters-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+    @media (max-width: 640px) {
+      .page-shell { width: min(100%, calc(100% - 20px)); padding-top: 16px; }
+      .hero { padding: 20px; border-radius: 22px; }
+      .metric-grid, .filters-grid { grid-template-columns: 1fr; }
+      .title { font-size: 2.2rem; }
+    }
+  </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100">
-  <div class="mx-auto max-w-6xl px-4 py-8">
-    <header class="flex flex-col gap-4">
-      <nav data-role-nav class="flex flex-col gap-4 border border-slate-800 bg-slate-900/70 px-4 py-3 backdrop-blur md:flex-row md:items-center md:justify-between rounded-xl">
-        <div class="flex items-center gap-3">
-          <img src="/assets/web-logo.png" alt="Smart Event System" class="h-9 w-9 rounded-lg object-cover">
-          <div>
-            <p class="text-sm font-semibold">Smart Event System</p>
-            <p class="text-xs text-slate-400">Manage and discover events</p>
-          </div>
-        </div>
-      </nav>
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-3xl font-semibold">All Bookings</h1>
-          <p class="text-slate-400">Admin view of all user bookings and registrations.</p>
-        </div>
-        <div class="flex gap-2">
-          <a href="/admin.html" class="rounded-lg border border-slate-700 px-4 py-2 text-sm hover:bg-slate-800">Back to Admin</a>
-          <button id="exportCsvBtn" class="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 hover:bg-emerald-500/20">Export CSV</button>
-          <button id="refreshBtn" class="rounded-lg bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-300">Refresh</button>
-        </div>
+<body>
+  <div class="page-shell">
+    <div data-role-nav></div>
+
+    <header class="hero">
+      <span class="eyebrow">Admin bookings console</span>
+      <h1 class="title">Inspect every booking without losing context.</h1>
+      <p class="subtitle">Filter by status, event, and date range. Export the active slice to CSV and keep admin operations aligned with the main Evenix dashboard.</p>
+      <div class="hero-actions">
+        <a href="/admin.html" class="action-btn">Back to Admin</a>
+        <button id="exportCsvBtn" class="action-btn">Export CSV</button>
+        <button id="refreshBtn" class="action-btn action-btn--accent">Refresh</button>
       </div>
     </header>
 
-    <section class="mt-8 grid gap-4 md:grid-cols-3">
-      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
-        <p class="text-sm text-slate-400">Total Booking Records</p>
-        <p id="totalBookings" class="mt-2 text-2xl font-semibold">0</p>
-      </div>
-      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
-        <p class="text-sm text-slate-400">Confirmed</p>
-        <p id="confirmedCount" class="mt-2 text-2xl font-semibold">0</p>
-      </div>
-      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
-        <p class="text-sm text-slate-400">Cancelled</p>
-        <p id="cancelledCount" class="mt-2 text-2xl font-semibold">0</p>
-      </div>
-    </section>
+    <div class="content-grid">
+      <section class="metric-grid">
+        <div class="rounded-xl border border-slate-800 bg-slate-900 p-4 metric-card">
+          <p class="text-sm text-slate-400">Total Booking Records</p>
+          <p id="totalBookings" class="mt-2 text-2xl font-semibold">0</p>
+        </div>
+        <div class="rounded-xl border border-slate-800 bg-slate-900 p-4 metric-card">
+          <p class="text-sm text-slate-400">Confirmed</p>
+          <p id="confirmedCount" class="mt-2 text-2xl font-semibold">0</p>
+        </div>
+        <div class="rounded-xl border border-slate-800 bg-slate-900 p-4 metric-card">
+          <p class="text-sm text-slate-400">Cancelled</p>
+          <p id="cancelledCount" class="mt-2 text-2xl font-semibold">0</p>
+        </div>
+      </section>
 
-    <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
-      <h2 class="text-lg font-semibold">Filters</h2>
-      <div class="mt-3 grid gap-3 md:grid-cols-4">
-        <select id="statusFilter" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm">
-          <option value="">All Statuses</option>
-          <option value="pending">pending</option>
-          <option value="confirmed">confirmed</option>
-          <option value="checked_in">checked_in</option>
-          <option value="cancelled">cancelled</option>
-          <option value="refunded">refunded</option>
-        </select>
-        <select id="eventFilter" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm">
-          <option value="">All Events</option>
-        </select>
-        <input id="dateFrom" type="date" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm">
-        <input id="dateTo" type="date" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm">
-      </div>
-    </section>
+      <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4 surface-card">
+        <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h2 class="text-lg font-semibold">Filters</h2>
+            <p class="section-meta">Server-side filters stay consistent across pagination and CSV export.</p>
+          </div>
+        </div>
+        <div class="mt-4 filters-grid">
+          <select id="statusFilter" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm">
+            <option value="">All Statuses</option>
+            <option value="pending">pending</option>
+            <option value="confirmed">confirmed</option>
+            <option value="checked_in">checked_in</option>
+            <option value="cancelled">cancelled</option>
+            <option value="refunded">refunded</option>
+          </select>
+          <select id="eventFilter" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm">
+            <option value="">All Events</option>
+          </select>
+          <input id="dateFrom" type="date" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm">
+          <input id="dateTo" type="date" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm">
+        </div>
+      </section>
 
-    <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4">
-      <h2 class="text-lg font-semibold">Bookings List</h2>
-      <div id="bookings" class="mt-4 grid gap-3 md:grid-cols-2"></div>
-      <div id="bookingsPager" class="mt-4"></div>
-    </section>
-  </div>
+      <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-4 surface-card">
+        <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h2 class="text-lg font-semibold">Bookings List</h2>
+            <p class="section-meta">Readable booking references, payment state, and event context in one grid.</p>
+          </div>
+        </div>
+        <div id="bookings" class="mt-4 grid gap-3 md:grid-cols-2"></div>
+        <div id="bookingsPager" class="mt-4"></div>
+      </section>
+    </div>
 
-  <script src="ui-feedback.js"></script>
+<script src="ui-feedback.js"></script>
   <script>
     const token = localStorage.getItem("token");
     if (!token) window.location.href = "/login.html";
@@ -268,6 +416,7 @@
     document.getElementById("exportCsvBtn").addEventListener("click", exportCsv);
     loadBookings();
   </script>
+  <script src="footer.js"></script>
   <script src="nav-auth.js?v=20260302a"></script>
 </body>
 </html>

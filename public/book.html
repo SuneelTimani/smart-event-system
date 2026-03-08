@@ -1,132 +1,192 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Book Event | Smart Event System</title>
+  <title>Book Event | Evenix</title>
   <link rel="icon" type="image/png" href="/assets/web-logo.png">
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #080b14;
+      --bg-surface: #0d1117;
+      --bg-elevated: #161b27;
+      --bg-hover: #1e2536;
+      --brand-primary: #7c6af7;
+      --brand-glow: rgba(124, 106, 247, 0.15);
+      --brand-accent: #f59e0b;
+      --text-primary: #f0f2f8;
+      --text-secondary: #8892a4;
+      --text-muted: #4a5568;
+      --border-default: rgba(255,255,255,0.06);
+      --border-strong: rgba(255,255,255,0.12);
+      --border-brand: rgba(124,106,247,0.4);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --info: #38bdf8;
+      --font-display: "Instrument Serif", serif;
+      --font-body: "DM Sans", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(124,106,247,0.22), transparent 22%),
+        radial-gradient(circle at 100% 0%, rgba(56,189,248,0.12), transparent 20%),
+        linear-gradient(180deg, #060810 0%, var(--bg-base) 100%);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+    }
+    button, input, select, textarea { font: inherit; }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--brand-primary);
+      outline-offset: 2px;
+    }
+    .page-shell { max-width: 1200px; margin: 0 auto; padding: 24px 20px 96px; }
+    .nav-shell,.surface-card,.hero-shell,.event-card,.widget-shell,dialog {
+      border: 1px solid var(--border-default);
+      background: rgba(13, 17, 23, 0.88);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.28);
+    }
+    .nav-shell { border-radius: 20px; }
+    .hero-shell {
+      position: relative; overflow: hidden; border-radius: 28px;
+      background: radial-gradient(circle at 20% 20%, rgba(124,106,247,0.24), transparent 24%), radial-gradient(circle at 80% 0%, rgba(245,158,11,0.14), transparent 24%), linear-gradient(135deg, rgba(10, 14, 24, 0.96), rgba(9, 12, 20, 0.98));
+    }
+    .hero-shell::before {
+      content: ""; position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 34px 34px; mask-image: linear-gradient(180deg, rgba(255,255,255,0.65), transparent 85%); pointer-events: none;
+    }
+    .display-title { margin: 0; font-family: var(--font-display); font-size: clamp(2.8rem, 6vw, 4.8rem); line-height: 1.02; font-weight: 400; letter-spacing: -0.03em; }
+    .eyebrow { color: var(--text-secondary); font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; }
+    .hero-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px; padding: 40px; align-items: end; }
+    .hero-preview { min-height: 360px; border-radius: 24px; overflow: hidden; border: 1px solid var(--border-default); background: linear-gradient(135deg, rgba(124,106,247,0.26), rgba(17,24,39,0.98)); position: relative; display: grid; align-items: end; }
+    .hero-preview img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .hero-preview::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5,8,15,0.1), rgba(5,8,15,0.84)); }
+    .hero-preview-content { position: relative; z-index: 1; padding: 24px; }
+    .avatar-stack { display: flex; align-items: center; }
+    .avatar-stack span { width: 34px; height: 34px; border-radius: 999px; border: 2px solid rgba(8,11,20,0.95); margin-left: -8px; display: inline-grid; place-items: center; background: linear-gradient(135deg, rgba(124,106,247,0.9), rgba(56,189,248,0.45)); font-size: 0.78rem; font-weight: 700; }
+    .avatar-stack span:first-child { margin-left: 0; }
+    .pill { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 999px; padding: 8px 12px; border: 1px solid var(--border-strong); color: var(--text-primary); background: rgba(255,255,255,0.03); }
+    .layout-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(330px, 0.9fr); gap: 24px; margin-top: 28px; }
+    .surface-card { border-radius: 22px; padding: 24px; }
+    .section-title { margin: 0; font-size: 1.2rem; font-weight: 600; }
+    .event-list { display: grid; gap: 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 18px; }
+    .event-card { border-radius: 18px; overflow: hidden; transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s; }
+    .event-card:hover { border-color: var(--border-strong); transform: translateY(-2px); box-shadow: 0 0 28px rgba(124,106,247,0.08), 0 22px 40px rgba(0,0,0,0.28); }
+    .event-card-media { height: 190px; position: relative; background: linear-gradient(135deg, rgba(124,106,247,0.26), rgba(17,24,39,0.98)); overflow: hidden; }
+    .event-card-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .event-card-media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5,8,15,0.08), rgba(5,8,15,0.82)); }
+    .card-badges { position: absolute; inset: 14px 14px auto 14px; z-index: 1; display: flex; justify-content: space-between; gap: 10px; }
+    .badge { border-radius: 999px; padding: 6px 10px; font-size: 0.75rem; font-weight: 500; backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.14); }
+    .badge-violet { background: rgba(124,106,247,0.18); color: #c4bbff; }
+    .badge-amber { background: rgba(245,158,11,0.18); color: #fcd34d; }
+    .badge-emerald { background: rgba(16,185,129,0.18); color: #9df4c0; }
+    .badge-rose { background: rgba(239,68,68,0.18); color: #f8aaaa; }
+    .event-card-body { padding: 20px; }
+    .event-card-title { margin: 0; font-family: var(--font-display); font-size: 1.6rem; line-height: 1.06; font-weight: 400; }
+    .tiny { font-size: 0.76rem; }
+    .ticket-chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .ticket-chip { border-radius: 999px; padding: 6px 10px; background: rgba(255,255,255,0.04); color: var(--text-secondary); font-size: 0.76rem; border: 1px solid rgba(255,255,255,0.05); }
+    .card-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    .btn-primary,.btn-ghost,.btn-subtle { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: 12px; padding: 10px 16px; transition: transform 0.15s, background 0.15s, border-color 0.15s, opacity 0.15s; border: 1px solid transparent; }
+    .btn-primary { background: var(--brand-primary); color: white; box-shadow: 0 0 20px var(--brand-glow); }
+    .btn-primary:hover { transform: translateY(-1px); opacity: 0.94; }
+    .btn-ghost { background: transparent; border-color: var(--border-strong); color: var(--text-primary); }
+    .btn-ghost:hover { background: var(--bg-hover); border-color: var(--border-brand); }
+    .btn-subtle { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.04); color: var(--text-primary); }
+    .btn-subtle:hover { background: rgba(255,255,255,0.08); }
+    .widget-shell { position: sticky; top: calc(var(--nav-offset, 0px) + 20px); border-radius: 22px; padding: 24px; height: fit-content; }
+    .field { display: grid; gap: 8px; margin-top: 14px; }
+    .field label { font-size: 0.75rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-secondary); }
+    .field input,.field select { width: 100%; border-radius: 12px; padding: 12px 14px; border: 1px solid var(--border-default); background: var(--bg-elevated); color: var(--text-primary); }
+    .field input:focus,.field select:focus { outline: none; border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(124,106,247,0.15); }
+    .widget-price { display: flex; align-items: end; justify-content: space-between; gap: 12px; padding: 16px; border-radius: 18px; background: linear-gradient(135deg, rgba(124,106,247,0.14), rgba(124,106,247,0.04)); border: 1px solid rgba(124,106,247,0.18); margin-top: 18px; }
+    .widget-price strong { font-size: 2.2rem; line-height: 1; letter-spacing: -0.04em; }
+    .progress-rail { width: 100%; height: 10px; border-radius: 999px; background: rgba(255,255,255,0.05); overflow: hidden; }
+    .progress-bar { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #7c6af7, #f59e0b); width: 0%; transition: width 0.25s ease; }
+    .trust-list { display: grid; gap: 10px; margin-top: 16px; color: var(--text-secondary); font-size: 0.88rem; }
+    .collapsible { margin-top: 14px; border: 1px solid var(--border-default); border-radius: 16px; overflow: hidden; background: rgba(255,255,255,0.02); }
+    .collapsible summary { list-style: none; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; color: var(--text-primary); }
+    .collapsible summary::-webkit-details-marker { display: none; }
+    .collapsible > div { padding: 0 16px 16px; }
+    .mobile-book-bar { display: none; position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 60; border-radius: 18px; border: 1px solid var(--border-strong); background: rgba(13,17,23,0.92); backdrop-filter: blur(18px); padding: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.36); gap: 12px; align-items: center; justify-content: space-between; }
+    @media (max-width: 980px) { .hero-grid { grid-template-columns: 1fr; padding: 28px; } .layout-grid { grid-template-columns: 1fr; } .widget-shell { position: static; } }
+    @media (max-width: 760px) { .page-shell { padding: 16px 14px 120px; } .event-list { grid-template-columns: 1fr; } .hero-preview { min-height: 280px; } .hero-grid { padding: 20px; } .mobile-book-bar { display: flex; } }
+  </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100">
-  <div class="mx-auto max-w-5xl px-4 py-8">
-    <header class="flex flex-col gap-4">
-      <nav data-role-nav class="flex flex-col gap-4 border border-slate-800 bg-slate-900/70 px-4 py-3 backdrop-blur md:flex-row md:items-center md:justify-between rounded-xl">
-        <div class="flex items-center gap-3">
-          <img src="/assets/web-logo.png" alt="Smart Event System" class="h-9 w-9 rounded-lg object-cover">
-          <div>
-            <p class="text-sm font-semibold">Smart Event System</p>
-            <p class="text-xs text-slate-400">Manage and discover events</p>
-          </div>
-        </div>
-        <div class="flex flex-wrap gap-2 text-sm">
-          <a class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800" href="/">Home</a>
-          <a data-nav="auth" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/user.html">User Dashboard</a>
-          <a data-nav="auth" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/book.html">Book Event</a>
-          <a data-nav="admin" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/create-event.html">Create Event</a>
-          <a data-nav="admin" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800 hidden" href="/admin.html">Admin Dashboard</a>
-          <a data-nav="guest" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-1 hover:bg-slate-800" href="/login.html">Login</a>
-          
-            <a data-nav="auth-avatar" class="hidden inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ring-2 ring-amber-300/40" href="/profile.html"><img data-nav-avatar-img src="https://ui-avatars.com/api/?name=U&background=0f172a&color=f59e0b&size=96" alt="Profile" class="h-full w-full object-cover"></a>
+<body>
+  <div class="page-shell">
+    <header class="flex flex-col gap-5">
+      <nav data-role-nav class="nav-shell flex flex-col gap-4 px-4 py-3 md:flex-row md:items-center md:justify-between">
+        <div class="flex w-full flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <a href="/" class="flex items-center gap-3">
+            <img src="/assets/web-logo.png" alt="Evenix" class="h-11 w-11 rounded-2xl object-cover">
+            <div>
+              <p class="text-sm font-semibold tracking-tight">Evenix</p>
+              <p class="text-xs text-slate-400">Manage and discover events</p>
+            </div>
+          </a>
+          <div class="flex flex-wrap items-center gap-3 text-sm"></div>
         </div>
       </nav>
-      <div>
-        <h1 class="text-3xl font-semibold">Book an Event</h1>
-        <p class="text-slate-400">Choose an event and submit your booking.</p>
-      </div>
+      <section class="hero-shell">
+        <div class="hero-grid">
+          <div>
+            <p class="eyebrow">Premium booking experience</p>
+            <h1 class="display-title mt-4">Book the right event before the price moves</h1>
+            <p class="mt-5 max-w-2xl text-[0.98rem] leading-7 text-slate-300">Review seat pressure, compare ticket tiers, apply promos, and secure your place with instant confirmation. As events fill, pricing can rise in real time.</p>
+            <div class="mt-8 flex flex-wrap gap-3"><span class="pill">Secure payment</span><span class="pill">Instant confirmation</span><span class="pill">Smart waitlist fallback</span></div>
+          </div>
+          <div id="selectedEventHero" class="hero-preview">
+            <div class="hero-preview-content">
+              <p class="eyebrow">Featured event</p>
+              <h2 id="heroEventTitle" class="mt-3 text-4xl font-normal tracking-tight" style="font-family: var(--font-display);">Choose an event to begin</h2>
+              <p id="heroEventMeta" class="mt-3 max-w-md text-sm text-slate-300">Select a live event to view seat pressure, ticket availability, and booking options.</p>
+              <div class="mt-5 flex items-center gap-4"><div class="avatar-stack" id="heroAvatarStack"><span>A</span><span>M</span><span>J</span></div><p id="heroAttendeeCount" class="text-sm text-slate-200">Live attendee signals update after you select an event.</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
     </header>
-
-    <section class="mt-8 grid gap-6 lg:grid-cols-3">
-      <div class="lg:col-span-2 rounded-xl border border-slate-800 bg-slate-900 p-4">
-        <h2 class="text-lg font-semibold">Available Events</h2>
-        <div id="events" class="mt-4 grid gap-3 sm:grid-cols-2"></div>
-      </div>
-
-      <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
-        <h2 class="text-lg font-semibold">Booking Form</h2>
-        <form id="bookingForm" class="mt-4 grid gap-3">
-          <select id="eventId" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100">
-            <option value="">Select Event</option>
-          </select>
-          <select id="ticketType" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100">
-            <option value="">Select Ticket Type</option>
-          </select>
-          <input id="quantity" type="number" min="1" max="10" value="1" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100">
-          <input id="promoCode" type="text" maxlength="40" placeholder="Promo Code (optional)" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100">
-          <input id="attendeeName" type="text" placeholder="Attendee Name" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100">
-          <input id="attendeeEmail" type="email" placeholder="Attendee Email" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100">
-          <input id="attendeeWhatsApp" type="text" placeholder="WhatsApp (+15551234567) optional" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100">
-          <select id="paymentMethod" class="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100">
-            <option value="stripe">Pay with Stripe (Test)</option>
-            <option value="card">Direct Confirm (No Gateway)</option>
-          </select>
-          <button type="submit" class="rounded-lg bg-amber-400 px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-amber-300">
-            Continue
-          </button>
+    <main class="layout-grid">
+      <section class="surface-card">
+        <div class="flex flex-wrap items-end justify-between gap-4"><div><p class="eyebrow">Explore live inventory</p><h2 class="section-title mt-2">Available events</h2></div><p class="text-sm text-slate-400">Pick an event to update the booking widget and mobile checkout bar.</p></div>
+        <div id="events" class="event-list" aria-live="polite"></div>
+      </section>
+      <aside class="widget-shell">
+        <div class="flex items-center justify-between gap-3"><div><p class="eyebrow">Sticky booking widget</p><h2 class="section-title mt-2">Complete booking</h2></div><span id="widgetSeatBadge" class="badge badge-emerald">Seats open</span></div>
+        <div class="widget-price"><div><p class="tiny uppercase tracking-[0.18em] text-slate-400">Current total</p><strong id="summaryTotal">$0</strong></div><div class="text-right text-sm text-slate-300"><div id="summaryType">Select ticket</div><div id="summaryQty" class="tiny text-slate-400">Qty 1</div></div></div>
+        <div class="mt-4"><div class="flex items-center justify-between text-sm"><span class="text-slate-300">Price increases as seats fill</span><span id="pricingTierLabel" class="text-amber-300">Demand pricing</span></div><div class="progress-rail mt-2"><div id="pricingProgressBar" class="progress-bar"></div></div></div>
+        <form id="bookingForm" class="mt-4">
+          <div class="field"><label for="eventId">Event</label><select id="eventId"><option value="">Select Event</option></select></div>
+          <div class="field"><label for="ticketType">Ticket Type</label><select id="ticketType"><option value="">Select Ticket Type</option></select></div>
+          <div class="field"><label for="quantity">Quantity</label><input id="quantity" type="number" min="1" max="10" value="1"></div>
+          <details class="collapsible"><summary><span>Promo code</span><span class="text-slate-400">Optional</span></summary><div><div class="field mt-0"><label for="promoCode">Promo</label><input id="promoCode" type="text" maxlength="40" placeholder="Enter promo code"></div></div></details>
+          <div class="field"><label for="attendeeName">Attendee Name</label><input id="attendeeName" type="text" placeholder="Your full name"></div>
+          <div class="field"><label for="attendeeEmail">Attendee Email</label><input id="attendeeEmail" type="email" placeholder="you@example.com"></div>
+          <div class="field"><label for="attendeeWhatsApp">WhatsApp</label><input id="attendeeWhatsApp" type="text" placeholder="+15551234567 (optional)"></div>
+          <div class="field"><label for="paymentMethod">Payment</label><select id="paymentMethod"><option value="stripe">Pay with Stripe (Test)</option><option value="card">Direct Confirm (No Gateway)</option></select></div>
+          <div class="trust-list"><div>Secure payment · Instant confirmation</div><div id="cancelWindowText">Free cancellation until event policy cutoff</div><div id="transferWindowText">Transfer available before transfer window closes</div></div>
+          <button type="submit" class="btn-primary mt-5 w-full">Book now</button>
         </form>
-        <p id="bookingMsg" class="mt-3 text-xs text-slate-300"></p>
-      </div>
-    </section>
+        <p id="bookingMsg" class="mt-4 text-sm text-slate-300"></p>
+      </aside>
+    </main>
   </div>
-
-  <dialog id="eventDetailModal" class="w-[92vw] max-w-xl rounded-2xl border border-slate-700 bg-slate-950 p-0 text-slate-100 backdrop:bg-black/70">
-    <div class="p-5">
-      <div class="flex items-start justify-between gap-3">
-        <h3 id="modalTitle" class="text-xl font-semibold"></h3>
-        <button id="closeEventModal" aria-label="Close details" class="inline-flex items-center justify-center rounded-md border border-slate-700 p-1.5 text-xs hover:bg-slate-800">
-          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M6 6l12 12M18 6L6 18" />
-          </svg>
-        </button>
-      </div>
-      <p id="modalDescription" class="mt-3 whitespace-pre-wrap text-sm text-slate-300"></p>
-      <p id="modalMeta" class="mt-3 text-xs text-slate-400"></p>
-    </div>
-  </dialog>
-  <dialog id="shareModal" class="w-[92vw] max-w-lg rounded-2xl border border-cyan-400/30 bg-slate-950 p-0 text-slate-100 shadow-2xl shadow-cyan-900/30 backdrop:bg-black/70">
-    <div class="p-5">
-      <div class="flex items-start justify-between gap-3">
-        <div>
-          <p class="text-xs uppercase tracking-[0.18em] text-cyan-300">Share Event</p>
-          <h3 id="shareTitle" class="mt-1 text-lg font-semibold"></h3>
-        </div>
-        <button id="closeShareModal" aria-label="Close share dialog" class="inline-flex items-center justify-center rounded-md border border-slate-700 p-1.5 text-xs hover:bg-slate-800">
-          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M6 6l12 12M18 6L6 18" />
-          </svg>
-        </button>
-      </div>
-      <p id="shareMeta" class="mt-2 text-xs text-slate-400"></p>
-
-      <div class="mt-4 rounded-xl border border-slate-800 bg-slate-900/70 p-3">
-        <p class="text-xs text-slate-400">Share Link</p>
-        <p id="shareUrlText" class="mt-1 break-all text-xs text-cyan-200"></p>
-        <div class="mt-3 flex flex-wrap gap-2">
-          <button id="shareCopyBtn" class="rounded-lg bg-cyan-400 px-3 py-1.5 text-xs font-semibold text-slate-900 hover:bg-cyan-300">Copy Link</button>
-          <button id="shareNativeBtn" class="rounded-lg border border-cyan-400/40 px-3 py-1.5 text-xs text-cyan-200 hover:bg-slate-800">Shareâ€¦</button>
-        </div>
-      </div>
-
-      <div class="mt-4 grid gap-2 sm:grid-cols-2">
-        <a id="shareWhatsAppBtn" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-3 py-2 text-sm text-emerald-200 hover:bg-emerald-400/20">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" class="h-4 w-4 fill-current" aria-hidden="true"><path d="M16 3C9 3 3.3 8.7 3.3 15.8c0 2.5.7 4.8 2 6.8L3 29l6.6-2.2c1.9 1 4.1 1.6 6.4 1.6 7 0 12.7-5.7 12.7-12.8S23 3 16 3zm0 23.3c-2 0-3.9-.5-5.5-1.5l-.4-.2-3.9 1.3 1.3-3.8-.2-.4c-1-1.7-1.6-3.6-1.6-5.8C5.7 9.8 10.3 5.2 16 5.2s10.3 4.6 10.3 10.6S21.7 26.3 16 26.3zm5.9-7.8c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-.3-.2-1.3-.5-2.5-1.7-.9-.9-1.5-2-1.7-2.3-.2-.3 0-.5.1-.7.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.7-1.8-1-2.4-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.7.4-.2.3-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.9 4.4 4 2.6 1.1 2.6.7 3.1.7.5 0 1.8-.7 2-1.5.2-.8.2-1.4.1-1.5 0-.1-.2-.2-.5-.4z"/></svg>
-          <span>WhatsApp</span>
-        </a>
-        <a id="shareXBtn" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-xl border border-sky-400/40 bg-sky-400/10 px-3 py-2 text-sm text-sky-200 hover:bg-sky-400/20">
-          <svg viewBox="0 0 24 24" class="h-4 w-4 fill-current" aria-hidden="true"><path d="M18.9 2H22l-6.7 7.7L23 22h-6.1l-4.8-6.3L6.6 22H3.5l7.2-8.2L1.3 2h6.2l4.4 5.8L18.9 2zm-1.1 18h1.7L6.5 3.9H4.7L17.8 20z"/></svg>
-          <span>X / Twitter</span>
-        </a>
-        <a id="shareFacebookBtn" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-xl border border-blue-400/40 bg-blue-400/10 px-3 py-2 text-sm text-blue-200 hover:bg-blue-400/20">
-          <svg viewBox="0 0 24 24" class="h-4 w-4 fill-current" aria-hidden="true"><path d="M13.5 22v-8h2.7l.4-3h-3.1V9.1c0-.9.3-1.6 1.7-1.6h1.5V4.8c-.7-.1-1.4-.2-2.1-.2-3.1 0-4.9 1.9-4.9 5.2V11H7v3h2.7v8h3.8z"/></svg>
-          <span>Facebook</span>
-        </a>
-        <a id="shareLinkedInBtn" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-xl border border-indigo-400/40 bg-indigo-400/10 px-3 py-2 text-sm text-indigo-200 hover:bg-indigo-400/20">
-          <svg viewBox="0 0 24 24" class="h-4 w-4 fill-current" aria-hidden="true"><path d="M6.9 8.5a2.2 2.2 0 1 1 0-4.3 2.2 2.2 0 0 1 0 4.3zM5 9.8h3.7V20H5V9.8zm5.8 0h3.5v1.4h.1c.5-.9 1.7-1.8 3.5-1.8 3.7 0 4.4 2.4 4.4 5.5V20h-3.7v-4.6c0-1.1 0-2.6-1.6-2.6s-1.8 1.2-1.8 2.5V20h-3.7V9.8z"/></svg>
-          <span>LinkedIn</span>
-        </a>
-      </div>
-    </div>
-  </dialog>
-
+  <div class="mobile-book-bar"><div><div class="text-xs uppercase tracking-[0.18em] text-slate-400">Selected total</div><div id="mobileTotal" class="text-lg font-semibold text-white">$0</div></div><button id="mobileBookBtn" type="button" class="btn-primary">Book now</button></div>
+  <dialog id="eventDetailModal" class="w-[92vw] max-w-xl rounded-[24px] border border-white/10 bg-[#161b27] p-0 text-slate-100 backdrop:bg-black/72"><div class="p-6"><div class="flex items-start justify-between gap-3"><div><p class="eyebrow">Event details</p><h3 id="modalTitle" class="mt-2 text-2xl font-normal" style="font-family: var(--font-display);"></h3></div><button id="closeEventModal" aria-label="Close details" class="btn-ghost !min-h-0 !rounded-full !p-2"><svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div><p id="modalDescription" class="mt-4 whitespace-pre-wrap text-sm text-slate-300"></p><p id="modalMeta" class="mt-4 text-sm text-slate-400"></p></div></dialog>
+  <dialog id="shareModal" class="w-[92vw] max-w-lg rounded-[24px] border border-white/10 bg-[#161b27] p-0 text-slate-100 backdrop:bg-black/72"><div class="p-6"><div class="flex items-start justify-between gap-3"><div><p class="eyebrow">Share event</p><h3 id="shareTitle" class="mt-2 text-2xl font-normal" style="font-family: var(--font-display);"></h3></div><button id="closeShareModal" aria-label="Close share dialog" class="btn-ghost !min-h-0 !rounded-full !p-2"><svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div><p id="shareMeta" class="mt-3 text-sm text-slate-400"></p><div class="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4"><p class="tiny uppercase tracking-[0.18em] text-slate-400">Share link</p><p id="shareUrlText" class="mt-2 break-all text-sm text-cyan-200"></p><div class="mt-4 flex flex-wrap gap-2"><button id="shareCopyBtn" class="btn-primary !min-h-0 !px-4 !py-2 text-sm">Copy link</button><button id="shareNativeBtn" class="btn-ghost !min-h-0 !px-4 !py-2 text-sm">Share</button></div></div><div class="mt-4 grid gap-2 sm:grid-cols-2"><a id="shareWhatsAppBtn" target="_blank" rel="noopener" class="btn-subtle justify-start">WhatsApp</a><a id="shareXBtn" target="_blank" rel="noopener" class="btn-subtle justify-start">X / Twitter</a><a id="shareFacebookBtn" target="_blank" rel="noopener" class="btn-subtle justify-start">Facebook</a><a id="shareLinkedInBtn" target="_blank" rel="noopener" class="btn-subtle justify-start">LinkedIn</a></div></div></dialog>
   <script src="ui-feedback.js"></script>
   <script src="i18n-time.js"></script>
   <script>
@@ -153,9 +213,16 @@
     const EVENTS_CACHE_TTL_MS = 45 * 1000;
     const TICKET_DRAFT_KEY = "ticketDraft";
 
+    function syncNavOffsetVar() {
+      const nav = document.querySelector("[data-role-nav]");
+      const offset = nav ? nav.offsetHeight + 12 : 0;
+      document.documentElement.style.setProperty("--nav-offset", `${offset}px`);
+    }
+
     function authHeaders() {
       return token ? { Authorization: token } : {};
     }
+
     function escapeHtml(value) {
       return String(value || "")
         .replace(/&/g, "&amp;")
@@ -164,15 +231,19 @@
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#39;");
     }
+
     function formatDateLocal(value) {
-      if (window.AppI18nTime) return window.AppI18nTime.formatDate(value, { dateStyle: "medium" });
+      if (window.AppI18nTime?.formatDateTimeWithZone) return window.AppI18nTime.formatDateTimeWithZone(value);
+      if (window.AppI18nTime?.formatDate) return window.AppI18nTime.formatDate(value, { dateStyle: "medium" });
       return new Date(value).toLocaleDateString();
     }
+
     function eventDetailsUrl(id) {
       const u = new URL("/event-details.html", window.location.origin);
       u.searchParams.set("id", id);
       return u.toString();
     }
+
     function shareTextForEvent(e) {
       return `${e.title || "Event"} | ${e.location || "TBD"} | ${new Date(e.date).toLocaleDateString()}`;
     }
@@ -182,6 +253,71 @@
       if (/^data:image\//i.test(src)) return src;
       if (/^https?:\/\//i.test(src)) return src;
       return "";
+    }
+
+    function getAvatarInitials(text) {
+      return String(text || "EA")
+        .split(" ")
+        .map((part) => part[0] || "")
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
+    }
+
+    function formatPrice(value) {
+      return Number(value || 0).toFixed(2).replace(/\.00$/, "");
+    }
+
+    function updateHeroPreview(event) {
+      const shell = document.getElementById("selectedEventHero");
+      const imageUrl = getEventImageUrl(event);
+      shell.style.background = imageUrl
+        ? "transparent"
+        : "linear-gradient(135deg, rgba(124,106,247,0.26), rgba(17,24,39,0.98))";
+      shell.innerHTML = `
+        ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(event?.title || "Event")}">` : ""}
+        <div class="hero-preview-content">
+          <p class="eyebrow">Selected event</p>
+          <h2 id="heroEventTitle" class="mt-3 text-4xl font-normal tracking-tight" style="font-family: var(--font-display);">${escapeHtml(event?.title || "Choose an event to begin")}</h2>
+          <p id="heroEventMeta" class="mt-3 max-w-md text-sm text-slate-300">${escapeHtml(event ? `${event.location || "TBD"} · ${formatDateLocal(event.date)} · ${event.category || "Event"}` : "Select a live event to view seat pressure, ticket availability, and booking options.")}</p>
+          <div class="mt-5 flex items-center gap-4">
+            <div class="avatar-stack" id="heroAvatarStack">
+              <span>${escapeHtml(getAvatarInitials(event?.organizer || "EV"))}</span>
+              <span>${escapeHtml(String(Math.max(0, Number(event?.seatsBooked || 0) + 7)).slice(-1) || "2")}</span>
+              <span>${escapeHtml(String(Math.max(0, Number(event?.seatsBooked || 0) + 15)).slice(-1) || "7")}</span>
+            </div>
+            <p id="heroAttendeeCount" class="text-sm text-slate-200">${event ? `${Number(event.seatsBooked || 0)} people attending · Follow organizer from full details` : "Live attendee signals update after you select an event."}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateBookingInsights(event, ticketName) {
+      const ticket = Array.isArray(event?.ticketTypes) ? event.ticketTypes.find((row) => row.name === ticketName) : null;
+      const remaining = Math.max(0, Number(event?.capacity || 0) - Number(event?.seatsBooked || 0));
+      const ratio = Number(event?.capacity || 0) > 0 ? Math.min(1, Number(event?.seatsBooked || 0) / Number(event.capacity || 1)) : 0;
+      document.getElementById("widgetSeatBadge").textContent = remaining > 0 ? `${remaining} seats left` : "Sold out";
+      document.getElementById("widgetSeatBadge").className = `badge ${remaining > 0 ? "badge-emerald" : "badge-rose"}`;
+      document.getElementById("pricingProgressBar").style.width = `${Math.round(ratio * 100)}%`;
+      document.getElementById("pricingTierLabel").textContent = ticket?.pricingTierLabel || event?.dynamicPricing?.label || "Demand pricing";
+      document.getElementById("cancelWindowText").textContent = `Free cancellation until ${Number(event?.cancelWindowHoursBefore ?? 24)}h before start`;
+      document.getElementById("transferWindowText").textContent = `Ticket transfer closes ${Number(event?.transferWindowHoursBefore ?? 2)}h before event`;
+      updateHeroPreview(event);
+    }
+
+    function updateSummary() {
+      const eventId = document.getElementById("eventId").value;
+      const ticketType = document.getElementById("ticketType").value;
+      const quantity = Math.max(1, Number(document.getElementById("quantity").value || 1));
+      const event = allEvents.find((row) => encodeURIComponent(String(row._id || "")) === eventId);
+      const ticket = Array.isArray(event?.ticketTypes) ? event.ticketTypes.find((row) => row.name === ticketType) : null;
+      const price = Number(ticket?.price || 0);
+      const total = price * quantity;
+      document.getElementById("summaryType").textContent = ticketType || "Select ticket";
+      document.getElementById("summaryQty").textContent = `Qty ${quantity}`;
+      document.getElementById("summaryTotal").textContent = `$${formatPrice(total)}`;
+      document.getElementById("mobileTotal").textContent = `$${formatPrice(total)}`;
+      if (event) updateBookingInsights(event, ticketType);
     }
 
     async function confirmStripeSessionIfPresent() {
@@ -225,18 +361,17 @@
 
     function renderLoadingSkeleton() {
       const container = document.getElementById("events");
-      container.innerHTML = `
-        <div class="animate-pulse rounded-lg border border-slate-800 bg-slate-950 p-3">
-          <div class="h-4 w-2/3 rounded bg-slate-800"></div>
-          <div class="mt-2 h-3 w-full rounded bg-slate-800"></div>
-          <div class="mt-2 h-3 w-4/5 rounded bg-slate-800"></div>
+      container.innerHTML = Array.from({ length: 4 }).map(() => `
+        <div class="event-card animate-pulse overflow-hidden">
+          <div class="h-[190px] bg-slate-800"></div>
+          <div class="space-y-3 p-5">
+            <div class="h-4 w-20 rounded-full bg-slate-800"></div>
+            <div class="h-8 w-4/5 rounded-2xl bg-slate-800"></div>
+            <div class="h-4 w-full rounded bg-slate-800"></div>
+            <div class="h-4 w-3/4 rounded bg-slate-800"></div>
+          </div>
         </div>
-        <div class="animate-pulse rounded-lg border border-slate-800 bg-slate-950 p-3">
-          <div class="h-4 w-2/3 rounded bg-slate-800"></div>
-          <div class="mt-2 h-3 w-full rounded bg-slate-800"></div>
-          <div class="mt-2 h-3 w-4/5 rounded bg-slate-800"></div>
-        </div>
-      `;
+      `).join("");
     }
 
     function renderEventCards(events) {
@@ -246,27 +381,40 @@
         const soldOut = remaining <= 0;
         const tickets = Array.isArray(e.ticketTypes) ? e.ticketTypes : [];
         const imageUrl = getEventImageUrl(e);
+        const urgency = Number(e.capacity || 0) > 0 && remaining / Math.max(1, Number(e.capacity || 0)) < 0.2 ? `${remaining} left` : "";
         return `
-          <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
-            ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(e.title || "Event")}" class="mb-3 h-36 w-full rounded-lg object-cover">` : `<div class="mb-3 flex h-36 items-center justify-center rounded-lg bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950/50"><img src="/assets/web-logo.png" alt="Smart Event System" class="h-14 w-14 rounded-xl object-cover opacity-80"></div>`}
-            <h3 class="font-semibold">${escapeHtml(e.title || "Untitled Event")}</h3>
-            <p class="mt-1 text-xs text-slate-300">${escapeHtml(e.description || "No description")}</p>
-            <p class="text-xs text-slate-500">${escapeHtml(e.location || "TBD")} | ${escapeHtml(e.category || "Other")} | ${escapeHtml(formatDateLocal(e.date))}</p>
-            <p class="mt-1 text-xs text-slate-400">Status: ${escapeHtml(e.status || "published")} | Seats left: ${escapeHtml(remaining)}</p>
-            ${Number(e.lowestTicketPrice || 0) > 0 ? `<p class="mt-1 text-xs font-medium text-amber-300">From $${escapeHtml(Number(e.lowestTicketPrice || 0).toFixed(2).replace(/\\.00$/, ""))} · ${escapeHtml(e.dynamicPricing?.label || "Dynamic pricing")}</p>` : ""}
-            <p class="mt-1 text-[11px] text-slate-500">Cancel window: ${Number(e.cancelWindowHoursBefore ?? 24)}h | Transfer window: ${Number(e.transferWindowHoursBefore ?? 2)}h before event</p>
-            <div class="mt-2 flex flex-wrap gap-1">
-              ${tickets.map((t) => `<span class="rounded bg-slate-800 px-2 py-0.5 text-[11px]">${escapeHtml(t.name)}: $${escapeHtml(t.price)}${Number(t.basePrice || t.price) !== Number(t.price) ? ` <span class="text-slate-400">(base $${escapeHtml(t.basePrice)})</span>` : ""} (${escapeHtml(Math.max(0, (t.quantity || 0) - (t.sold || 0)))} left)</span>`).join("")}
+          <article class="event-card">
+            <div class="event-card-media">
+              ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(e.title || "Event")}">` : `<div class="grid h-full place-items-center"><img src="/assets/web-logo.png" alt="Evenix" class="h-16 w-16 rounded-3xl object-cover opacity-80"></div>`}
+              <div class="card-badges">
+                <span class="badge badge-violet">${escapeHtml(e.category || "Event")}</span>
+                ${urgency ? `<span class="badge badge-amber">${escapeHtml(urgency)}</span>` : ""}
+              </div>
             </div>
-            <button class="mt-2 rounded-md border border-slate-800 px-2 py-1 text-xs hover:bg-slate-800" onclick="selectEvent('${encodeURIComponent(String(e._id || ""))}')">Use This Event</button>
-            <button class="mt-2 ml-2 rounded-md border border-emerald-500/40 px-2 py-1 text-xs text-emerald-300 hover:bg-slate-800 ${soldOut ? "opacity-40 cursor-not-allowed" : ""}" ${soldOut ? "disabled" : ""} onclick="quickBookEvent('${encodeURIComponent(String(e._id || ""))}')">Quick Book 1</button>
-            ${soldOut && e.waitlistEnabled !== false
-              ? `<button class="mt-2 ml-2 rounded-md border border-indigo-500/40 px-2 py-1 text-xs text-indigo-200 hover:bg-slate-800" onclick="quickJoinWaitlist('${encodeURIComponent(String(e._id || ""))}')">Join Waitlist</button>`
-              : ""}
-            <button class="mt-2 ml-2 rounded-md border border-amber-400/40 px-2 py-1 text-xs text-amber-200 hover:bg-slate-800" onclick="openEventDetails('${encodeURIComponent(String(e._id || ""))}')">View Description</button>
-            <button class="mt-2 ml-2 rounded-md border border-cyan-400/40 px-2 py-1 text-xs text-cyan-200 hover:bg-slate-800" onclick="openShareModal('${encodeURIComponent(String(e._id || ""))}')">Share</button>
-            <a class="mt-2 ml-2 inline-block rounded-md border border-slate-700 px-2 py-1 text-xs hover:bg-slate-800" href="/event-details.html?id=${encodeURIComponent(String(e._id || ""))}">Full Details</a>
-          </div>
+            <div class="event-card-body">
+              <div class="flex items-start justify-between gap-3">
+                <h3 class="event-card-title">${escapeHtml(e.title || "Untitled Event")}</h3>
+                <span class="badge ${soldOut ? "badge-rose" : "badge-emerald"}">${soldOut ? "Sold Out" : `${remaining} seats`}</span>
+              </div>
+              <p class="mt-3 text-sm text-slate-300">${escapeHtml(e.description || "No description available.")}</p>
+              <div class="mt-4 space-y-2 text-sm text-slate-400">
+                <div>${escapeHtml(e.location || "TBD")} · ${escapeHtml(e.category || "Other")}</div>
+                <div>${escapeHtml(formatDateLocal(e.date))}</div>
+                <div class="text-amber-300">From $${escapeHtml(formatPrice(e.lowestTicketPrice || 0))} · ${escapeHtml(e.dynamicPricing?.label || "Dynamic pricing")}</div>
+                <div class="tiny">Cancel window ${Number(e.cancelWindowHoursBefore ?? 24)}h · Transfer ${Number(e.transferWindowHoursBefore ?? 2)}h before event</div>
+              </div>
+              <div class="ticket-chip-row">
+                ${tickets.map((t) => `<span class="ticket-chip">${escapeHtml(t.name)} · $${escapeHtml(formatPrice(t.price))} · ${escapeHtml(Math.max(0, (t.quantity || 0) - (t.sold || 0)))} left</span>`).join("")}
+              </div>
+              <div class="card-actions">
+                <button class="btn-primary" onclick="selectEvent('${encodeURIComponent(String(e._id || ""))}')">Use this event</button>
+                <button class="btn-subtle ${soldOut ? "opacity-40 pointer-events-none" : ""}" ${soldOut ? "disabled" : ""} onclick="quickBookEvent('${encodeURIComponent(String(e._id || ""))}')">Quick book</button>
+                ${soldOut && e.waitlistEnabled !== false ? `<button class="btn-subtle" onclick="quickJoinWaitlist('${encodeURIComponent(String(e._id || ""))}')">Join waitlist</button>` : ""}
+                <button class="btn-ghost" onclick="openEventDetails('${encodeURIComponent(String(e._id || ""))}')">View details</button>
+                <button class="btn-ghost" onclick="openShareModal('${encodeURIComponent(String(e._id || ""))}')">Share</button>
+              </div>
+            </div>
+          </article>
         `;
       }).join("");
     }
@@ -274,9 +422,9 @@
     async function loadEvents() {
       renderLoadingSkeleton();
       const select = document.getElementById("eventId");
-
       const now = Date.now();
       const cachedRaw = sessionStorage.getItem(EVENTS_CACHE_KEY);
+
       if (cachedRaw) {
         try {
           const cached = JSON.parse(cachedRaw);
@@ -292,7 +440,6 @@
 
       const res = await fetch("/api/events?status=published&limit=20");
       if (!res.ok) {
-        // Fallback to stale cache when backend is temporarily unavailable.
         if (cachedRaw) {
           try {
             const cached = JSON.parse(cachedRaw);
@@ -305,30 +452,32 @@
             }
           } catch (_) {}
         }
-        document.getElementById("events").innerHTML = '<p class="text-rose-300 text-sm">Failed to load events. Please refresh after server/database is back.</p>';
+        document.getElementById("events").innerHTML = '<div class="surface-card text-rose-300">Failed to load events. Please refresh after server/database is back.</div>';
         return;
       }
 
       const events = await res.json();
       allEvents = Array.isArray(events) ? events : [];
       if (!allEvents.length) {
-        // Safety fallback for legacy data where status is missing in older records.
         const fallbackRes = await fetch("/api/events?limit=20");
         if (fallbackRes.ok) {
           const fallbackEvents = await fallbackRes.json();
           allEvents = Array.isArray(fallbackEvents) ? fallbackEvents : [];
         }
       }
+
       sessionStorage.setItem(EVENTS_CACHE_KEY, JSON.stringify({ cachedAt: now, events: allEvents }));
       if (!allEvents.length) {
-        document.getElementById("events").innerHTML = uiEmptyState("No events available", "Please check back later.");
+        document.getElementById("events").innerHTML = '<div class="surface-card text-slate-300">No events available right now.</div>';
         select.innerHTML = '<option value="">Select Event</option>';
         updateTicketOptions("");
         return;
       }
+
       renderEventCards(allEvents);
       select.innerHTML = '<option value="">Select Event</option>' + allEvents.map((e) => `<option value="${encodeURIComponent(String(e._id || ""))}">${escapeHtml(e.title || "Untitled Event")}</option>`).join("");
       updateTicketOptions(select.value);
+      updateHeroPreview(allEvents[0]);
     }
 
     function openEventDetails(id) {
@@ -337,7 +486,7 @@
       document.getElementById("modalTitle").textContent = event.title || "Untitled Event";
       document.getElementById("modalDescription").textContent = event.description || "No description available.";
       const imageUrl = getEventImageUrl(event);
-      document.getElementById("modalMeta").innerHTML = `${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(event.title || "Event")}" class="mb-3 h-40 w-full rounded-lg object-cover">` : ""}${escapeHtml(event.location || "TBD")} | ${escapeHtml(event.category || "Other")} | ${escapeHtml(new Date(event.date).toLocaleDateString())}`;
+      document.getElementById("modalMeta").innerHTML = `${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(event.title || "Event")}" class="mb-4 h-44 w-full rounded-2xl object-cover">` : ""}${escapeHtml(event.location || "TBD")} · ${escapeHtml(event.category || "Other")} · ${escapeHtml(new Date(event.date).toLocaleDateString())}`;
       eventDetailModal.showModal();
     }
     window.openEventDetails = openEventDetails;
@@ -348,6 +497,9 @@
     function selectEvent(id) {
       document.getElementById("eventId").value = id;
       updateTicketOptions(id);
+      updateSummary();
+      const widget = document.querySelector(".widget-shell");
+      if (widget && window.innerWidth < 980) widget.scrollIntoView({ behavior: "smooth", block: "start" });
     }
     window.selectEvent = selectEvent;
 
@@ -432,7 +584,7 @@
       const text = shareTextForEvent(event);
 
       shareTitle.textContent = event.title || "Untitled Event";
-      shareMeta.textContent = `${event.location || "TBD"} | ${new Date(event.date).toLocaleDateString()}`;
+      shareMeta.textContent = `${event.location || "TBD"} · ${new Date(event.date).toLocaleDateString()}`;
       shareUrlText.textContent = url;
       shareCopyBtn.dataset.url = url;
       shareNativeBtn.dataset.url = url;
@@ -466,6 +618,7 @@
         }
       });
     }
+
     if (shareNativeBtn) {
       shareNativeBtn.addEventListener("click", async () => {
         if (!navigator.share) return;
@@ -480,12 +633,18 @@
 
     function updateTicketOptions(eventId) {
       const ticketSelect = document.getElementById("ticketType");
-      const event = allEvents.find((e) => e._id === eventId);
+      const event = allEvents.find((e) => encodeURIComponent(String(e._id || "")) === eventId);
       if (!event || !Array.isArray(event.ticketTypes)) {
         ticketSelect.innerHTML = '<option value="">Select Ticket Type</option>';
+        updateSummary();
         return;
       }
-      ticketSelect.innerHTML = '<option value="">Select Ticket Type</option>' + event.ticketTypes.map((t) => `<option value="${escapeHtml(t.name)}">${escapeHtml(t.name)} - $${escapeHtml(t.price)} (${escapeHtml(Math.max(0, (t.quantity || 0) - (t.sold || 0)))} left${Number(t.pricingMultiplier || 1) > 1 ? ` · ${escapeHtml(t.pricingTierLabel || "dynamic")}` : ""})</option>`).join("");
+      ticketSelect.innerHTML = '<option value="">Select Ticket Type</option>' + event.ticketTypes.map((t) => `<option value="${escapeHtml(t.name)}">${escapeHtml(t.name)} - $${escapeHtml(formatPrice(t.price))} (${escapeHtml(Math.max(0, (t.quantity || 0) - (t.sold || 0)))} left${Number(t.pricingMultiplier || 1) > 1 ? ` · ${escapeHtml(t.pricingTierLabel || "dynamic")}` : ""})</option>`).join("");
+      if (event.ticketTypes[0]) {
+        ticketSelect.value = event.ticketTypes[0].name;
+      }
+      updateBookingInsights(event, ticketSelect.value);
+      updateSummary();
     }
 
     function applyTicketDraftIfAny() {
@@ -505,18 +664,23 @@
         if (draft.attendeeEmail) document.getElementById("attendeeEmail").value = draft.attendeeEmail;
         if (draft.attendeeWhatsApp) document.getElementById("attendeeWhatsApp").value = draft.attendeeWhatsApp;
         if (draft.paymentMethod) document.getElementById("paymentMethod").value = draft.paymentMethod;
+        if (draft.promoCode) document.getElementById("promoCode").value = draft.promoCode;
 
         const msg = document.getElementById("bookingMsg");
         msg.classList.remove("text-rose-300");
         msg.classList.add("text-emerald-300");
         msg.textContent = "Ticketing details loaded. Review and continue payment.";
-      } catch (_) {
-        // Ignore malformed local draft silently.
-      }
+        updateSummary();
+      } catch (_) {}
     }
 
     document.getElementById("eventId").addEventListener("change", (e) => {
       updateTicketOptions(e.target.value);
+    });
+    document.getElementById("ticketType").addEventListener("change", updateSummary);
+    document.getElementById("quantity").addEventListener("input", updateSummary);
+    document.getElementById("mobileBookBtn").addEventListener("click", () => {
+      document.querySelector('#bookingForm button[type="submit"]').click();
     });
 
     document.getElementById("bookingForm").addEventListener("submit", async (e) => {
@@ -566,9 +730,8 @@
 
       if (!res.ok) {
         let text = "Booking failed.";
-        let errBody = null;
         try {
-          errBody = await res.json();
+          const errBody = await res.json();
           text = errBody.error || text;
         } catch (_) {}
         const soldOut = /not enough|sold out|availability/i.test(text);
@@ -598,16 +761,14 @@
         const cleanUrl = window.location.pathname;
         window.history.replaceState({}, "", cleanUrl);
       }
+      updateSummary();
+      syncNavOffsetVar();
     });
+    window.addEventListener("load", syncNavOffsetVar);
+    window.addEventListener("resize", syncNavOffsetVar);
   </script>
   <script src="chat-widget.js"></script>
+  <script src="footer.js"></script>
   <script src="nav-auth.js?v=20260302a"></script>
 </body>
 </html>
-
-
-
-
-
-
-
