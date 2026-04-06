@@ -10,6 +10,7 @@ const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
 const { stripeWebhook } = require("./controllers/bookingController");
 const { startNotificationWorker, stopNotificationWorker } = require("./utils/notifications");
 const { startReminderWorker, stopReminderWorker } = require("./utils/reminderWorker");
+const isVercel = Boolean(process.env.VERCEL);
 
 // Middleware
 app.disable("x-powered-by");
@@ -172,6 +173,9 @@ app.use("/api/chatbot", chatbotRoutes);
 const mlRoutes = require("./routes/mlRoutes");
 app.use("/api", mlRoutes);
 
+const cronRoutes = require("./routes/cronRoutes");
+app.use("/api/cron", cronRoutes);
+
 app.get("/sitemap.xml", async (req, res) => {
   try {
     const Event = require("./models/Event");
@@ -251,23 +255,26 @@ process.on("uncaughtException", (error) => {
   console.error("[FATAL] Uncaught exception:", error);
 });
 
-// Start Server
 const PORT = Number(process.env.PORT) || 5000;
-app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
-  startNotificationWorker();
-  startReminderWorker();
-});
+if (!isVercel && require.main === module) {
+  app.listen(PORT, () => {
+    console.log("Server running on port " + PORT);
+    startNotificationWorker();
+    startReminderWorker();
+  });
 
-process.on("SIGINT", () => {
-  stopNotificationWorker();
-  stopReminderWorker();
-  process.exit(0);
-});
+  process.on("SIGINT", () => {
+    stopNotificationWorker();
+    stopReminderWorker();
+    process.exit(0);
+  });
 
-process.on("SIGTERM", () => {
-  stopNotificationWorker();
-  stopReminderWorker();
-  process.exit(0);
-});
+  process.on("SIGTERM", () => {
+    stopNotificationWorker();
+    stopReminderWorker();
+    process.exit(0);
+  });
+}
+
+module.exports = app;
 // console.log("Public folder path:", public/index.html);
